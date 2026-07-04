@@ -1,0 +1,10 @@
+# Bloquer l'accès direct aux fichiers PHP de config
+<Files "config.php">
+    Order Allow,Deny
+    Deny from all
+</Files>
+
+# Forcer HTTPS
+RewriteEngine On
+RewriteCond %{HTTPS} off
+RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]

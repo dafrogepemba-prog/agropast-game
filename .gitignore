@@ -1,3 +1,6 @@
+# Sécurité — ne jamais committer les credentials
+api/config.php
+
 # OS
 .DS_Store
 Thumbs.db
