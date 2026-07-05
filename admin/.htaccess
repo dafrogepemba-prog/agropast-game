@@ -1,6 +1,10 @@
+# Page d'accueil par défaut
+DirectoryIndex index.php
+
 # Bloquer l'accès direct aux fichiers sensibles
-<Files "*.php">
-    # PHP géré par le serveur — OK
+<Files "config.php">
+    Order Allow,Deny
+    Deny from all
 </Files>
 
 # Forcer HTTPS
@@ -11,7 +15,7 @@ RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 # Pas d'indexation du répertoire
 Options -Indexes
 
-# Anti-hotlinking / sécurité headers
+# Sécurité headers
 <IfModule mod_headers.c>
     Header always set X-Frame-Options "DENY"
     Header always set X-Content-Type-Options "nosniff"
