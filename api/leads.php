@@ -1,25 +1,15 @@
 <?php
 // ============================================================
 // ENDPOINT : POST /api/leads.php
-// Reçoit les données du formulaire index.html,
-// insère en base MySQL, redirige vers merci.html
+// Hébergé sur LWS mutualisé : ftp.epsylon-cg.com
+// Chemin FTP : /agropast-game.online/api/leads.php
+// Base partagée epsyl2799210 — toutes les tables préfixées apg_
 // ============================================================
 
 require_once __DIR__ . '/config.php';
 
-// --- CORS : autorise uniquement le site Netlify -----------
-$origin = $_SERVER['HTTP_ORIGIN'] ?? '';
-if ($origin === ALLOWED_ORIGIN || $origin === 'https://www.' . str_replace('https://', '', ALLOWED_ORIGIN)) {
-    header('Access-Control-Allow-Origin: ' . $origin);
-}
-header('Access-Control-Allow-Methods: POST, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type');
-
-// Répondre aux pre-flight OPTIONS
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(204);
-    exit;
-}
+// Même serveur LWS — pas de CORS nécessaire
+// Le formulaire et l'API sont sur agropast-game.online
 
 // --- Accepter uniquement POST ----------------------------
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
