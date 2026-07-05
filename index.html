@@ -63,13 +63,101 @@
     nav {
       position: sticky; top: 0; z-index: 100;
       background: var(--dark);
-      padding: .8rem 1.5rem;
+      padding: 0 1.5rem;
       display: flex; align-items: center; justify-content: space-between;
       box-shadow: 0 2px 8px rgba(0,0,0,.3);
+      min-height: 60px;
+      transition: background .3s;
     }
-    .nav-logo { font-size: 1.3rem; font-weight: 800; color: var(--yellow); letter-spacing: .5px; }
+    nav.scrolled { background: rgba(27,42,27,.97); backdrop-filter: blur(8px); }
+    .nav-logo { font-size: 1.3rem; font-weight: 800; color: var(--yellow); letter-spacing: .5px; flex-shrink: 0; }
     .nav-logo span { color: var(--green-l); }
-    .nav-cta { font-size: .9rem; padding: .5rem 1.2rem; }
+
+    /* Liens de navigation desktop */
+    .nav-links {
+      display: flex; align-items: center; gap: .25rem;
+      list-style: none;
+    }
+    .nav-links a {
+      color: rgba(255,255,255,.75);
+      font-size: .88rem;
+      font-weight: 600;
+      padding: .45rem .75rem;
+      border-radius: 6px;
+      transition: color .2s, background .2s;
+      white-space: nowrap;
+    }
+    .nav-links a:hover { color: var(--white); background: rgba(255,255,255,.08); }
+    .nav-links a[aria-current="page"] {
+      color: var(--yellow);
+      background: rgba(249,168,37,.12);
+    }
+    /* Focus clavier visible */
+    .nav-links a:focus-visible {
+      outline: 2px solid var(--yellow);
+      outline-offset: 2px;
+    }
+
+    .nav-right { display: flex; align-items: center; gap: .75rem; }
+    .nav-cta { font-size: .85rem; padding: .45rem 1.1rem; }
+
+    /* Menu hamburger mobile */
+    .nav-hamburger {
+      display: none;
+      background: none; border: none;
+      cursor: pointer;
+      padding: .4rem;
+      color: var(--white);
+      flex-direction: column; gap: 5px;
+      align-items: center; justify-content: center;
+    }
+    .nav-hamburger span {
+      display: block; width: 22px; height: 2px;
+      background: var(--white);
+      border-radius: 2px;
+      transition: transform .3s, opacity .3s;
+    }
+    .nav-hamburger[aria-expanded="true"] span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+    .nav-hamburger[aria-expanded="true"] span:nth-child(2) { opacity: 0; }
+    .nav-hamburger[aria-expanded="true"] span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+    /* Mobile nav drawer */
+    @media (max-width: 720px) {
+      .nav-hamburger { display: flex; }
+      .nav-links {
+        position: fixed; top: 60px; left: 0; right: 0;
+        background: var(--dark);
+        flex-direction: column; align-items: stretch;
+        padding: 1rem 1.5rem 1.5rem;
+        gap: .25rem;
+        box-shadow: 0 4px 12px rgba(0,0,0,.4);
+        transform: translateY(-110%);
+        transition: transform .3s ease;
+        z-index: 99;
+      }
+      .nav-links.open { transform: translateY(0); }
+      .nav-links a { font-size: 1rem; padding: .75rem 1rem; }
+      .nav-cta { display: none; }
+    }
+
+    /* ===== BOUTON RETOUR EN HAUT ===== */
+    #btn-top {
+      position: fixed; bottom: 1.5rem; right: 1.5rem;
+      z-index: 200;
+      background: var(--green);
+      color: var(--white);
+      border: none; border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 1.2rem;
+      cursor: pointer;
+      box-shadow: var(--shadow);
+      opacity: 0; pointer-events: none;
+      transition: opacity .3s, transform .3s;
+      display: flex; align-items: center; justify-content: center;
+    }
+    #btn-top.visible { opacity: 1; pointer-events: auto; }
+    #btn-top:hover { transform: translateY(-3px); background: var(--green-l); }
+    #btn-top:focus-visible { outline: 2px solid var(--yellow); outline-offset: 2px; }
 
     /* ===== HERO ===== */
     #hero {
@@ -297,13 +385,35 @@
 <!-- ======================================================
      NAVBAR
 ====================================================== -->
-<nav>
-  <span class="nav-logo">🍉 AgroPast<span>Game</span></span>
-  <a href="https://play.google.com/store" target="_blank" rel="noopener" class="btn btn-primary nav-cta"
-     aria-label="Télécharger AgroPast-Game sur le Play Store">
-    ▶ Jouer gratuitement
-  </a>
+<nav id="main-nav" aria-label="Navigation principale">
+  <a href="#hero" class="nav-logo" aria-label="AgroPast-Game — retour en haut">🍉 AgroPast<span>Game</span></a>
+
+  <!-- Liens desktop -->
+  <ul class="nav-links" id="nav-links" role="list">
+    <li><a href="#hero"        aria-label="Section Accueil">🏠 Accueil</a></li>
+    <li><a href="#features"    aria-label="Section Pourquoi jouer">⭐ Pourquoi</a></li>
+    <li><a href="#howto"       aria-label="Section Comment jouer">🎮 Jouer</a></li>
+    <li><a href="#leaderboard" aria-label="Section Classement">🏆 Classement</a></li>
+    <li><a href="#signup"      aria-label="Section Inscription">✉️ S'inscrire</a></li>
+  </ul>
+
+  <div class="nav-right">
+    <a href="https://play.google.com/store" target="_blank" rel="noopener"
+       class="btn btn-primary nav-cta"
+       aria-label="Télécharger AgroPast-Game sur le Play Store">
+      ▶ Jouer gratuitement
+    </a>
+    <!-- Hamburger mobile -->
+    <button class="nav-hamburger" id="nav-hamburger"
+            aria-controls="nav-links" aria-expanded="false"
+            aria-label="Ouvrir le menu de navigation">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
 </nav>
+
+<!-- Bouton retour en haut -->
+<button id="btn-top" aria-label="Retour en haut de page" title="Retour en haut">▲</button>
 
 <!-- ======================================================
      ÉTAPE 1 — NOTORIÉTÉ : HERO
@@ -775,6 +885,94 @@
      */
 
     // Si validation OK, le formulaire se soumet normalement (action="/api/leads.php")
+  });
+})();
+/* ---- NAVIGATION : sticky highlight + hamburger + retour haut -------- */
+(function () {
+  const nav        = document.getElementById('main-nav');
+  const hamburger  = document.getElementById('nav-hamburger');
+  const navLinks   = document.getElementById('nav-links');
+  const btnTop     = document.getElementById('btn-top');
+  const links      = navLinks.querySelectorAll('a[href^="#"]');
+
+  // Sections observées pour l'indicateur actif
+  const sectionIds = ['hero', 'features', 'howto', 'leaderboard', 'signup'];
+  const sections   = sectionIds.map(id => document.getElementById(id)).filter(Boolean);
+
+  // --- Hamburger mobile ------------------------------------
+  hamburger.addEventListener('click', () => {
+    const open = navLinks.classList.toggle('open');
+    hamburger.setAttribute('aria-expanded', open);
+  });
+
+  // Fermer le menu au clic sur un lien mobile
+  links.forEach(a => {
+    a.addEventListener('click', () => {
+      navLinks.classList.remove('open');
+      hamburger.setAttribute('aria-expanded', 'false');
+    });
+  });
+
+  // Fermer le menu en cliquant en dehors
+  document.addEventListener('click', e => {
+    if (!nav.contains(e.target)) {
+      navLinks.classList.remove('open');
+      hamburger.setAttribute('aria-expanded', 'false');
+    }
+  });
+
+  // --- Scroll : navbar scrolled + retour haut + section active ---------
+  let ticking = false;
+
+  function onScroll() {
+    const scrollY = window.scrollY;
+
+    // Effet glassmorphism sur la navbar après 50px
+    nav.classList.toggle('scrolled', scrollY > 50);
+
+    // Bouton retour en haut après 400px
+    btnTop.classList.toggle('visible', scrollY > 400);
+
+    // Section active (Intersection + fallback scroll)
+    let activeId = '';
+    sections.forEach(sec => {
+      const rect = sec.getBoundingClientRect();
+      if (rect.top <= 80) activeId = sec.id;
+    });
+
+    links.forEach(a => {
+      const isActive = a.getAttribute('href') === '#' + activeId;
+      a.setAttribute('aria-current', isActive ? 'page' : 'false');
+    });
+
+    ticking = false;
+  }
+
+  window.addEventListener('scroll', () => {
+    if (!ticking) { requestAnimationFrame(onScroll); ticking = true; }
+  }, { passive: true });
+
+  onScroll(); // init au chargement
+
+  // --- Bouton retour en haut -----------------------------------
+  btnTop.addEventListener('click', () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  // --- Smooth scroll pour toutes les ancres internes -----------
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      const target = document.querySelector(a.getAttribute('href'));
+      if (target) {
+        e.preventDefault();
+        const offset = nav.offsetHeight + 8;
+        const top = target.getBoundingClientRect().top + window.scrollY - offset;
+        window.scrollTo({ top, behavior: 'smooth' });
+        // Focus pour accessibilité clavier
+        target.setAttribute('tabindex', '-1');
+        target.focus({ preventScroll: true });
+      }
+    });
   });
 })();
 </script>
