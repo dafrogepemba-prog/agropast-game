@@ -529,6 +529,10 @@
           <span class="form-hint">Facultatif — aide-nous à améliorer notre communication.</span>
         </div>
 
+        <!-- Champs cachés : UTM + parrainage capturés par JS -->
+        <input type="hidden" id="field-utm"      name="utm"      value="" />
+        <input type="hidden" id="field-referrer" name="referrer" value="" />
+
         <button type="submit" class="btn btn-primary form-submit"
                 aria-label="Envoyer le formulaire d'inscription">
           ✅ Je m'inscris !
@@ -709,6 +713,35 @@
   setLog('Clique sur une parcelle 🟫 pour commencer à semer.');
 })();
 
+/* ---- CAPTURE UTM + REF (parrainage) -------------------
+   Lit les paramètres d'URL au chargement et les injecte
+   dans les champs cachés du formulaire.
+---------------------------------------------------------------- */
+(function () {
+  const p = new URLSearchParams(window.location.search);
+
+  // UTM source (ex: ?utm_source=whatsapp ou ?source=facebook)
+  const utm = p.get('utm_source') || p.get('source') || p.get('utm') || '';
+  document.getElementById('field-utm').value = utm;
+
+  // Référent parrain (ex: ?ref=abc123)
+  const ref = p.get('ref') || '';
+  document.getElementById('field-referrer').value = ref;
+
+  // Pré-remplir le select "source" si UTM détecté
+  if (utm) {
+    const sel = document.getElementById('field-source');
+    const map = {
+      whatsapp: 'whatsapp', facebook: 'social', instagram: 'social',
+      twitter: 'social', google: 'search', friend: 'friend', ami: 'friend'
+    };
+    const key = utm.toLowerCase();
+    for (const [k, v] of Object.entries(map)) {
+      if (key.includes(k)) { sel.value = v; break; }
+    }
+  }
+})();
+
 /* ---- FORMULAIRE DE CONTACT -----------------------------------
    Validation front + soumission Ajax (ou redirection classique).
    TODO: remplacer action="#" par action="/api/leads.php" côté HTML
@@ -736,11 +769,12 @@
     }
 
     /*
-     * Le formulaire poste vers https://agropast-game.online/api/leads.php
-     * hébergé sur LWS mutualisé (MySQL epsyl2799210, table ag_leads).
-     * La soumission est gérée nativement par le navigateur (action= dans le form).
-     * Ce bloc JS gère uniquement la validation front avant envoi.
+     * Le formulaire poste vers /api/leads.php (même serveur LWS).
+     * leads.php insère en MySQL et redirige vers merci.html?prenom=X&ref=Y.
+     * La validation front ci-dessous bloque l'envoi si invalide.
      */
+
+    // Si validation OK, le formulaire se soumet normalement (action="/api/leads.php")
   });
 })();
 </script>
