@@ -1,0 +1,18 @@
+# Bloquer l'accès direct aux fichiers sensibles
+<Files "*.php">
+    # PHP géré par le serveur — OK
+</Files>
+
+# Forcer HTTPS
+RewriteEngine On
+RewriteCond %{HTTPS} off
+RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# Pas d'indexation du répertoire
+Options -Indexes
+
+# Anti-hotlinking / sécurité headers
+<IfModule mod_headers.c>
+    Header always set X-Frame-Options "DENY"
+    Header always set X-Content-Type-Options "nosniff"
+</IfModule>
