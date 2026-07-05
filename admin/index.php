@@ -20,7 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Identifiants admin (à changer en production)
     // Mot de passe stocké en hash bcrypt pour la sécurité
     $admin_user = 'admin';
-    $admin_hash = '$2y$12$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi'; // secret = "AgroPast@2025!"
+    $admin_hash = '$2y$12$h2VgbTBXJS3qLMRrwpoLLeXXAgGvF02agqwuVMaq.i9g3I8tdxFKS';
 
     if ($user === $admin_user && password_verify($pass, $admin_hash)) {
         session_regenerate_id(true);
