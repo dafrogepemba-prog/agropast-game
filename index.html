@@ -885,13 +885,8 @@
       return;
     }
 
-    /*
-     * Le formulaire poste vers /api/leads.php (même serveur LWS).
-     * leads.php insère en MySQL et redirige vers merci.html?prenom=X&ref=Y.
-     * La validation front ci-dessous bloque l'envoi si invalide.
-     */
-
-    // Si validation OK, le formulaire se soumet normalement (action="/api/leads.php")
+    // Validation OK → soumettre le formulaire vers leads.php
+    form.submit();
   });
 })();
 /* ---- NAVIGATION : sticky highlight + hamburger + retour haut -------- */
