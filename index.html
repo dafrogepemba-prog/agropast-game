@@ -587,10 +587,9 @@
       <!--
         TODO: POST vers /api/leads.php
         Le formulaire envoie les données en POST vers l'endpoint PHP,
-        qui insère en base MySQL et répond avec une redirection 303 vers merci.html.
-        Pour l'instant, action="#" et JS gère la redirection côté client.
+        qui insère en base MySQL et redirige vers merci.html.
       -->
-      <form id="contact-form" action="/api/leads.php" method="POST" novalidate
+      <form id="contact-form" action="https://agropast-game.online/api/leads.php" method="POST" novalidate
             aria-label="Formulaire d'inscription à la newsletter AgroPast-Game">
 
         <div class="form-group">
@@ -613,16 +612,24 @@
           <label for="field-country">Pays</label>
           <select id="field-country" name="country">
             <option value="">-- Sélectionner --</option>
-            <option>Sénégal</option>
-            <option>Côte d'Ivoire</option>
-            <option>Cameroun</option>
-            <option>Bénin</option>
-            <option>Burkina Faso</option>
-            <option>Mali</option>
-            <option>Togo</option>
-            <option>Guinée</option>
-            <option>Nigeria</option>
-            <option>Autre</option>
+            <option value="Congo-Brazzaville">Congo-Brazzaville 🇨🇬</option>
+            <option value="RDC">RD Congo (Kinshasa) 🇨🇩</option>
+            <option value="Sénégal">Sénégal 🇸🇳</option>
+            <option value="Côte d'Ivoire">Côte d'Ivoire 🇨🇮</option>
+            <option value="Cameroun">Cameroun 🇨🇲</option>
+            <option value="Gabon">Gabon 🇬🇦</option>
+            <option value="Bénin">Bénin 🇧🇯</option>
+            <option value="Burkina Faso">Burkina Faso 🇧🇫</option>
+            <option value="Mali">Mali 🇲🇱</option>
+            <option value="Togo">Togo 🇹🇬</option>
+            <option value="Guinée">Guinée 🇬🇳</option>
+            <option value="Niger">Niger 🇳🇪</option>
+            <option value="Tchad">Tchad 🇹🇩</option>
+            <option value="Centrafrique">Centrafrique 🇨🇫</option>
+            <option value="Nigeria">Nigeria 🇳🇬</option>
+            <option value="Ghana">Ghana 🇬🇭</option>
+            <option value="France">France 🇫🇷</option>
+            <option value="Autre">Autre</option>
           </select>
         </div>
 

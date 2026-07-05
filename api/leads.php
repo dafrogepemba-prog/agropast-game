@@ -132,7 +132,7 @@ try {
         $existing = $row->fetch();
         $prenom   = urlencode(explode(' ', $existing['nom'])[0]);
         $ref      = $existing['ref_id'];
-        header("Location: ../merci.html?prenom={$prenom}&ref={$ref}&already=1");
+        header("Location: https://agropast-game.online/merci.html?prenom={$prenom}&ref={$ref}&already=1");
         exit;
     }
     error_log('DB insertion échouée : ' . $e->getMessage());
@@ -142,5 +142,5 @@ try {
 
 // --- Redirection vers merci.html avec prénom + ref_id ----
 $prenom = urlencode(explode(' ', $name)[0]); // premier mot du pseudo
-header("Location: ../merci.html?prenom={$prenom}&ref={$ref_id}");
+header("Location: https://agropast-game.online/merci.html?prenom={$prenom}&ref={$ref_id}");
 exit;
