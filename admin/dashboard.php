@@ -445,6 +445,11 @@ if (isset($_GET['export']) && $_GET['export'] === 'csv') {
           <td class="ref-code"><?= $lead['referrer_ref_id'] ? htmlspecialchars($lead['referrer_ref_id']) : '—' ?></td>
           <td><?= date('d/m/y H:i', strtotime($lead['date_inscription'])) ?></td>
           <td>
+            <a href="user_detail.php?id=<?= $lead['id'] ?>"
+               style="display:inline-block;background:#1565c0;color:#fff;border-radius:5px;
+                      padding:.25rem .55rem;font-size:.78rem;text-decoration:none;margin-right:.3rem">
+              🔍 Détails
+            </a>
             <form method="POST" action="" style="display:inline"
                   onsubmit="return confirm('Supprimer cet utilisateur ?\nIl pourra se reinscrire avec le meme numero.')">
               <input type="hidden" name="action_delete" value="1">
