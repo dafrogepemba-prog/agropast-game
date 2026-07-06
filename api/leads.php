@@ -92,13 +92,17 @@ function generateRefId(PDO $pdo, string $table): string {
 $ref_id        = generateRefId($pdo, $table);
 $source_finale = $utm ?: $source;
 
+// --- Générer PIN 4 chiffres aléatoire --------------------
+$pin      = str_pad((string)random_int(0, 9999), 4, '0', STR_PAD_LEFT);
+$pin_hash = password_hash($pin, PASSWORD_BCRYPT, ['cost' => 10]);
+
 // --- Insertion -------------------------------------------
 try {
     $stmt = $pdo->prepare("
         INSERT INTO `{$table}`
-            (ref_id, whatsapp, nom, email, pays, source_declaree, utm_source, referrer_ref_id)
+            (ref_id, whatsapp, nom, email, pays, pin_hash, source_declaree, utm_source, referrer_ref_id)
         VALUES
-            (:ref_id, :whatsapp, :nom, :email, :pays, :source_declaree, :utm_source, :referrer_ref_id)
+            (:ref_id, :whatsapp, :nom, :email, :pays, :pin_hash, :source_declaree, :utm_source, :referrer_ref_id)
     ");
     $stmt->execute([
         ':ref_id'          => $ref_id,
@@ -106,6 +110,7 @@ try {
         ':nom'             => $name,
         ':email'           => $email,
         ':pays'            => $country,
+        ':pin_hash'        => $pin_hash,
         ':source_declaree' => $source,
         ':utm_source'      => $utm,
         ':referrer_ref_id' => $referrer,
@@ -113,12 +118,14 @@ try {
 } catch (PDOException $e) {
     if ($e->getCode() === '23000') {
         // WhatsApp déjà inscrit → récupère ses infos et redirige
-        $row = $pdo->prepare("SELECT ref_id, nom FROM `{$table}` WHERE whatsapp=?");
+        $row = $pdo->prepare("SELECT ref_id, nom, pin_hash FROM `{$table}` WHERE whatsapp=?");
         $row->execute([$whatsapp]);
         $existing = $row->fetch();
-        $prenom   = urlencode(explode(' ', $existing['nom'])[0]);
-        $ref      = $existing['ref_id'];
-        header("Location: https://agropast-game.online/merci.html?prenom={$prenom}&ref={$ref}&already=1");
+        $prenom  = urlencode(explode(' ', $existing['nom'])[0]);
+        $nomEnc  = urlencode($existing['nom']);
+        $ref     = $existing['ref_id'];
+        $waNum   = ltrim(preg_replace('/[^+\d]/', '', $whatsapp), '+');
+        header("Location: https://agropast-game.online/merci.html?prenom={$prenom}&ref={$ref}&already=1&nom={$nomEnc}&tel={$waNum}");
         exit;
     }
     error_log('leads.php insert: ' . $e->getMessage());
@@ -127,14 +134,8 @@ try {
 }
 
 // --- Redirection vers merci.html -------------------------
-$prenom     = urlencode(explode(' ', $name)[0]);
-$waMsg      = "🍉 AgroPast-Game — Mon inscription\n\n"
-            . "Bonjour ! Voici mes informations de connexion :\n"
-            . "👤 Pseudo : {$name}\n"
-            . "🔑 Mon PIN : {$pin}\n"
-            . "🔗 Mon lien parrain : https://agropast-game.online?ref={$ref_id}\n\n"
-            . "⚠️ Garde ce message précieusement pour te connecter !";
-$waNumero   = ltrim(preg_replace('/[^+\d]/', '', $whatsapp), '+');
-$waUrl      = 'https://wa.me/' . $waNumero . '?text=' . rawurlencode($waMsg);
-header("Location: https://agropast-game.online/merci.html?prenom={$prenom}&ref={$ref_id}&wa=" . urlencode($waUrl));
+$prenom   = urlencode(explode(' ', $name)[0]);
+$nomEnc   = urlencode($name);
+$waNumero = ltrim(preg_replace('/[^+\d]/', '', $whatsapp), '+');
+header("Location: https://agropast-game.online/merci.html?prenom={$prenom}&ref={$ref_id}&pin={$pin}&nom={$nomEnc}&tel={$waNumero}");
 exit;
