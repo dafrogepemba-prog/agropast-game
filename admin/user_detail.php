@@ -41,11 +41,14 @@ $bonus      = $scoreRow ? (int)$scoreRow['bonus_total']     : 0;
 $updatedAt  = $scoreRow ? $scoreRow['updated_at']           : null;
 
 // --- Calculs revenus estimés ------------------------------
-// Modèle : 1 000 pts = 0.10 $ revenus AdMob estimés
-// Parrainage Google : 1 filleul actif ≈ 0.05 $ CPM
-$CPT           = 0.10 / 1000;   // $ par point
-$CPF           = 0.05;          // $ par filleul actif (CPM parrainage)
-$revPoints     = round($score * $CPT, 2);
+// Politique Google AdMob : estimation uniquement, jamais de garantie
+// Taux de conversion : 1 USD = 600 FCFA (XAF – Congo-Brazzaville)
+// Modèle indicatif : 1 000 pts ≈ 60 FCFA de revenus AdMob estimés
+// Parrainage : 1 filleul actif ≈ 30 FCFA CPM estimé
+$USD_TO_FCFA   = 600;
+$CPT           = (0.10 / 1000) * $USD_TO_FCFA;  // FCFA par point
+$CPF           = 0.05 * $USD_TO_FCFA;            // FCFA par filleul actif
+$revPoints     = round($score * $CPT);
 
 // Filleuls directs
 $filleulsStmt = $pdo->prepare("SELECT COUNT(*) FROM `{$tLeads}` WHERE referrer_ref_id=?");
@@ -63,14 +66,14 @@ try {
     $nbFilleulsActifs = (int)$filleulsActifsStmt->fetchColumn();
 } catch (PDOException $ignored) { $nbFilleulsActifs = 0; }
 
-$revParrainage  = round($nbFilleulsActifs * $CPF, 2);
-$revTotal       = round($revPoints + $revParrainage, 2);
+$revParrainage  = round($nbFilleulsActifs * $CPF);
+$revTotal       = round($revPoints + $revParrainage);
 
 // Estimation semaine (score / semaines actives)
 $dateInscription = new DateTime($u['date_inscription']);
 $now             = new DateTime();
 $semaines        = max(1, (int)$dateInscription->diff($now)->days / 7);
-$revParSemaine   = round($revTotal / $semaines, 2);
+$revParSemaine   = round($revTotal / $semaines);
 $ptsParSemaine   = round($score / $semaines);
 
 // --- Niveau joueur ----------------------------------------
@@ -315,27 +318,29 @@ $source = $u['utm_source'] ?: $u['source_declaree'] ?: '—';
 
   <!-- REVENUS ESTIMÉS -->
   <div class="card" style="margin-bottom:1.5rem">
-    <h2>💰 Revenus estimés (basés sur le modèle AdMob + parrainage)</h2>
+    <h2>💰 Revenus estimés — Indicatif uniquement (FCFA / XAF)</h2>
     <div class="rev-grid" style="grid-template-columns:repeat(4,1fr)">
       <div class="rev-box gold">
-        <div class="amount"><?= $revPoints ?> $</div>
-        <div class="desc">AdMob (points × 0.10$/1 000 pts)</div>
+        <div class="amount"><?= number_format($revPoints) ?> F</div>
+        <div class="desc">AdMob estimé<br>(pts × 60 F/1 000 pts)</div>
       </div>
       <div class="rev-box blue">
-        <div class="amount"><?= $revParrainage ?> $</div>
-        <div class="desc">Parrainage (<?= $nbFilleulsActifs ?> filleul(s) actif(s) × 0.05 $)</div>
+        <div class="amount"><?= number_format($revParrainage) ?> F</div>
+        <div class="desc">Parrainage estimé<br>(<?= $nbFilleulsActifs ?> filleul(s) × 30 F)</div>
       </div>
       <div class="rev-box green">
-        <div class="amount"><?= $revTotal ?> $</div>
-        <div class="desc">Total cumulé estimé</div>
+        <div class="amount"><?= number_format($revTotal) ?> F</div>
+        <div class="desc">Total estimé cumulé</div>
       </div>
       <div class="rev-box purple">
-        <div class="amount"><?= $revParSemaine ?> $/sem</div>
-        <div class="desc">Revenu moyen par semaine</div>
+        <div class="amount"><?= number_format($revParSemaine) ?> F/sem</div>
+        <div class="desc">Estimation moyenne par semaine</div>
       </div>
     </div>
     <p style="font-size:.75rem;color:#aaa;margin-top:.8rem">
-      ⚠️ Estimation indicative. Revenus réels dépendent du CPM Google AdMob, du taux de clics et de la géolocalisation.
+      ⚠️ Estimation indicative en FCFA (XAF). Les revenus réels dépendent du CPM Google AdMob,
+      du pays, du taux de clics et des performances publicitaires. Aucun revenu n'est garanti.
+      Taux appliqué : 1 USD = 600 FCFA.
     </p>
   </div>
 

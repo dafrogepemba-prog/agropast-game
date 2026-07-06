@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+// ignore: avoid_web_libraries_in_flutter
+import 'dart:html' as html;
 import '../services/game_provider.dart';
 import '../services/admob_service.dart';
 import '../models/parcelle.dart';
@@ -29,6 +31,65 @@ class _GameScreenState extends State<GameScreen> {
     super.dispose();
   }
 
+  // ── Menu principal (quitter / déconnexion) ──────────────
+  void _showLogoutDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        backgroundColor: const Color(0xFF2d4a1e),
+        title: const Text('Menu', style: TextStyle(color: Colors.white)),
+        content: const Text(
+          'Que veux-tu faire ?',
+          style: TextStyle(color: Colors.white70),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Continuer à jouer',
+                style: TextStyle(color: Colors.white54)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF2e7d32)),
+            onPressed: () {
+              Navigator.pop(context);
+              _navigateToSite();
+            },
+            child: const Text('⏎ Retour au site'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFc62828)),
+            onPressed: () {
+              Navigator.pop(context);
+              _logout();
+            },
+            child: const Text('🔓 Se déconnecter'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── Retour au site vitrine ───────────────────────────────
+  void _navigateToSite() {
+    try {
+      html.window.location.href = '/';
+    } catch (_) {}
+  }
+
+  // ── Déconnexion compte (efface localStorage) ────────────
+  void _logout() {
+    try {
+      html.window.localStorage.remove('apg_token');
+      html.window.localStorage.remove('apg_whatsapp');
+      html.window.localStorage.remove('apg_nom');
+      html.window.localStorage.remove('apg_ref_id');
+      html.window.location.href = '/login.html';
+    } catch (_) {}
+  }
+
+  // ── Publicité récompensée AdMob ─────────────────────────
   void _showAd(BuildContext context) {
     if (!_adMob.isLoaded) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -97,6 +158,22 @@ class _GameScreenState extends State<GameScreen> {
                     fontSize: 13, fontWeight: FontWeight.bold),
               ),
             ),
+            const SizedBox(width: 8),
+            // Bouton menu / déconnexion
+            GestureDetector(
+              onTap: () => _showLogoutDialog(context),
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.white12,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: Colors.white24),
+                ),
+                child: const Text('☰ Menu',
+                    style: TextStyle(fontSize: 12, color: Colors.white70)),
+              ),
+            ),
           ],
         ),
       ),
@@ -137,7 +214,8 @@ class _GameScreenState extends State<GameScreen> {
               // Grille des parcelles (2 × 3)
               Expanded(
                 child: GridView.builder(
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  gridDelegate:
+                      const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 3,
                     crossAxisSpacing: 10,
                     mainAxisSpacing: 10,
@@ -166,20 +244,22 @@ class _GameScreenState extends State<GameScreen> {
                             color: _adMob.isLoaded
                                 ? const Color(0xFFf9a825)
                                 : Colors.grey),
-                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        padding:
+                            const EdgeInsets.symmetric(vertical: 12),
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12)),
                       ),
-                      onPressed: _adMob.isLoaded
-                          ? () => _showAd(context)
-                          : null,
-                      icon: const Text('🎬', style: TextStyle(fontSize: 18)),
+                      onPressed:
+                          _adMob.isLoaded ? () => _showAd(context) : null,
+                      icon: const Text('🎬',
+                          style: TextStyle(fontSize: 18)),
                       label: Text(
                         _adMob.isLoaded
                             ? 'Booster\n+50 🪙 +500 pts'
                             : 'Chargement…',
                         textAlign: TextAlign.center,
-                        style: const TextStyle(fontSize: 11)),
+                        style: const TextStyle(fontSize: 11),
+                      ),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -191,14 +271,16 @@ class _GameScreenState extends State<GameScreen> {
                         backgroundColor: gp.saisonTerminee
                             ? const Color(0xFF2e7d32)
                             : Colors.grey.shade700,
-                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        padding:
+                            const EdgeInsets.symmetric(vertical: 12),
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12)),
                       ),
                       onPressed: gp.saisonTerminee
                           ? () => gp.nouvelleSaison()
                           : null,
-                      icon: const Text('🌾', style: TextStyle(fontSize: 18)),
+                      icon: const Text('🌾',
+                          style: TextStyle(fontSize: 18)),
                       label: const Text('Nouvelle\nsaison',
                           textAlign: TextAlign.center,
                           style: TextStyle(
@@ -222,7 +304,8 @@ class _PlayerBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      padding:
+          const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       decoration: BoxDecoration(
         color: const Color(0xFF0d1f0d),
         borderRadius: BorderRadius.circular(12),
@@ -245,12 +328,12 @@ class _Stat extends StatelessWidget {
   const _Stat(this.icon, this.value);
   @override
   Widget build(BuildContext context) => Column(
-    children: [
-      Text(icon, style: const TextStyle(fontSize: 18)),
-      const SizedBox(height: 2),
-      Text(value,
-          style: const TextStyle(
-              color: Colors.white70, fontSize: 11)),
-    ],
-  );
+        children: [
+          Text(icon, style: const TextStyle(fontSize: 18)),
+          const SizedBox(height: 2),
+          Text(value,
+              style: const TextStyle(
+                  color: Colors.white70, fontSize: 11)),
+        ],
+      );
 }
