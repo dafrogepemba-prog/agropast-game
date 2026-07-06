@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 // ignore: avoid_web_libraries_in_flutter
@@ -12,6 +13,7 @@ class GameProvider extends ChangeNotifier {
   Player player  = Player();
   bool  _loading = true;
   String message = '';
+  String _webToken = ''; // token JWT depuis localStorage
 
   bool get loading => _loading;
 
@@ -19,14 +21,17 @@ class GameProvider extends ChangeNotifier {
   Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
 
-    // Sur web : récupérer le nom/token depuis localStorage (set par login.html)
     String pseudo = prefs.getString('pseudo') ?? 'Fermier';
     String email  = prefs.getString('email')  ?? '';
+
+    // Lire les données web depuis localStorage (posé par login.html)
     try {
       final webNom   = html.window.localStorage['apg_nom']      ?? '';
       final webWa    = html.window.localStorage['apg_whatsapp'] ?? '';
-      if (webNom.isNotEmpty)  pseudo = webNom;
-      if (webWa.isNotEmpty)   email  = webWa;
+      final webToken = html.window.localStorage['apg_token']    ?? '';
+      if (webNom.isNotEmpty)   pseudo     = webNom;
+      if (webWa.isNotEmpty)    email      = webWa;
+      if (webToken.isNotEmpty) _webToken  = webToken;
     } catch (_) {}
 
     player = Player(
@@ -99,15 +104,14 @@ class GameProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // ---- Sync API (fire & forget — pas bloquant) ---------------
+  // ---- Sync API avec token JWT (fire & forget) --------------
   Future<void> _syncScore({
     required String eventType,
     int bonusPoints = 0,
   }) async {
-    if (player.email.isEmpty) return;
+    if (_webToken.isEmpty) return; // pas de token = pas connecté
     await ApiService.syncScore(
-      pseudo:         player.pseudo,
-      email:          player.email,
+      token:          _webToken,
       scoreTotal:     player.scoreTotal,
       nombreRecoltes: player.nombreRecoltes,
       eventType:      eventType,

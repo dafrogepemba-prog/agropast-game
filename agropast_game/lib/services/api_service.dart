@@ -1,36 +1,28 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
-// ============================================================
-// API Service — Synchronisation score avec le backend LWS
-// Endpoint : POST https://agropast-game.online/api/sync_score.php
-// ============================================================
-
 class ApiService {
   static const String _baseUrl = 'https://agropast-game.online/api';
 
-  // Sync score après récompense AdMob ou récolte
+  // Sync score avec token JWT (authentification)
   static Future<bool> syncScore({
-    required String pseudo,
-    required String email,   // identifiant unique du joueur
+    required String token,
     required int    scoreTotal,
     required int    nombreRecoltes,
-    required String eventType, // 'recolte' | 'admob_reward' | 'saison'
+    required String eventType,
     int    bonusPoints = 0,
   }) async {
     try {
       final response = await http.post(
         Uri.parse('$_baseUrl/sync_score.php'),
-        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-        body: {
-          'pseudo':          pseudo,
-          'email':           email,
-          'score_total':     scoreTotal.toString(),
-          'nombre_recoltes': nombreRecoltes.toString(),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'token':           token,
+          'score_total':     scoreTotal,
+          'nombre_recoltes': nombreRecoltes,
           'event_type':      eventType,
-          'bonus_points':    bonusPoints.toString(),
-          'timestamp':       DateTime.now().toIso8601String(),
-        },
+          'bonus_points':    bonusPoints,
+        }),
       ).timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
@@ -38,13 +30,12 @@ class ApiService {
         return data['success'] == true;
       }
       return false;
-    } catch (e) {
-      // Pas de crash si pas de réseau — le jeu continue localement
+    } catch (_) {
       return false;
     }
   }
 
-  // Récupérer le leaderboard réel
+  // Récupérer le leaderboard
   static Future<List<Map<String, dynamic>>> getLeaderboard() async {
     try {
       final response = await http.get(
