@@ -445,12 +445,13 @@ if (isset($_GET['export']) && $_GET['export'] === 'csv') {
           <td class="ref-code"><?= $lead['referrer_ref_id'] ? htmlspecialchars($lead['referrer_ref_id']) : '—' ?></td>
           <td><?= date('d/m/y H:i', strtotime($lead['date_inscription'])) ?></td>
           <td>
-            <button
-              class="btn-del"
-              onclick="openDeleteModal(<?= $lead['id'] ?>, <?= json_encode($lead['nom'] ?: $lead['whatsapp'] ?? '') ?>)"
-              title="Supprimer cet utilisateur">
-              🗑 Suppr.
-            </button>
+            <form method="POST" action="" style="display:inline"
+                  onsubmit="return confirm('Supprimer cet utilisateur ?\nIl pourra se reinscrire avec le meme numero.')">
+              <input type="hidden" name="action_delete" value="1">
+              <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf) ?>">
+              <input type="hidden" name="delete_id" value="<?= $lead['id'] ?>">
+              <button type="submit" class="btn-del">🗑 Suppr.</button>
+            </form>
           </td>
         </tr>
       <?php endforeach; ?>
@@ -477,42 +478,6 @@ if (isset($_GET['export']) && $_GET['export'] === 'csv') {
   </div>
 
 </main>
-
-<!-- MODAL CONFIRMATION SUPPRESSION -->
-<div class="modal-overlay" id="deleteModal">
-  <div class="modal-box">
-    <h3>🗑 Supprimer l'utilisateur ?</h3>
-    <p id="modalUserName"></p>
-    <p style="color:#e53935;font-size:.85rem">
-      ⚠️ Cette action est <strong>irréversible</strong>. L'utilisateur pourra se réinscrire avec le même numéro.
-    </p>
-    <form method="POST" action="" id="deleteForm">
-      <input type="hidden" name="action_delete" value="1" />
-      <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf) ?>" />
-      <input type="hidden" name="delete_id" id="deleteIdInput" value="" />
-      <div class="modal-actions">
-        <button type="button" class="btn-cancel" onclick="closeDeleteModal()">Annuler</button>
-        <button type="submit" class="btn-confirm-del">Oui, supprimer</button>
-      </div>
-    </form>
-  </div>
-</div>
-
-<script>
-function openDeleteModal(id, name) {
-  document.getElementById('deleteIdInput').value = id;
-  document.getElementById('modalUserName').textContent =
-    'Utilisateur : ' + (name || '#' + id);
-  document.getElementById('deleteModal').classList.add('open');
-}
-function closeDeleteModal() {
-  document.getElementById('deleteModal').classList.remove('open');
-}
-// Fermer en cliquant sur l'overlay
-document.getElementById('deleteModal').addEventListener('click', function(e) {
-  if (e.target === this) closeDeleteModal();
-});
-</script>
 
 </body>
 </html>
