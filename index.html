@@ -398,8 +398,17 @@
   </ul>
 
   <div class="nav-right">
+    <!-- Zone joueur connecté (injectée par JS) -->
+    <div id="nav-user" style="display:none; align-items:center; gap:.5rem">
+      <span id="nav-pseudo" style="color:#f9a825; font-weight:700; font-size:.85rem"></span>
+      <button onclick="logout()" style="
+        background:rgba(255,255,255,.1); color:#fff; border:1px solid rgba(255,255,255,.2);
+        border-radius:6px; padding:.35rem .7rem; font-size:.8rem; cursor:pointer">
+        Déconnexion
+      </button>
+    </div>
     <a href="https://play.google.com/store" target="_blank" rel="noopener"
-       class="btn btn-primary nav-cta"
+       class="btn btn-primary nav-cta" id="nav-cta-dl"
        aria-label="Télécharger AgroPast-Game sur le Play Store">
       ▶ Jouer gratuitement
     </a>
@@ -411,8 +420,6 @@
     </button>
   </div>
 </nav>
-
-<!-- Bouton retour en haut -->
 <button id="btn-top" aria-label="Retour en haut de page" title="Retour en haut">▲</button>
 
 <!-- ======================================================
@@ -595,16 +602,25 @@
         <div class="form-group">
           <label for="field-name">Pseudo / Nom <span aria-hidden="true">*</span></label>
           <input type="text" id="field-name" name="name"
-                 placeholder="Ex: AgriKing_Dakar"
+                 placeholder="Ex: AgriKing_Brazza"
                  required minlength="2" maxlength="60"
                  autocomplete="nickname" />
         </div>
 
         <div class="form-group">
-          <label for="field-email">Adresse e-mail <span aria-hidden="true">*</span></label>
+          <label for="field-whatsapp">Numéro WhatsApp <span aria-hidden="true">*</span></label>
+          <input type="tel" id="field-whatsapp" name="whatsapp"
+                 placeholder="+242 06 123 45 67"
+                 required maxlength="20"
+                 autocomplete="tel" />
+          <span class="form-hint">Ton identifiant de connexion au jeu.</span>
+        </div>
+
+        <div class="form-group">
+          <label for="field-email">Email <span style="font-size:.8rem;color:#aaa">(optionnel)</span></label>
           <input type="email" id="field-email" name="email"
                  placeholder="ton@email.com"
-                 required maxlength="120"
+                 maxlength="120"
                  autocomplete="email" />
         </div>
 
@@ -889,6 +905,63 @@
     form.submit();
   });
 })();
+/* ---- SESSION & AUTH ------------------------------------------
+   Vérifie le token localStorage au chargement.
+   Affiche le pseudo dans la navbar si connecté.
+   Redirige vers login.html si token absent/expiré ET que
+   l'utilisateur clique sur le CTA "Jouer".
+---------------------------------------------------------------- */
+(function () {
+  const token    = localStorage.getItem('apg_token');
+  const nom      = localStorage.getItem('apg_nom');
+  const whatsapp = localStorage.getItem('apg_whatsapp');
+
+  if (token && nom) {
+    // Afficher le pseudo dans la navbar
+    const navUser = document.getElementById('nav-user');
+    const navPseudo = document.getElementById('nav-pseudo');
+    if (navUser && navPseudo) {
+      navPseudo.textContent = '👤 ' + nom;
+      navUser.style.display = 'flex';
+    }
+    // Masquer le CTA téléchargement et remplacer par "Jouer"
+    const ctaDl = document.getElementById('nav-cta-dl');
+    if (ctaDl) {
+      ctaDl.textContent = '🎮 Mon compte';
+      ctaDl.href = '#signup';
+      ctaDl.removeAttribute('target');
+    }
+  }
+
+  // Déconnexion
+  window.logout = function () {
+    localStorage.removeItem('apg_token');
+    localStorage.removeItem('apg_nom');
+    localStorage.removeItem('apg_whatsapp');
+    localStorage.removeItem('apg_ref_id');
+    window.location.reload();
+  };
+
+  // Requête signée anti-triche — utilisée après récolte/pub
+  window.syncScore = async function(scoreTotal, nombreRecoltes, eventType, bonusPoints = 0) {
+    const tok = localStorage.getItem('apg_token');
+    if (!tok) return;
+    try {
+      await fetch('https://agropast-game.online/api/sync_score.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          token:           tok,
+          score_total:     scoreTotal,
+          nombre_recoltes: nombreRecoltes,
+          event_type:      eventType,
+          bonus_points:    bonusPoints,
+        }),
+      });
+    } catch (_) { /* fire & forget */ }
+  };
+})();
+
 /* ---- NAVIGATION : sticky highlight + hamburger + retour haut -------- */
 (function () {
   const nav        = document.getElementById('main-nav');
