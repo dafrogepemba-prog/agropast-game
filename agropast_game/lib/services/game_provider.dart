@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+// ignore: avoid_web_libraries_in_flutter
+import 'dart:html' as html;
 import '../models/parcelle.dart';
 import '../models/player.dart';
 import 'api_service.dart';
@@ -13,12 +15,23 @@ class GameProvider extends ChangeNotifier {
 
   bool get loading => _loading;
 
-  // ---- Init depuis SharedPreferences -------------------------
+  // ---- Init depuis SharedPreferences + localStorage web ------
   Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
+
+    // Sur web : récupérer le nom/token depuis localStorage (set par login.html)
+    String pseudo = prefs.getString('pseudo') ?? 'Fermier';
+    String email  = prefs.getString('email')  ?? '';
+    try {
+      final webNom   = html.window.localStorage['apg_nom']      ?? '';
+      final webWa    = html.window.localStorage['apg_whatsapp'] ?? '';
+      if (webNom.isNotEmpty)  pseudo = webNom;
+      if (webWa.isNotEmpty)   email  = webWa;
+    } catch (_) {}
+
     player = Player(
-      pseudo:         prefs.getString('pseudo')         ?? 'Fermier',
-      email:          prefs.getString('email')          ?? '',
+      pseudo:         pseudo,
+      email:          email,
       scoreTotal:     prefs.getInt('scoreTotal')        ?? 0,
       nombreRecoltes: prefs.getInt('nombreRecoltes')    ?? 0,
       niveau:         prefs.getInt('niveau')            ?? 1,
