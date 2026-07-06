@@ -267,7 +267,9 @@
   const prenom  = params.get('prenom') || '';
   const refId   = params.get('ref')    || '';
   const already = params.get('already') === '1';
-  const waUrl   = params.get('wa')     || '';
+  const pin     = params.get('pin')    || '';
+  const nom     = params.get('nom')    || prenom || 'Fermier';
+  const tel     = params.get('tel')    || '';
   const base    = 'https://agropast-game.online';
 
   // --- Personnalisation du message -------------------------
@@ -285,11 +287,28 @@
   }
 
   // --- Bouton PIN WhatsApp ---------------------------------
-  if (waUrl) {
-    const pinBox = document.getElementById('pin-box');
-    const btnWa  = document.getElementById('btn-wa-pin');
-    btnWa.href   = waUrl;
-    pinBox.style.display = 'block';
+  if (tel && pin) {
+    const shareLink = base + '?ref=' + encodeURIComponent(refId);
+    const msg = '🍉 AgroPast-Game — Mon inscription\n\n'
+              + 'Voici mes informations de connexion :\n'
+              + '👤 Pseudo : ' + decodeURIComponent(nom) + '\n'
+              + '🔑 Mon PIN : ' + pin + '\n'
+              + '🔗 Mon lien parrain : ' + shareLink + '\n\n'
+              + '⚠️ Garde ce message pour te connecter !';
+    const waHref = 'https://wa.me/' + tel + '?text=' + encodeURIComponent(msg);
+    document.getElementById('btn-wa-pin').href = waHref;
+    document.getElementById('pin-box').style.display = 'block';
+  } else if (tel && already) {
+    // Déjà inscrit : on ne connait pas le PIN, message générique
+    const shareLink = base + '?ref=' + encodeURIComponent(refId);
+    const msg = '🍉 AgroPast-Game\n\n'
+              + 'Tu es déjà inscrit(e) !\n'
+              + '👤 Pseudo : ' + decodeURIComponent(nom) + '\n'
+              + '🔗 Lien parrain : ' + shareLink + '\n\n'
+              + 'Si tu as oublié ton PIN, contacte le support.';
+    const waHref = 'https://wa.me/' + tel + '?text=' + encodeURIComponent(msg);
+    document.getElementById('btn-wa-pin').href = waHref;
+    document.getElementById('pin-box').style.display = 'block';
   }
 
   // --- Lien de parrainage ----------------------------------
