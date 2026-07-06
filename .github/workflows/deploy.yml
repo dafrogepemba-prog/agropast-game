@@ -26,5 +26,9 @@ jobs:
             api/config.php
             deploy-ftp.bat
             ftp-commands.txt
+            ftp-deploy-game.txt
             maintenance/**
             .github/**
+            agropast_game/build/**
+            agropast_game/.dart_tool/**
+            agropast_game/.flutter-plugins**
