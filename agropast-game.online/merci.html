@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Merci — AgroPast-Game</title>
+  <meta name="robots" content="noindex" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --green:  #2e7d32;
+      --green-l:#4caf50;
+      --yellow: #f9a825;
+      --dark:   #1b2a1b;
+      --white:  #ffffff;
+      --bg:     #f1f8e9;
+      --shadow: 0 4px 18px rgba(0,0,0,.12);
+      --radius: 14px;
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      min-height: 100vh;
+      background: linear-gradient(135deg, var(--dark) 0%, #1a4620 60%, #2d6a2d 100%);
+      font-family: 'Segoe UI', Arial, sans-serif;
+      color: var(--white);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1.5rem;
+      text-align: center;
+    }
+    /* confetti animation */
+    .confetti-wrap {
+      position: fixed; inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 0;
+    }
+    .confetti-piece {
+      position: absolute;
+      width: 10px; height: 10px;
+      border-radius: 2px;
+      animation: fall linear infinite;
+      opacity: 0;
+    }
+    @keyframes fall {
+      0%   { transform: translateY(-20px) rotate(0deg);   opacity: 1; }
+      100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+    }
+
+    .card {
+      position: relative; z-index: 1;
+      background: rgba(255,255,255,.07);
+      border: 1px solid rgba(255,255,255,.15);
+      border-radius: var(--radius);
+      padding: 3rem 2rem;
+      max-width: 560px;
+      width: 100%;
+      backdrop-filter: blur(6px);
+      box-shadow: var(--shadow);
+    }
+    .emoji-big { font-size: 4rem; margin-bottom: 1rem; display: block; }
+    h1 {
+      font-size: clamp(1.6rem, 5vw, 2.4rem);
+      font-weight: 900;
+      margin-bottom: .5rem;
+      line-height: 1.2;
+    }
+    h1 .prenom { color: var(--yellow); }
+    .subtitle {
+      font-size: 1.05rem;
+      opacity: .85;
+      margin-bottom: 2rem;
+      line-height: 1.6;
+    }
+
+    /* Lien de parrainage */
+    .ref-box {
+      background: rgba(0,0,0,.25);
+      border: 1px solid rgba(255,255,255,.2);
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .ref-box p { font-size: .85rem; opacity: .7; margin-bottom: .5rem; }
+    .ref-link-wrap {
+      display: flex; gap: .5rem; align-items: center;
+    }
+    #ref-link-input {
+      flex: 1;
+      background: rgba(255,255,255,.1);
+      border: 1px solid rgba(255,255,255,.2);
+      border-radius: 6px;
+      color: var(--white);
+      padding: .5rem .75rem;
+      font-size: .85rem;
+      cursor: text;
+    }
+    #btn-copy {
+      background: var(--yellow);
+      color: var(--dark);
+      border: none;
+      border-radius: 6px;
+      padding: .5rem 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: .85rem;
+      transition: transform .15s;
+      white-space: nowrap;
+    }
+    #btn-copy:hover { transform: scale(1.05); }
+    #copy-confirm {
+      font-size: .8rem;
+      color: var(--green-l);
+      min-height: 1.2rem;
+      margin-top: .4rem;
+    }
+
+    /* Boutons partage */
+    .share-title {
+      font-size: .95rem;
+      opacity: .7;
+      margin-bottom: .8rem;
+    }
+    .share-btns {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .75rem;
+      justify-content: center;
+      margin-bottom: 2rem;
+    }
+    .btn-share {
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+      padding: .65rem 1.3rem;
+      border-radius: 50px;
+      font-weight: 700;
+      font-size: .95rem;
+      cursor: pointer;
+      border: none;
+      text-decoration: none;
+      transition: transform .15s, box-shadow .15s;
+    }
+    .btn-share:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+    .btn-whatsapp { background: #25d366; color: #fff; }
+    .btn-facebook { background: #1877f2; color: #fff; }
+    .btn-twitter  { background: #1da1f2; color: #fff; }
+
+    /* CTA téléchargement */
+    .cta-dl {
+      display: inline-block;
+      background: var(--green-l);
+      color: var(--white);
+      padding: .85rem 2.5rem;
+      border-radius: 50px;
+      font-weight: 800;
+      font-size: 1.05rem;
+      text-decoration: none;
+      transition: transform .15s, box-shadow .15s;
+      margin-bottom: 1.5rem;
+    }
+    .cta-dl:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+
+    .back-link {
+      font-size: .85rem;
+      opacity: .5;
+    }
+    .back-link a { color: var(--white); }
+    .back-link a:hover { opacity: 1; }
+
+    @media (max-width: 420px) {
+      .card { padding: 2rem 1rem; }
+      .share-btns { flex-direction: column; align-items: center; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Confetti décoratif -->
+<div class="confetti-wrap" id="confetti" aria-hidden="true"></div>
+
+<div class="card">
+  <span class="emoji-big" aria-hidden="true">🎉</span>
+
+  <h1>Félicitations <span class="prenom" id="prenom-display"></span> !</h1>
+  <p class="subtitle" id="msg-subtitle">
+    Tu es maintenant dans la liste des premiers joueurs d'AgroPast-Game.<br>
+    Partage le jeu et fais grimper ton rang avant même le lancement !
+  </p>
+
+  <!-- Lien de parrainage unique -->
+  <div class="ref-box" id="ref-box" style="display:none">
+    <p>🔗 Ton lien d'invitation personnel (partage-le à tes amis !)</p>
+    <div class="ref-link-wrap">
+      <input type="text" id="ref-link-input" readonly aria-label="Ton lien d'invitation" />
+      <button id="btn-copy" onclick="copyLink()" aria-label="Copier le lien">📋 Copier</button>
+    </div>
+    <div id="copy-confirm" aria-live="polite"></div>
+  </div>
+
+  <!-- Boutons partage -->
+  <p class="share-title">Partage sur tes réseaux :</p>
+  <div class="share-btns" role="group" aria-label="Boutons de partage">
+    <a id="btn-whatsapp" href="#" target="_blank" rel="noopener"
+       class="btn-share btn-whatsapp" aria-label="Partager sur WhatsApp">
+      💬 WhatsApp
+    </a>
+    <a id="btn-facebook" href="#" target="_blank" rel="noopener"
+       class="btn-share btn-facebook" aria-label="Partager sur Facebook">
+      👍 Facebook
+    </a>
+    <a id="btn-twitter" href="#" target="_blank" rel="noopener"
+       class="btn-share btn-twitter" aria-label="Partager sur X / Twitter">
+      🐦 Twitter
+    </a>
+  </div>
+
+  <!-- CTA téléchargement -->
+  <a href="https://play.google.com/store" target="_blank" rel="noopener"
+     class="cta-dl" aria-label="Télécharger AgroPast-Game sur le Play Store">
+    📥 Télécharger le jeu maintenant
+  </a>
+
+  <p class="back-link"><a href="/">← Retour à l'accueil</a></p>
+</div>
+
+<script>
+// ============================================================
+// merci.html — personnalisation + liens viraux
+// Lit ?prenom=XXX&ref=XXXXXX dans l'URL
+// ============================================================
+(function () {
+  const params  = new URLSearchParams(window.location.search);
+  const prenom  = params.get('prenom') || '';
+  const refId   = params.get('ref')    || '';
+  const already = params.get('already') === '1';
+  const base    = 'https://agropast-game.online';
+
+  // --- Personnalisation du message -------------------------
+  const prenomEl = document.getElementById('prenom-display');
+  if (prenom) {
+    prenomEl.textContent = decodeURIComponent(prenom);
+  } else {
+    // Pas de prénom → message générique
+    document.querySelector('h1').textContent = 'Félicitations ! 🎉';
+  }
+
+  if (already) {
+    document.getElementById('msg-subtitle').textContent =
+      'Tu étais déjà inscrit(e) ! Voici à nouveau ton lien personnel pour inviter tes amis.';
+  }
+
+  // --- Lien de parrainage ----------------------------------
+  const refBox = document.getElementById('ref-box');
+  const refInput = document.getElementById('ref-link-input');
+  let shareUrl = base;
+
+  if (refId) {
+    shareUrl = base + '?ref=' + encodeURIComponent(refId);
+    refInput.value = shareUrl;
+    refBox.style.display = 'block';
+  }
+
+  // --- Messages de partage ---------------------------------
+  const prenomDecoded = prenom ? decodeURIComponent(prenom) : 'Rejoins-moi';
+  const msgShare = `🍉 ${prenomDecoded} t'invite à rejoindre AgroPast-Game ! Un jeu mobile gratuit de ferme de pastèques et de vinification. Inscris-toi ici : ${shareUrl}`;
+
+  document.getElementById('btn-whatsapp').href =
+    'https://wa.me/?text=' + encodeURIComponent(msgShare);
+
+  document.getElementById('btn-facebook').href =
+    'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(shareUrl);
+
+  document.getElementById('btn-twitter').href =
+    'https://twitter.com/intent/tweet?text=' + encodeURIComponent(msgShare);
+
+  // --- Copier le lien --------------------------------------
+  window.copyLink = function () {
+    const confirm = document.getElementById('copy-confirm');
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(shareUrl).then(() => {
+        confirm.textContent = '✅ Lien copié !';
+        setTimeout(() => confirm.textContent = '', 3000);
+      });
+    } else {
+      refInput.select();
+      document.execCommand('copy');
+      confirm.textContent = '✅ Lien copié !';
+      setTimeout(() => confirm.textContent = '', 3000);
+    }
+  };
+
+  // --- Confetti --------------------------------------------
+  const wrap   = document.getElementById('confetti');
+  const colors = ['#f9a825','#4caf50','#2e7d32','#ffffff','#ff7043','#29b6f6'];
+  for (let i = 0; i < 60; i++) {
+    const el = document.createElement('div');
+    el.className = 'confetti-piece';
+    el.style.cssText = [
+      `left:${Math.random()*100}%`,
+      `background:${colors[Math.floor(Math.random()*colors.length)]}`,
+      `width:${6+Math.random()*8}px`,
+      `height:${6+Math.random()*8}px`,
+      `animation-duration:${2+Math.random()*4}s`,
+      `animation-delay:${Math.random()*3}s`,
+      `border-radius:${Math.random()>0.5?'50%':'2px'}`,
+    ].join(';');
+    wrap.appendChild(el);
+  }
+})();
+</script>
+</body>
+</html>

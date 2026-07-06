@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AgroPast-Game — Connexion</title>
+  <meta name="robots" content="noindex" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --green: #2e7d32; --green-l: #4caf50;
+      --yellow: #f9a825; --dark: #1b2a1b; --white: #fff;
+    }
+    body {
+      min-height: 100vh;
+      background: linear-gradient(135deg, var(--dark) 0%, #1a4620 100%);
+      font-family: 'Segoe UI', Arial, sans-serif;
+      display: flex; align-items: center; justify-content: center;
+      padding: 1.5rem;
+    }
+    .card {
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 18px;
+      padding: 2.5rem 2rem;
+      width: 100%; max-width: 400px;
+      backdrop-filter: blur(10px);
+      color: var(--white);
+      text-align: center;
+    }
+    .logo { font-size: 3.5rem; margin-bottom: .5rem; }
+    h1 { font-size: 1.6rem; color: var(--yellow); font-weight: 900; }
+    .sub { font-size: .85rem; opacity: .6; margin-bottom: 2rem; }
+
+    /* Tabs */
+    .tabs { display: flex; gap: .5rem; margin-bottom: 1.8rem; }
+    .tab {
+      flex: 1; padding: .55rem;
+      background: rgba(255,255,255,.07);
+      border: 1px solid rgba(255,255,255,.15);
+      border-radius: 8px; color: rgba(255,255,255,.6);
+      font-size: .9rem; font-weight: 600; cursor: pointer;
+      transition: all .2s;
+    }
+    .tab.active { background: var(--green); color: var(--white); border-color: var(--green); }
+
+    /* Form */
+    .form-group { margin-bottom: 1rem; text-align: left; }
+    label { display: block; font-size: .8rem; opacity: .7; margin-bottom: .3rem; }
+    .input-wrap { position: relative; display: flex; align-items: center; }
+    .flag { position: absolute; left: 12px; font-size: 1.1rem; }
+    input {
+      width: 100%; padding: .7rem .9rem .7rem 2.6rem;
+      background: rgba(255,255,255,.08);
+      border: 1.5px solid rgba(255,255,255,.2);
+      border-radius: 8px; color: var(--white);
+      font-size: 1rem; transition: border-color .2s;
+    }
+    input::placeholder { color: rgba(255,255,255,.3); }
+    input:focus { outline: none; border-color: var(--green-l); }
+    input.no-icon { padding-left: .9rem; }
+    .pin-wrap { display: flex; gap: .5rem; justify-content: center; }
+    .pin-wrap input {
+      width: 52px; padding: .7rem .4rem;
+      text-align: center; font-size: 1.4rem; font-weight: 700;
+      letter-spacing: 2px;
+    }
+
+    /* Bouton */
+    .btn-submit {
+      width: 100%; padding: .9rem;
+      background: var(--green); color: var(--white);
+      border: none; border-radius: 10px;
+      font-size: 1rem; font-weight: 700; cursor: pointer;
+      transition: background .2s, transform .15s;
+      margin-top: .5rem;
+    }
+    .btn-submit:hover { background: #1b5e20; transform: translateY(-1px); }
+    .btn-submit:disabled { background: #555; cursor: not-allowed; transform: none; }
+
+    /* Messages */
+    .msg {
+      font-size: .88rem; padding: .6rem 1rem;
+      border-radius: 8px; margin-top: 1rem;
+      display: none;
+    }
+    .msg.error   { background: rgba(198,40,40,.2); color: #ef9a9a; display: block; }
+    .msg.success { background: rgba(46,125,50,.2);  color: #a5d6a7;  display: block; }
+
+    .optional { font-size: .75rem; opacity: .5; margin-left: 4px; }
+    .divider { opacity: .2; margin: 1.2rem 0; }
+  </style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">🍉</div>
+  <h1>AgroPast-Game</h1>
+  <p class="sub">Cultive. Récolte. Domine.</p>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('login')"  id="tab-login">Connexion</button>
+    <button class="tab"        onclick="switchTab('register')" id="tab-register">S'inscrire</button>
+  </div>
+
+  <!-- FORMULAIRE CONNEXION -->
+  <form id="form-login" onsubmit="submitLogin(event)">
+    <div class="form-group">
+      <label>Numéro WhatsApp</label>
+      <div class="input-wrap">
+        <span class="flag">📱</span>
+        <input type="tel" id="login-phone" placeholder="+242 06 123 45 67"
+               autocomplete="tel" required />
+      </div>
+    </div>
+    <div class="form-group">
+      <label>PIN (4 chiffres)</label>
+      <div class="input-wrap">
+        <span class="flag">🔐</span>
+        <input type="password" id="login-pin" placeholder="••••"
+               maxlength="4" pattern="\d{4}" class="no-icon"
+               style="padding-left:2.6rem" required />
+      </div>
+    </div>
+    <button type="submit" class="btn-submit" id="btn-login">🔓 Se connecter</button>
+    <div class="msg" id="msg-login"></div>
+  </form>
+
+  <!-- FORMULAIRE INSCRIPTION -->
+  <form id="form-register" style="display:none" onsubmit="submitRegister(event)">
+    <div class="form-group">
+      <label>Numéro WhatsApp</label>
+      <div class="input-wrap">
+        <span class="flag">📱</span>
+        <input type="tel" id="reg-phone" placeholder="+242 06 123 45 67"
+               autocomplete="tel" required />
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Pseudo <span class="optional">(optionnel)</span></label>
+      <div class="input-wrap">
+        <span class="flag">👤</span>
+        <input type="text" id="reg-nom" placeholder="Ex: AgriKing_Brazza"
+               maxlength="60" />
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Email <span class="optional">(optionnel)</span></label>
+      <div class="input-wrap">
+        <span class="flag">✉️</span>
+        <input type="email" id="reg-email" placeholder="ton@email.com"
+               autocomplete="email" />
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Pays</label>
+      <div class="input-wrap">
+        <span class="flag">🌍</span>
+        <select id="reg-pays" style="padding-left:2.6rem;width:100%;
+            padding:.7rem .9rem .7rem 2.6rem;background:rgba(255,255,255,.08);
+            border:1.5px solid rgba(255,255,255,.2);border-radius:8px;
+            color:#fff;font-size:1rem">
+          <option value="">-- Sélectionner --</option>
+          <option value="Congo-Brazzaville">Congo-Brazzaville 🇨🇬</option>
+          <option value="RDC">RD Congo 🇨🇩</option>
+          <option value="Sénégal">Sénégal 🇸🇳</option>
+          <option value="Côte d'Ivoire">Côte d'Ivoire 🇨🇮</option>
+          <option value="Cameroun">Cameroun 🇨🇲</option>
+          <option value="Gabon">Gabon 🇬🇦</option>
+          <option value="Bénin">Bénin 🇧🇯</option>
+          <option value="Burkina Faso">Burkina Faso 🇧🇫</option>
+          <option value="Mali">Mali 🇲🇱</option>
+          <option value="Autre">Autre</option>
+        </select>
+      </div>
+    </div>
+    <hr class="divider" />
+    <div class="form-group">
+      <label>Crée ton PIN secret (4 chiffres)</label>
+      <div class="input-wrap">
+        <span class="flag">🔐</span>
+        <input type="password" id="reg-pin" placeholder="••••"
+               maxlength="4" pattern="\d{4}"
+               style="padding-left:2.6rem" required />
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Confirme ton PIN</label>
+      <div class="input-wrap">
+        <span class="flag">🔐</span>
+        <input type="password" id="reg-pin2" placeholder="••••"
+               maxlength="4" pattern="\d{4}"
+               style="padding-left:2.6rem" required />
+      </div>
+    </div>
+    <button type="submit" class="btn-submit" id="btn-register">✅ Créer mon compte</button>
+    <div class="msg" id="msg-register"></div>
+  </form>
+</div>
+
+<script>
+// ============================================================
+// Auth — login.html
+// Connexion/Inscription par numéro WhatsApp + PIN
+// Session stockée dans localStorage (token 30 jours)
+// ============================================================
+
+const API = 'https://agropast-game.online/api/auth.php';
+
+// Vérifier si déjà connecté
+(function () {
+  const token = localStorage.getItem('apg_token');
+  if (token) {
+    // Vérifier côté serveur que le token est encore valide
+    fetch(API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'verify', token }),
+    })
+      .then(r => r.json())
+      .then(d => { if (d.success) window.location.href = '/'; })
+      .catch(() => {});
+  }
+})();
+
+function switchTab(tab) {
+  document.getElementById('form-login').style.display    = tab === 'login'    ? '' : 'none';
+  document.getElementById('form-register').style.display = tab === 'register' ? '' : 'none';
+  document.getElementById('tab-login').classList.toggle('active',    tab === 'login');
+  document.getElementById('tab-register').classList.toggle('active', tab === 'register');
+}
+
+function showMsg(id, text, type) {
+  const el = document.getElementById(id);
+  el.textContent = text;
+  el.className = 'msg ' + type;
+}
+
+function setLoading(btnId, loading) {
+  const btn = document.getElementById(btnId);
+  btn.disabled = loading;
+  btn.textContent = loading ? '⏳ Chargement…' : btn.dataset.label;
+}
+
+// Sauvegarder label initial
+document.addEventListener('DOMContentLoaded', () => {
+  ['btn-login','btn-register'].forEach(id => {
+    const btn = document.getElementById(id);
+    if (btn) btn.dataset.label = btn.textContent;
+  });
+});
+
+// ---- CONNEXION ---------------------------------------------
+async function submitLogin(e) {
+  e.preventDefault();
+  const phone = document.getElementById('login-phone').value.trim();
+  const pin   = document.getElementById('login-pin').value.trim();
+
+  if (pin.length !== 4 || !/^\d{4}$/.test(pin)) {
+    showMsg('msg-login', 'Le PIN doit être 4 chiffres.', 'error');
+    return;
+  }
+
+  setLoading('btn-login', true);
+
+  try {
+    const res  = await fetch(API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'login', whatsapp: phone, pin }),
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      // Stocker la session dans localStorage
+      localStorage.setItem('apg_token',    data.token);
+      localStorage.setItem('apg_whatsapp', data.whatsapp);
+      localStorage.setItem('apg_nom',      data.nom);
+      localStorage.setItem('apg_ref_id',   data.ref_id);
+
+      showMsg('msg-login', `Bienvenue ${data.nom} 🎉`, 'success');
+      setTimeout(() => window.location.href = '/', 800);
+    } else {
+      showMsg('msg-login', data.error || 'Erreur de connexion.', 'error');
+      setLoading('btn-login', false);
+    }
+  } catch (_) {
+    showMsg('msg-login', 'Erreur réseau. Vérifie ta connexion.', 'error');
+    setLoading('btn-login', false);
+  }
+}
+
+// ---- INSCRIPTION -------------------------------------------
+async function submitRegister(e) {
+  e.preventDefault();
+  const phone = document.getElementById('reg-phone').value.trim();
+  const nom   = document.getElementById('reg-nom').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  const pays  = document.getElementById('reg-pays').value;
+  const pin   = document.getElementById('reg-pin').value.trim();
+  const pin2  = document.getElementById('reg-pin2').value.trim();
+
+  if (!/^\d{4}$/.test(pin)) {
+    showMsg('msg-register', 'Le PIN doit être exactement 4 chiffres.', 'error');
+    return;
+  }
+  if (pin !== pin2) {
+    showMsg('msg-register', 'Les deux PIN ne correspondent pas.', 'error');
+    return;
+  }
+
+  setLoading('btn-register', true);
+
+  try {
+    const res  = await fetch(API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'register', whatsapp: phone, nom, email, pays, pin }),
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      localStorage.setItem('apg_token',    data.token);
+      localStorage.setItem('apg_whatsapp', data.whatsapp);
+      localStorage.setItem('apg_nom',      data.nom);
+      localStorage.setItem('apg_ref_id',   data.ref_id);
+
+      showMsg('msg-register', `Compte créé ! Bienvenue ${data.nom} 🍉`, 'success');
+      setTimeout(() => window.location.href = '/', 1000);
+    } else {
+      if (data.code === 'ALREADY_EXISTS') {
+        showMsg('msg-register', 'Ce numéro est déjà inscrit. Utilise "Connexion".', 'error');
+        setTimeout(() => switchTab('login'), 1500);
+      } else {
+        showMsg('msg-register', data.error || 'Erreur inscription.', 'error');
+      }
+      setLoading('btn-register', false);
+    }
+  } catch (_) {
+    showMsg('msg-register', 'Erreur réseau. Vérifie ta connexion.', 'error');
+    setLoading('btn-register', false);
+  }
+}
+</script>
+</body>
+</html>
