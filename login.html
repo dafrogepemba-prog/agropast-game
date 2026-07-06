@@ -324,8 +324,25 @@ async function submitRegister(e) {
       localStorage.setItem('apg_nom',      data.nom);
       localStorage.setItem('apg_ref_id',   data.ref_id);
 
-      showMsg('msg-register', `Compte créé ! Bienvenue ${data.nom} 🍉`, 'success');
-      setTimeout(() => window.location.href = '/', 1000);
+      // Construire lien wa.me avec le PIN pour sauvegarde
+      const tel      = data.whatsapp.replace(/[^0-9]/g, '');
+      const shareUrl = 'https://agropast-game.online?ref=' + encodeURIComponent(data.ref_id);
+      const msg      = '🍉 AgroPast-Game — Mon inscription\n\n'
+                     + 'Voici mes informations de connexion :\n'
+                     + '👤 Pseudo : ' + data.nom + '\n'
+                     + '📱 Numéro : ' + data.whatsapp + '\n'
+                     + '🔑 Mon PIN : ' + pin + '\n'
+                     + '🔗 Mon lien parrain : ' + shareUrl + '\n\n'
+                     + '⚠️ Garde ce message pour te connecter !';
+      const waUrl = 'https://wa.me/' + tel + '?text=' + encodeURIComponent(msg);
+
+      // Afficher bouton WhatsApp avant redirection
+      showMsg('msg-register', `✅ Compte créé ! Bienvenue ${data.nom} 🍉`, 'success');
+      const btn = document.getElementById('btn-register');
+      btn.textContent = '💬 Sauvegarder mon PIN sur WhatsApp';
+      btn.disabled = false;
+      btn.style.background = '#25d366';
+      btn.onclick = () => { window.open(waUrl, '_blank'); setTimeout(() => window.location.href = '/', 1500); };
     } else {
       if (data.code === 'ALREADY_EXISTS') {
         showMsg('msg-register', 'Ce numéro est déjà inscrit. Utilise "Connexion".', 'error');
