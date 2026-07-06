@@ -1,0 +1,23 @@
+# ============================================================
+# .htaccess — /agropast-game.online/
+# Gère les URLs du site AgroPast-Game
+# ============================================================
+
+RewriteEngine On
+
+# Supprimer www (canonique sans www)
+RewriteCond %{HTTP_HOST} ^www\.agropast-game\.online$ [NC]
+RewriteRule ^ https://agropast-game.online%{REQUEST_URI} [L,R=301]
+
+# Page d'accueil par défaut
+DirectoryIndex index.html
+
+# Interdire la navigation dans les répertoires
+Options -Indexes
+
+# Headers de sécurité
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
