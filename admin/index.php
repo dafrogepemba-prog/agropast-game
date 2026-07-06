@@ -17,12 +17,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $user = trim($_POST['username'] ?? '');
     $pass = $_POST['password'] ?? '';
 
-    // Identifiants admin (à changer en production)
-    // Mot de passe stocké en hash bcrypt pour la sécurité
-    $admin_user = 'admin';
-    $admin_hash = '$2y$12$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi'; // password: admin
+    // Identifiants admin
+    $admin_user     = 'admin';
+    $admin_password = 'admin'; // mot de passe temporaire en clair
 
-    if ($user === $admin_user && password_verify($pass, $admin_hash)) {
+    if ($user === $admin_user && $pass === $admin_password) {
         session_regenerate_id(true);
         $_SESSION['admin_logged_in'] = true;
         $_SESSION['admin_user']      = $user;
