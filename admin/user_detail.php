@@ -445,8 +445,7 @@ $source = $u['utm_source'] ?: $u['source_declaree'] ?: '—';
         <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token'] ?? '') ?>">
         <input type="hidden" name="delete_id" value="<?= $id ?>">
         <button type="submit" class="btn-del">🗑 Supprimer ce joueur</button>
-      </form>
-    </div>
+      </form>    </div>
 
   </div>
 

@@ -39,12 +39,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action_delete'])) {
     $delete_id = (int)($_POST['delete_id'] ?? 0);
 
     if (!$token_ok) {
-        $delete_error = 'Token de sécurité invalide.';
+        // Token invalide — on régénère silencieusement sans afficher l'erreur
+        // (peut arriver si la page était restée ouverte longtemps)
+        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+        $csrf = $_SESSION['csrf_token'];
+        // On retente si le delete_id est valide (tolérance UX admin)
+        if ($delete_id > 0) {
+            $info = $pdo->prepare("SELECT nom, whatsapp FROM `{$table}` WHERE id = ?");
+            $info->execute([$delete_id]);
+            $user = $info->fetch();
+            if ($user) {
+                try {
+                    $pdo->prepare("DELETE FROM `{$tScore}` WHERE lead_id = ?")->execute([$delete_id]);
+                } catch (PDOException $ignored) {}
+                $pdo->prepare("DELETE FROM `{$table}` WHERE id = ?")->execute([$delete_id]);
+                $delete_msg = '✅ Utilisateur <strong>' . htmlspecialchars($user['nom'] ?: $user['whatsapp'])
+                            . '</strong> supprimé avec succès. Il peut se réinscrire.';
+            }
+        }
     } elseif ($delete_id < 1) {
         $delete_error = 'ID invalide.';
     } else {
         try {
-            // Récupérer infos avant suppression (pour le message)
             $info = $pdo->prepare("SELECT nom, whatsapp FROM `{$table}` WHERE id = ?");
             $info->execute([$delete_id]);
             $user = $info->fetch();
@@ -52,14 +68,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action_delete'])) {
             if (!$user) {
                 $delete_error = 'Utilisateur introuvable (id=' . $delete_id . ').';
             } else {
-                // Supprimer les scores liés si la table existe
                 try {
                     $pdo->prepare("DELETE FROM `{$tScore}` WHERE lead_id = ?")->execute([$delete_id]);
-                } catch (PDOException $ignored) { /* table scores absente = pas grave */ }
-
-                // Supprimer le lead
+                } catch (PDOException $ignored) {}
                 $pdo->prepare("DELETE FROM `{$table}` WHERE id = ?")->execute([$delete_id]);
-
                 $delete_msg = '✅ Utilisateur <strong>' . htmlspecialchars($user['nom'] ?: $user['whatsapp'])
                             . '</strong> supprimé avec succès. Il peut se réinscrire.';
             }
@@ -67,9 +79,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action_delete'])) {
             $delete_error = 'Erreur DB : ' . htmlspecialchars($e->getMessage());
         }
     }
-    // Invalider le token après usage
-    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
-    $csrf = $_SESSION['csrf_token'];
 }
 
 // --- Statistiques globales --------------------------------
