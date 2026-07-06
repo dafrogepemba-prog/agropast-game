@@ -1,0 +1,27 @@
+# ============================================================
+# .htaccess — RACINE FTP /
+# Hébergement LWS mutualisé partagé
+# Routage par domaine :
+#   agropast-game.online  → /agropast-game.online/
+#   epsylon-cg.com        → fichiers normaux (inchangé)
+# ============================================================
+
+RewriteEngine On
+
+# --- Forcer HTTPS sur tous les domaines -------------------
+RewriteCond %{HTTPS} off
+RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# --- Routage agropast-game.online -------------------------
+# Si le domaine est agropast-game.online (avec ou sans www)
+# ET que l'URL ne commence pas déjà par /agropast-game.online/
+# ET que l'URL ne commence pas par /api/ ou /admin/
+# → on sert les fichiers depuis /agropast-game.online/
+
+RewriteCond %{HTTP_HOST} ^(www\.)?agropast-game\.online$ [NC]
+RewriteCond %{REQUEST_URI} !^/agropast-game\.online/
+RewriteCond %{REQUEST_URI} !^/api/
+RewriteCond %{REQUEST_URI} !^/admin/
+RewriteRule ^(.*)$ /agropast-game.online/$1 [L]
+
+# --- epsylon-cg.com : rien à changer, sert la racine normalement ---
