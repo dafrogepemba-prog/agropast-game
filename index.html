@@ -401,15 +401,21 @@
     <!-- Zone joueur connecté (injectée par JS) -->
     <div id="nav-user" style="display:none; align-items:center; gap:.5rem">
       <span id="nav-pseudo" style="color:#f9a825; font-weight:700; font-size:.85rem"></span>
+      <a href="/game/" id="nav-btn-jouer" style="
+        background:#2e7d32; color:#fff; border:none;
+        border-radius:6px; padding:.4rem .9rem; font-size:.85rem;
+        cursor:pointer; text-decoration:none; font-weight:700">
+        🎮 Jouer
+      </a>
       <button onclick="logout()" style="
         background:rgba(255,255,255,.1); color:#fff; border:1px solid rgba(255,255,255,.2);
         border-radius:6px; padding:.35rem .7rem; font-size:.8rem; cursor:pointer">
         Déconnexion
       </button>
     </div>
-    <a href="https://play.google.com/store" target="_blank" rel="noopener"
+    <a href="/login.html"
        class="btn btn-primary nav-cta" id="nav-cta-dl"
-       aria-label="Télécharger AgroPast-Game sur le Play Store">
+       aria-label="Connexion pour jouer">
       ▶ Jouer gratuitement
     </a>
     <!-- Hamburger mobile -->
@@ -924,13 +930,9 @@
       navPseudo.textContent = '👤 ' + nom;
       navUser.style.display = 'flex';
     }
-    // Masquer le CTA téléchargement et remplacer par "Jouer"
+    // Masquer le CTA "Jouer gratuitement" quand connecté
     const ctaDl = document.getElementById('nav-cta-dl');
-    if (ctaDl) {
-      ctaDl.textContent = '🎮 Mon compte';
-      ctaDl.href = '#signup';
-      ctaDl.removeAttribute('target');
-    }
+    if (ctaDl) ctaDl.style.display = 'none';
   }
 
   // Déconnexion
