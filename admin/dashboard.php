@@ -126,7 +126,7 @@ $total_leads = $count_stmt->fetchColumn();
 $total_pages = max(1, ceil($total_leads / $per_page));
 
 $leads_stmt = $pdo->prepare("
-    SELECT id, ref_id, nom, email, pays, source_declaree, utm_source, referrer_ref_id, date_inscription
+    SELECT id, ref_id, nom, email, pays, source_declaree, utm_source, referrer_ref_id, date_inscription, whatsapp
     FROM `{$table}` {$where}
     ORDER BY date_inscription DESC
     LIMIT {$per_page} OFFSET {$offset}
