@@ -1,5 +1,18 @@
 # Sécurité — ne jamais committer les credentials
 api/config.php
+deploy-ftp.bat
+ftp-commands.txt
+ftp-deploy-game.txt
+ftp-game.txt
+ftp-game2.txt
+ftp-assets.txt
+ftp-check.txt
+ftp-fix-index.txt
+ftp-login.txt
+ftp-reset.txt
+ftp-delete-reset.txt
+winscp-game.txt
+api/reset_test.php
 
 # OS
 .DS_Store
