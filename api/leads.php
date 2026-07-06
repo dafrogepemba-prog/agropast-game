@@ -127,6 +127,14 @@ try {
 }
 
 // --- Redirection vers merci.html -------------------------
-$prenom = urlencode(explode(' ', $name)[0]);
-header("Location: https://agropast-game.online/merci.html?prenom={$prenom}&ref={$ref_id}");
+$prenom     = urlencode(explode(' ', $name)[0]);
+$waMsg      = "🍉 AgroPast-Game — Mon inscription\n\n"
+            . "Bonjour ! Voici mes informations de connexion :\n"
+            . "👤 Pseudo : {$name}\n"
+            . "🔑 Mon PIN : {$pin}\n"
+            . "🔗 Mon lien parrain : https://agropast-game.online?ref={$ref_id}\n\n"
+            . "⚠️ Garde ce message précieusement pour te connecter !";
+$waNumero   = ltrim(preg_replace('/[^+\d]/', '', $whatsapp), '+');
+$waUrl      = 'https://wa.me/' . $waNumero . '?text=' . rawurlencode($waMsg);
+header("Location: https://agropast-game.online/merci.html?prenom={$prenom}&ref={$ref_id}&wa=" . urlencode($waUrl));
 exit;

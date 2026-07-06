@@ -140,11 +140,12 @@ if ($action === 'register') {
         _saveToken($pdo, (int)$userId, $newToken);
 
         echo json_encode([
-            'success' => true,
-            'token'   => $newToken,
-            'ref_id'  => $ref_id,
-            'nom'     => $nom ?: 'Fermier',
-            'whatsapp'=> $whatsapp,
+            'success'      => true,
+            'token'        => $newToken,
+            'ref_id'       => $ref_id,
+            'nom'          => $nom ?: 'Fermier',
+            'whatsapp'     => $whatsapp,
+            'whatsapp_url' => _buildWaUrl($whatsapp, $pin, $nom ?: 'Fermier', $ref_id),
         ]);
     } catch (PDOException $e) {
         error_log('register error: '.$e->getMessage());
@@ -192,6 +193,21 @@ if ($action === 'verify') {
     $result = _verifyToken($pdo, $token);
     echo json_encode($result);
     exit;
+}
+
+// ============================================================
+// HELPER : Construire lien wa.me avec PIN pré-rempli
+// ============================================================
+function _buildWaUrl(string $whatsapp, string $pin, string $nom, string $ref_id): string {
+    // Nettoyer le numéro (retirer le +)
+    $numero = ltrim($whatsapp, '+');
+    $msg = "🍉 AgroPast-Game — Mon inscription\n\n"
+         . "Bonjour ! Voici mes informations de connexion :\n"
+         . "👤 Pseudo : {$nom}\n"
+         . "🔑 Mon PIN : {$pin}\n"
+         . "🔗 Mon lien parrain : https://agropast-game.online?ref={$ref_id}\n\n"
+         . "⚠️ Garde ce message précieusement pour te connecter !";
+    return 'https://wa.me/' . $numero . '?text=' . rawurlencode($msg);
 }
 
 // ============================================================
