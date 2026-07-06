@@ -21,7 +21,56 @@ try {
     die('Erreur DB : ' . htmlspecialchars($e->getMessage()));
 }
 
-$table = DB_PREFIX . 'leads';
+$table  = DB_PREFIX . 'leads';
+$tScore = DB_PREFIX . 'scores';
+
+// --- Token CSRF session ----------------------------------
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
+$csrf = $_SESSION['csrf_token'];
+
+// --- ACTION : Supprimer un utilisateur -------------------
+$delete_msg   = '';
+$delete_error = '';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action_delete'])) {
+    $token_ok  = isset($_POST['csrf_token']) && hash_equals($csrf, $_POST['csrf_token']);
+    $delete_id = (int)($_POST['delete_id'] ?? 0);
+
+    if (!$token_ok) {
+        $delete_error = 'Token de sécurité invalide.';
+    } elseif ($delete_id < 1) {
+        $delete_error = 'ID invalide.';
+    } else {
+        try {
+            // Récupérer infos avant suppression (pour le message)
+            $info = $pdo->prepare("SELECT nom, whatsapp FROM `{$table}` WHERE id = ?");
+            $info->execute([$delete_id]);
+            $user = $info->fetch();
+
+            if (!$user) {
+                $delete_error = 'Utilisateur introuvable (id=' . $delete_id . ').';
+            } else {
+                // Supprimer les scores liés si la table existe
+                try {
+                    $pdo->prepare("DELETE FROM `{$tScore}` WHERE lead_id = ?")->execute([$delete_id]);
+                } catch (PDOException $ignored) { /* table scores absente = pas grave */ }
+
+                // Supprimer le lead
+                $pdo->prepare("DELETE FROM `{$table}` WHERE id = ?")->execute([$delete_id]);
+
+                $delete_msg = '✅ Utilisateur <strong>' . htmlspecialchars($user['nom'] ?: $user['whatsapp'])
+                            . '</strong> supprimé avec succès. Il peut se réinscrire.';
+            }
+        } catch (PDOException $e) {
+            $delete_error = 'Erreur DB : ' . htmlspecialchars($e->getMessage());
+        }
+    }
+    // Invalider le token après usage
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+    $csrf = $_SESSION['csrf_token'];
+}
 
 // --- Statistiques globales --------------------------------
 $stats = $pdo->query("
@@ -209,6 +258,41 @@ if (isset($_GET['export']) && $_GET['export'] === 'csv') {
     }
     .pagination a:hover { background: var(--bg); }
     .pagination .active { background: var(--green); color: var(--white); border-color: var(--green); }
+
+    /* SUPPRESSION */
+    .btn-del {
+      background: none; border: 1px solid #e53935; color: #e53935;
+      border-radius: 5px; padding: .25rem .55rem; font-size: .78rem;
+      cursor: pointer; white-space: nowrap; transition: background .15s, color .15s;
+    }
+    .btn-del:hover { background: #e53935; color: #fff; }
+    .alert { padding: .75rem 1rem; border-radius: 8px; margin-bottom: 1.2rem; font-size: .9rem; }
+    .alert-success { background: #e8f5e9; border: 1px solid #a5d6a7; color: #2e7d32; }
+    .alert-error   { background: #ffebee; border: 1px solid #ef9a9a; color: #c62828; }
+
+    /* Modal confirmation */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,.5); z-index: 1000;
+      align-items: center; justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal-box {
+      background: #fff; border-radius: 12px; padding: 2rem;
+      max-width: 380px; width: 90%; box-shadow: 0 8px 32px rgba(0,0,0,.2);
+    }
+    .modal-box h3 { margin-bottom: .8rem; color: #c62828; }
+    .modal-box p  { font-size: .9rem; color: #555; margin-bottom: 1.2rem; }
+    .modal-actions { display: flex; gap: .7rem; justify-content: flex-end; }
+    .btn-cancel {
+      background: #eee; border: none; border-radius: 6px;
+      padding: .45rem 1rem; cursor: pointer; font-size: .9rem;
+    }
+    .btn-confirm-del {
+      background: #e53935; color: #fff; border: none; border-radius: 6px;
+      padding: .45rem 1rem; cursor: pointer; font-size: .9rem; font-weight: 600;
+    }
+    .btn-confirm-del:hover { background: #b71c1c; }
   </style>
 </head>
 <body>
@@ -222,6 +306,14 @@ if (isset($_GET['export']) && $_GET['export'] === 'csv') {
 </header>
 
 <main>
+
+  <!-- MESSAGES SUPPRESSION -->
+  <?php if ($delete_msg): ?>
+    <div class="alert alert-success"><?= $delete_msg ?></div>
+  <?php endif; ?>
+  <?php if ($delete_error): ?>
+    <div class="alert alert-error">❌ <?= htmlspecialchars($delete_error) ?></div>
+  <?php endif; ?>
 
   <!-- STATS GLOBALES -->
   <div class="stats-grid">
@@ -333,6 +425,7 @@ if (isset($_GET['export']) && $_GET['export'] === 'csv') {
           <th>Ref</th>
           <th>Parrain</th>
           <th>Date</th>
+          <th>Actions</th>
         </tr>
       </thead>
       <tbody>
@@ -351,10 +444,18 @@ if (isset($_GET['export']) && $_GET['export'] === 'csv') {
           <td class="ref-code"><?= htmlspecialchars($lead['ref_id']) ?></td>
           <td class="ref-code"><?= $lead['referrer_ref_id'] ? htmlspecialchars($lead['referrer_ref_id']) : '—' ?></td>
           <td><?= date('d/m/y H:i', strtotime($lead['date_inscription'])) ?></td>
+          <td>
+            <button
+              class="btn-del"
+              onclick="openDeleteModal(<?= $lead['id'] ?>, <?= json_encode($lead['nom'] ?: $lead['whatsapp'] ?? '') ?>)"
+              title="Supprimer cet utilisateur">
+              🗑 Suppr.
+            </button>
+          </td>
         </tr>
       <?php endforeach; ?>
       <?php if (empty($leads)): ?>
-        <tr><td colspan="8" style="text-align:center;padding:2rem;color:#888">Aucun résultat</td></tr>
+        <tr><td colspan="9" style="text-align:center;padding:2rem;color:#888">Aucun résultat</td></tr>
       <?php endif; ?>
       </tbody>
     </table>
@@ -376,5 +477,42 @@ if (isset($_GET['export']) && $_GET['export'] === 'csv') {
   </div>
 
 </main>
+
+<!-- MODAL CONFIRMATION SUPPRESSION -->
+<div class="modal-overlay" id="deleteModal">
+  <div class="modal-box">
+    <h3>🗑 Supprimer l'utilisateur ?</h3>
+    <p id="modalUserName"></p>
+    <p style="color:#e53935;font-size:.85rem">
+      ⚠️ Cette action est <strong>irréversible</strong>. L'utilisateur pourra se réinscrire avec le même numéro.
+    </p>
+    <form method="POST" action="" id="deleteForm">
+      <input type="hidden" name="action_delete" value="1" />
+      <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf) ?>" />
+      <input type="hidden" name="delete_id" id="deleteIdInput" value="" />
+      <div class="modal-actions">
+        <button type="button" class="btn-cancel" onclick="closeDeleteModal()">Annuler</button>
+        <button type="submit" class="btn-confirm-del">Oui, supprimer</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function openDeleteModal(id, name) {
+  document.getElementById('deleteIdInput').value = id;
+  document.getElementById('modalUserName').textContent =
+    'Utilisateur : ' + (name || '#' + id);
+  document.getElementById('deleteModal').classList.add('open');
+}
+function closeDeleteModal() {
+  document.getElementById('deleteModal').classList.remove('open');
+}
+// Fermer en cliquant sur l'overlay
+document.getElementById('deleteModal').addEventListener('click', function(e) {
+  if (e.target === this) closeDeleteModal();
+});
+</script>
+
 </body>
 </html>
