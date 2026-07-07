@@ -14,8 +14,11 @@ class GameProvider extends ChangeNotifier {
   bool  _loading = true;
   String message = '';
   String _webToken = '';
+  NiveauInfo? _levelUpEvent; // non-null = montée de niveau à afficher
 
   bool get loading => _loading;
+  NiveauInfo? get levelUpEvent => _levelUpEvent;
+  void clearLevelUpEvent() { _levelUpEvent = null; }
 
   // ── Init : charge joueur + état des parcelles ────────────
   Future<void> init() async {
@@ -34,12 +37,14 @@ class GameProvider extends ChangeNotifier {
     } catch (_) {}
 
     player = Player(
-      pseudo:         pseudo,
-      email:          email,
-      scoreTotal:     prefs.getInt('scoreTotal')     ?? 0,
-      nombreRecoltes: prefs.getInt('nombreRecoltes') ?? 0,
-      niveau:         prefs.getInt('niveau')         ?? 1,
-      piecesOr:       prefs.getInt('piecesOr')       ?? 100,
+      pseudo:          pseudo,
+      email:           email,
+      scoreTotal:      prefs.getInt('scoreTotal')     ?? 0,
+      nombreRecoltes:  prefs.getInt('nombreRecoltes') ?? 0,
+      niveau:          prefs.getInt('niveau')         ?? 1,
+      piecesOr:        prefs.getInt('piecesOr')       ?? 100,
+      niveauxAtteints: (jsonDecode(prefs.getString('niveauxAtteints') ?? '[1]') as List)
+                           .map((e) => e as int).toList(),
     );
 
     // ── Restaurer l'état des parcelles ───────────────────
@@ -71,6 +76,7 @@ class GameProvider extends ChangeNotifier {
     prefs.setInt('nombreRecoltes',    player.nombreRecoltes);
     prefs.setInt('niveau',            player.niveau);
     prefs.setInt('piecesOr',          player.piecesOr);
+    prefs.setString('niveauxAtteints', jsonEncode(player.niveauxAtteints));
     // Sauvegarder l'état des parcelles
     prefs.setString('parcelles_state',
         jsonEncode(parcelles.map((p) => p.toMap()).toList()));
@@ -90,10 +96,11 @@ class GameProvider extends ChangeNotifier {
       message = '🌱 Graine plantée sur la parcelle ${index + 1} !';
       _save(); // sauvegarder l'état de la parcelle
     } else if (wasMure) {
-      player.ajouterScore(p.score);
+      final montee = player.ajouterScore(p.score);
       message = '🍉 Récolte ! +${p.score} pts';
       _save();
       _syncScore(eventType: 'recolte');
+      if (montee != null) _levelUpEvent = montee;
     } else if (p.etat == ParcelleEtat.mure) {
       message = '🍉 Pastèque mûre ! Clique pour récolter.';
     } else {
@@ -109,11 +116,12 @@ class GameProvider extends ChangeNotifier {
   // Règle stricte : pas de récompense si la pub est fermée avant la fin
   void appliquerBonusAdMob(int amount, String type) {
     player.piecesOr += amount;
-    final bonusScore = amount * 10; // 50 pièces = 500 pts bonus
-    player.ajouterScore(bonusScore);
+    final bonusScore = amount * 10;
+    final montee = player.ajouterScore(bonusScore);
     message = '🎬 Pub regardée ! +$amount 🪙 & +$bonusScore pts';
     _save();
     _syncScore(eventType: 'admob_reward', bonusPoints: bonusScore);
+    if (montee != null) _levelUpEvent = montee;
     notifyListeners();
   }
 
