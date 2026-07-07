@@ -79,15 +79,46 @@ class _GameScreenState extends State<GameScreen> {
     WebBridge.navigateTo('/login.html');
   }
 
-  // ── Bonus web (AdMob indisponible sur navigateur) ────────
+  // ── Bonus web : Google H5 Games Ads ────────────────────
   void _showWebBonus(BuildContext context) {
-    context.read<GameProvider>().appliquerBonusAdMob(10, 'web_bonus');
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Bonus +10 pieces & +100 pts !'),
-        backgroundColor: Color(0xFF2e7d32),
-        duration: Duration(seconds: 3),
-      ),
+    // Tenter la vraie pub H5 AdSense
+    WebBridge.showH5RewardedAd(
+      onGranted: (amount, type) {
+        // ✅ Vidéo vue en entier — récompense accordée par Google
+        context.read<GameProvider>().appliquerBonusAdMob(amount, type);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text('+$amount pieces & +${amount * 10} pts !'),
+            backgroundColor: const Color(0xFF2e7d32),
+            duration: const Duration(seconds: 3),
+          ));
+        }
+      },
+      onNotGranted: (reason) {
+        // Pub non disponible ou fermée — petit bonus de consolation
+        if (reason == 'dismissed_early') {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Regarde la pub jusqu\'a la fin pour gagner les points.'),
+                duration: Duration(seconds: 2),
+              ),
+            );
+          }
+        } else {
+          // Pas de pub dispo → bonus journalier minimal
+          context.read<GameProvider>().appliquerBonusAdMob(5, 'web_fallback');
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Bonus +5 pts ! Pub indisponible pour l\'instant.'),
+                backgroundColor: Color(0xFF546e7a),
+                duration: Duration(seconds: 3),
+              ),
+            );
+          }
+        }
+      },
     );
   }
 
