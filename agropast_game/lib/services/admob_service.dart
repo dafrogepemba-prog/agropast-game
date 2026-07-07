@@ -1,126 +1,131 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 // ============================================================
-// AdMob Service — Rewarded Ads
-// Conforme aux règles Google AdMob :
-// - La récompense ne se déclenche QUE via onUserEarnedReward
-// - Si l'utilisateur ferme avant la fin → PAS de récompense
-// - Aucune incitation au clic sur la pub
+// AdMob Service — Rewarded Ads (PRODUCTION)
+// App ID     : ca-app-pub-4115564366785475~5279911679
+// Ad Unit ID : ca-app-pub-4115564366785475/9740112422
+//
+// Règles Google AdMob strictement respectées :
+// - Récompense UNIQUEMENT via onUserEarnedReward
+// - Pub fermée avant la fin → PAS de récompense
+// - Aucune incitation au clic sur la publicité
+// - Pré-chargement dès l'ouverture du jeu pour UX fluide
 // ============================================================
 
-// Import conditionnel : AdMob uniquement sur Android/iOS
-// Sur web : stub qui ne fait rien
 class AdMobService {
-  // IDs de test Google (à remplacer par les vrais IDs en production)
-  // Android test ID : ca-app-pub-3940256099942544/5224354917
-  static const String rewardedAdUnitIdAndroid =
-      'ca-app-pub-3940256099942544/5224354917';
+  // ── IDs de production ──────────────────────────────────
+  static const String _appId =
+      'ca-app-pub-4115564366785475~5279911679';
 
-  // TODO: Remplacer par ton vrai Ad Unit ID après approbation AdMob
-  // static const String rewardedAdUnitIdProd = 'ca-app-pub-XXXXXXXX/XXXXXXXXXX';
+  static const String _rewardedAdUnitId =
+      'ca-app-pub-4115564366785475/9740112422';
 
+  // ── État interne ───────────────────────────────────────
+  RewardedAd? _rewardedAd;
   bool _isLoaded  = false;
   bool _isShowing = false;
 
   bool get isLoaded  => _isLoaded && !kIsWeb;
   bool get isShowing => _isShowing;
 
-  // ---- Initialisation ----------------------------------------
+  // ── Initialisation SDK (appelé dans main.dart) ─────────
   static Future<void> init() async {
     if (kIsWeb) return;
-    // Sur Android/iOS : MobileAds.instance.initialize()
-    // Activé quand google_mobile_ads est réintégré pour le build Android
-    debugPrint('[AdMob] Initialized (mobile mode)');
+    await MobileAds.instance.initialize();
+    debugPrint('[AdMob] SDK initialized — App: $_appId');
   }
 
-  // ---- Chargement de la Rewarded Ad --------------------------
-  // Appelé dès que l'écran de jeu est chargé pour avoir la pub prête
+  // ── Pré-chargement de la Rewarded Ad ───────────────────
+  // À appeler dès l'ouverture de game_screen pour avoir la pub prête
   void loadRewardedAd({VoidCallback? onLoaded, VoidCallback? onFailed}) {
-    if (kIsWeb) {
-      debugPrint('[AdMob] Web : rewarded ads not supported');
-      return;
-    }
+    if (kIsWeb) return; // Pas de pub sur web
 
-    // Sur Android (quand google_mobile_ads est actif) :
-    // RewardedAd.load(
-    //   adUnitId: rewardedAdUnitIdAndroid,
-    //   request: const AdRequest(),
-    //   rewardedAdLoadCallback: RewardedAdLoadCallback(
-    //     onAdLoaded: (ad) {
-    //       _rewardedAd = ad;
-    //       _isLoaded = true;
-    //       onLoaded?.call();
-    //     },
-    //     onAdFailedToLoad: (error) {
-    //       _isLoaded = false;
-    //       onFailed?.call();
-    //       debugPrint('[AdMob] Failed to load: $error');
-    //     },
-    //   ),
-    // );
-
-    // Simulation pour test (web/debug)
-    Future.delayed(const Duration(milliseconds: 800), () {
-      _isLoaded = true;
-      onLoaded?.call();
-      debugPrint('[AdMob] Rewarded Ad loaded (simulation)');
-    });
+    RewardedAd.load(
+      adUnitId: _rewardedAdUnitId,
+      request: const AdRequest(),
+      rewardedAdLoadCallback: RewardedAdLoadCallback(
+        onAdLoaded: (ad) {
+          _rewardedAd = ad;
+          _isLoaded   = true;
+          debugPrint('[AdMob] Rewarded Ad loaded');
+          onLoaded?.call();
+        },
+        onAdFailedToLoad: (error) {
+          _rewardedAd = null;
+          _isLoaded   = false;
+          debugPrint('[AdMob] Failed to load: ${error.message}');
+          onFailed?.call();
+          // Retry après 30 secondes
+          Future.delayed(const Duration(seconds: 30), () {
+            loadRewardedAd(onLoaded: onLoaded);
+          });
+        },
+      ),
+    );
   }
 
-  // ---- Affichage de la Rewarded Ad ---------------------------
-  // RÈGLE ADMOB STRICTE :
-  // La récompense ne se déclenche QUE dans onUserEarnedReward.
-  // Si l'utilisateur ferme avant la fin → onDismissed sans récompense.
+  // ── Affichage de la Rewarded Ad ────────────────────────
+  //
+  // RÈGLE ADMOB STRICTE (§ Rewarded ads policy) :
+  // • La récompense n'est accordée QUE dans onUserEarnedReward
+  // • onAdDismissedFullScreenContent ne donne PAS de récompense
+  //   si onUserEarnedReward n'a pas encore été appelé
+  // • Aucune récompense partielle
+  //
   void showRewardedAd({
     required Function(int amount, String type) onUserEarnedReward,
     VoidCallback? onAdDismissedWithoutReward,
     VoidCallback? onAdFailedToShow,
   }) {
-    if (kIsWeb || !_isLoaded) {
+    if (kIsWeb || !_isLoaded || _rewardedAd == null) {
       onAdFailedToShow?.call();
-      debugPrint('[AdMob] Cannot show ad: not loaded or web platform');
       return;
     }
 
+    bool _rewardGranted = false; // garde-fou anti-double-récompense
     _isShowing = true;
     _isLoaded  = false;
 
-    // Sur Android (quand google_mobile_ads est actif) :
-    // _rewardedAd!.fullScreenContentCallback = FullScreenContentCallback(
-    //   onAdDismissedFullScreenContent: (ad) {
-    //     ad.dispose();
-    //     _isShowing = false;
-    //     // Ne rien faire ici — la récompense vient de onUserEarnedReward
-    //     // Si onUserEarnedReward n'a pas été appelé → pas de récompense
-    //     loadRewardedAd(); // Précharger la suivante
-    //   },
-    //   onAdFailedToShowFullScreenContent: (ad, error) {
-    //     ad.dispose();
-    //     _isShowing = false;
-    //     onAdFailedToShow?.call();
-    //   },
-    // );
-    // _rewardedAd!.show(
-    //   onUserEarnedReward: (ad, reward) {
-    //     // SEUL endroit où la récompense est accordée
-    //     onUserEarnedReward(reward.amount.toInt(), reward.type);
-    //   },
-    // );
+    _rewardedAd!.fullScreenContentCallback = FullScreenContentCallback(
+      onAdDismissedFullScreenContent: (ad) {
+        ad.dispose();
+        _rewardedAd = null;
+        _isShowing  = false;
+        // Si la vidéo a été fermée SANS que onUserEarnedReward soit appelé
+        // → pas de récompense (règle AdMob)
+        if (!_rewardGranted) {
+          onAdDismissedWithoutReward?.call();
+        }
+        // Précharger la prochaine pub immédiatement
+        loadRewardedAd();
+      },
+      onAdFailedToShowFullScreenContent: (ad, error) {
+        ad.dispose();
+        _rewardedAd = null;
+        _isShowing  = false;
+        debugPrint('[AdMob] Failed to show: ${error.message}');
+        onAdFailedToShow?.call();
+        loadRewardedAd();
+      },
+    );
 
-    // Simulation pour test : l'utilisateur regarde la pub complète
-    Future.delayed(const Duration(seconds: 2), () {
-      _isShowing = false;
-      // Simule onUserEarnedReward (la vraie récompense AdMob)
-      onUserEarnedReward(50, 'pieces_or');
-      debugPrint('[AdMob] onUserEarnedReward fired (simulation)');
-      // Recharger pour la prochaine fois
-      loadRewardedAd();
-    });
+    _rewardedAd!.show(
+      onUserEarnedReward: (ad, reward) {
+        // ✅ SEUL endroit où la récompense est accordée
+        // Déclenché par Google uniquement si la vidéo est vue en entier
+        _rewardGranted = true;
+        onUserEarnedReward(reward.amount.toInt(), reward.type);
+        debugPrint('[AdMob] onUserEarnedReward: ${reward.amount} ${reward.type}');
+      },
+    );
   }
 
   void dispose() {
-    _isLoaded  = false;
-    _isShowing = false;
+    _rewardedAd?.dispose();
+    _rewardedAd = null;
+    _isLoaded   = false;
+    _isShowing  = false;
   }
 }
