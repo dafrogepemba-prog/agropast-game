@@ -8,45 +8,61 @@ import 'api_service.dart';
 import 'web_bridge.dart';
 
 class GameProvider extends ChangeNotifier {
-  final List<Parcelle> parcelles = List.generate(6, (i) => Parcelle(id: i));
+  List<Parcelle> parcelles = List.generate(6, (i) => Parcelle(id: i));
 
   Player player  = Player();
   bool  _loading = true;
   String message = '';
-  String _webToken = ''; // token JWT depuis localStorage
+  String _webToken = '';
 
   bool get loading => _loading;
 
-  // ---- Init depuis SharedPreferences + localStorage web ------
+  // ── Init : charge joueur + état des parcelles ────────────
   Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
 
+    // Nom depuis localStorage web (login.html) ou SharedPreferences
     String pseudo = prefs.getString('pseudo') ?? 'Fermier';
     String email  = prefs.getString('email')  ?? '';
-
-    // Lire les données depuis localStorage (web) ou SharedPreferences (mobile)
     try {
       final webNom   = WebBridge.getLocalStorage('apg_nom');
       final webWa    = WebBridge.getLocalStorage('apg_whatsapp');
       final webToken = WebBridge.getLocalStorage('apg_token');
-      if (webNom.isNotEmpty)   pseudo     = webNom;
-      if (webWa.isNotEmpty)    email      = webWa;
-      if (webToken.isNotEmpty) _webToken  = webToken;
+      if (webNom.isNotEmpty)   pseudo    = webNom;
+      if (webWa.isNotEmpty)    email     = webWa;
+      if (webToken.isNotEmpty) _webToken = webToken;
     } catch (_) {}
 
     player = Player(
       pseudo:         pseudo,
       email:          email,
-      scoreTotal:     prefs.getInt('scoreTotal')        ?? 0,
-      nombreRecoltes: prefs.getInt('nombreRecoltes')    ?? 0,
-      niveau:         prefs.getInt('niveau')            ?? 1,
-      piecesOr:       prefs.getInt('piecesOr')          ?? 100,
+      scoreTotal:     prefs.getInt('scoreTotal')     ?? 0,
+      nombreRecoltes: prefs.getInt('nombreRecoltes') ?? 0,
+      niveau:         prefs.getInt('niveau')         ?? 1,
+      piecesOr:       prefs.getInt('piecesOr')       ?? 100,
     );
+
+    // ── Restaurer l'état des parcelles ───────────────────
+    final parcellesJson = prefs.getString('parcelles_state');
+    if (parcellesJson != null) {
+      try {
+        final List<dynamic> list = jsonDecode(parcellesJson);
+        parcelles = List.generate(6, (i) {
+          if (i < list.length) {
+            return Parcelle.fromMap(Map<String, dynamic>.from(list[i]));
+          }
+          return Parcelle(id: i);
+        });
+      } catch (_) {
+        parcelles = List.generate(6, (i) => Parcelle(id: i));
+      }
+    }
+
     _loading = false;
     notifyListeners();
   }
 
-  // ---- Sauvegarde locale -------------------------------------
+  // ── Sauvegarde locale ─────────────────────────────────────
   Future<void> _save() async {
     final prefs = await SharedPreferences.getInstance();
     prefs.setString('pseudo',         player.pseudo);
@@ -55,6 +71,9 @@ class GameProvider extends ChangeNotifier {
     prefs.setInt('nombreRecoltes',    player.nombreRecoltes);
     prefs.setInt('niveau',            player.niveau);
     prefs.setInt('piecesOr',          player.piecesOr);
+    // Sauvegarder l'état des parcelles
+    prefs.setString('parcelles_state',
+        jsonEncode(parcelles.map((p) => p.toMap()).toList()));
   }
 
   // ---- Interaction parcelle ----------------------------------
@@ -69,6 +88,7 @@ class GameProvider extends ChangeNotifier {
 
     if (wasVide) {
       message = '🌱 Graine plantée sur la parcelle ${index + 1} !';
+      _save(); // sauvegarder l'état de la parcelle
     } else if (wasMure) {
       player.ajouterScore(p.score);
       message = '🍉 Récolte ! +${p.score} pts';
@@ -78,6 +98,7 @@ class GameProvider extends ChangeNotifier {
       message = '🍉 Pastèque mûre ! Clique pour récolter.';
     } else {
       message = '💧 Arrosage ${_waterLabel(p.etat)}';
+      _save(); // sauvegarder état arrosage
     }
 
     notifyListeners();
@@ -100,6 +121,7 @@ class GameProvider extends ChangeNotifier {
   void nouvelleSaison() {
     for (final p in parcelles) p.reset();
     message = '🌾 Nouvelle saison ! Commence à semer.';
+    _save();
     _syncScore(eventType: 'saison');
     notifyListeners();
   }
