@@ -309,6 +309,15 @@ if (isset($_GET['export']) && $_GET['export'] === 'csv') {
 <header>
   <h1>🍉 AgroPast-Game — Dashboard Admin</h1>
   <div style="display:flex;align-items:center;gap:1rem">
+    <a href="withdrawals.php" style="background:#f9a825;color:#1b2a1b;border-radius:6px;
+       padding:.4rem .9rem;font-size:.85rem;text-decoration:none;font-weight:700">
+      💸 Retraits <?php
+        try {
+          $nbW = $pdo->query("SELECT COUNT(*) FROM `".DB_PREFIX."withdrawals` WHERE statut='en_attente'")->fetchColumn();
+          if ($nbW > 0) echo "<span style='background:#e53935;color:#fff;border-radius:10px;padding:.1rem .4rem;margin-left:.3rem'>{$nbW}</span>";
+        } catch (Exception $ig) {}
+      ?>
+    </a>
     <span class="user">👤 <?= htmlspecialchars($_SESSION['admin_user']) ?></span>
     <a href="logout.php" class="btn-logout">Déconnexion</a>
   </div>
