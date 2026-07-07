@@ -46,18 +46,29 @@ $stats = $pdo->query("
 
 // --- Liste ---------------------------------------------------
 $filtre = $_GET['f'] ?? 'en_attente';
-$where  = in_array($filtre, ['en_attente','approuve','refuse','tous'])
-        ? ($filtre === 'tous' ? '' : "WHERE statut='" . $pdo->quote($filtre) . "'")
-        : "WHERE statut='en_attente'";
+$allowed = ['en_attente', 'approuve', 'refuse', 'tous'];
+if (!in_array($filtre, $allowed)) $filtre = 'en_attente';
 
-$list = $pdo->query("
-    SELECT w.*, l.whatsapp, l.pays
-    FROM `{$tW}` w
-    LEFT JOIN `" . DB_PREFIX . "leads` l ON l.id = w.user_id
-    $where
-    ORDER BY w.created_at DESC
-    LIMIT 100
-")->fetchAll();
+if ($filtre === 'tous') {
+    $list = $pdo->query("
+        SELECT w.*, l.whatsapp, l.pays
+        FROM `{$tW}` w
+        LEFT JOIN `" . DB_PREFIX . "leads` l ON l.id = w.user_id
+        ORDER BY w.created_at DESC
+        LIMIT 100
+    ")->fetchAll();
+} else {
+    $stmt = $pdo->prepare("
+        SELECT w.*, l.whatsapp, l.pays
+        FROM `{$tW}` w
+        LEFT JOIN `" . DB_PREFIX . "leads` l ON l.id = w.user_id
+        WHERE w.statut = ?
+        ORDER BY w.created_at DESC
+        LIMIT 100
+    ");
+    $stmt->execute([$filtre]);
+    $list = $stmt->fetchAll();
+}
 ?>
 <!DOCTYPE html>
 <html lang="fr">
