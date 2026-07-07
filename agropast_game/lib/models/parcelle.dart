@@ -76,4 +76,19 @@ class Parcelle {
     etat  = ParcelleEtat.vide;
     score = 0;
   }
+
+  // ── Sérialisation pour persistance ───────────────────────
+  Map<String, dynamic> toMap() => {
+    'id':    id,
+    'etat':  etat.index,
+    'score': score,
+  };
+
+  factory Parcelle.fromMap(Map<String, dynamic> map) {
+    final p = Parcelle(id: map['id'] as int? ?? 0);
+    final etatIndex = map['etat'] as int? ?? 0;
+    p.etat  = ParcelleEtat.values[etatIndex.clamp(0, ParcelleEtat.values.length - 1)];
+    p.score = map['score'] as int? ?? 0;
+    return p;
+  }
 }
