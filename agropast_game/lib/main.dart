@@ -14,7 +14,7 @@ void main() async {
     DeviceOrientation.portraitDown,
   ]);
 
-  // Init AdMob
+  // Init AdMob SDK de production
   await AdMobService.init();
 
   runApp(

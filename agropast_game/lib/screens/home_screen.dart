@@ -2,9 +2,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
-// ignore: avoid_web_libraries_in_flutter
-import 'dart:html' as html;
 import '../services/game_provider.dart';
+import '../services/web_bridge.dart';
 import 'game_screen.dart';
 import 'leaderboard_screen.dart';
 
@@ -117,10 +116,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     if (tel.length < 8) return;
                     setS(() => loading = true);
                     try {
-                      String token = '';
-                      try {
-                        token = html.window.localStorage['apg_token'] ?? '';
-                      } catch (_) {}
+                      String token = WebBridge.getLocalStorage('apg_token');
                       final res = await http.post(
                         Uri.parse('https://agropast-game.online/api/withdraw.php'),
                         headers: {'Content-Type': 'application/json'},

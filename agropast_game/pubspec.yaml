@@ -14,8 +14,8 @@ dependencies:
   provider: ^6.1.2
   # Persistance locale (scores, progression)
   shared_preferences: ^2.3.2
-  # AdMob Rewarded Ads (Android/iOS uniquement — désactivé pour test web)
-  # google_mobile_ads: ^5.1.0
+  # AdMob Rewarded Ads (Android/iOS uniquement)
+  google_mobile_ads: ^5.1.0
   # Animations
   animate_do: ^3.3.4
   # HTTP pour leaderboard API

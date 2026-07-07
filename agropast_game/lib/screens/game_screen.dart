@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-// ignore: avoid_web_libraries_in_flutter
-import 'dart:html' as html;
 import '../services/game_provider.dart';
 import '../services/admob_service.dart';
 import '../models/parcelle.dart';
 import '../widgets/parcelle_widget.dart';
+import '../services/web_bridge.dart';
 
 class GameScreen extends StatefulWidget {
   const GameScreen({super.key});
@@ -69,17 +68,15 @@ class _GameScreenState extends State<GameScreen> {
   }
 
   void _navigateToSite() {
-    try { html.window.location.href = '/'; } catch (_) {}
+    WebBridge.navigateTo('/');
   }
 
   void _logout() {
-    try {
-      html.window.localStorage.remove('apg_token');
-      html.window.localStorage.remove('apg_whatsapp');
-      html.window.localStorage.remove('apg_nom');
-      html.window.localStorage.remove('apg_ref_id');
-      html.window.location.href = '/login.html';
-    } catch (_) {}
+    WebBridge.removeLocalStorage('apg_token');
+    WebBridge.removeLocalStorage('apg_whatsapp');
+    WebBridge.removeLocalStorage('apg_nom');
+    WebBridge.removeLocalStorage('apg_ref_id');
+    WebBridge.navigateTo('/login.html');
   }
 
   // ── Bonus web (AdMob indisponible sur navigateur) ────────

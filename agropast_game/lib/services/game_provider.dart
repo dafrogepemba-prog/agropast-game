@@ -1,11 +1,11 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-// ignore: avoid_web_libraries_in_flutter
-import 'dart:html' as html;
 import '../models/parcelle.dart';
 import '../models/player.dart';
 import 'api_service.dart';
+import 'web_bridge.dart';
 
 class GameProvider extends ChangeNotifier {
   final List<Parcelle> parcelles = List.generate(6, (i) => Parcelle(id: i));
@@ -24,11 +24,11 @@ class GameProvider extends ChangeNotifier {
     String pseudo = prefs.getString('pseudo') ?? 'Fermier';
     String email  = prefs.getString('email')  ?? '';
 
-    // Lire les données web depuis localStorage (posé par login.html)
+    // Lire les données depuis localStorage (web) ou SharedPreferences (mobile)
     try {
-      final webNom   = html.window.localStorage['apg_nom']      ?? '';
-      final webWa    = html.window.localStorage['apg_whatsapp'] ?? '';
-      final webToken = html.window.localStorage['apg_token']    ?? '';
+      final webNom   = WebBridge.getLocalStorage('apg_nom');
+      final webWa    = WebBridge.getLocalStorage('apg_whatsapp');
+      final webToken = WebBridge.getLocalStorage('apg_token');
       if (webNom.isNotEmpty)   pseudo     = webNom;
       if (webWa.isNotEmpty)    email      = webWa;
       if (webToken.isNotEmpty) _webToken  = webToken;
