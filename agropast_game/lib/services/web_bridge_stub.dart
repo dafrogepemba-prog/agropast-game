@@ -5,6 +5,9 @@ class WebBridge {
   static void removeLocalStorage(String key) {}
   static void navigateTo(String url) {}
 
+  // Partage via URL externe (WhatsApp, etc.)
+  static void share(String url) {}
+
   // Sur mobile, AdMob natif est utilisé — cette méthode n'est jamais appelée
   static void showH5RewardedAd({
     required void Function(int amount, String type) onGranted,

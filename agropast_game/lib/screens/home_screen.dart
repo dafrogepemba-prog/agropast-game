@@ -7,6 +7,7 @@ import '../services/web_bridge.dart';
 import '../models/player.dart';
 import 'game_screen.dart';
 import 'leaderboard_screen.dart';
+import 'profile_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -15,6 +16,44 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  int _referralCount = 0; // nombre de filleuls
+
+  @override
+  void initState() {
+    super.initState();
+    _loadReferralCount();
+  }
+
+  // ── Charger le nombre de filleuls depuis l'API ───────────
+  Future<void> _loadReferralCount() async {
+    final refId = WebBridge.getLocalStorage('apg_ref_id');
+    if (refId.isEmpty) return;
+    try {
+      final res = await http
+          .get(Uri.parse(
+              'https://agropast-game.online/api/referral_stats.php?ref_id=$refId'))
+          .timeout(const Duration(seconds: 8));
+      if (res.statusCode == 200) {
+        final data = jsonDecode(res.body);
+        if (mounted) {
+          setState(() {
+            _referralCount = (data['filleuls'] as num?)?.toInt() ?? 0;
+          });
+        }
+      }
+    } catch (_) {} // silencieux — pas bloquant
+  }
+
+  // ── Partager via WhatsApp ────────────────────────────────
+  void _inviterAmi() {
+    final refId = WebBridge.getLocalStorage('apg_ref_id');
+    final link = 'https://agropast-game.online?ref=$refId';
+    final message = Uri.encodeComponent(
+        '🍉 Rejoins-moi sur AgroPast-Game ! '
+        'Cultive ta ferme et gagne des FCFA. '
+        'Inscris-toi ici : $link');
+    WebBridge.share('https://wa.me/?text=$message');
+  }
 
   @override
   void didChangeDependencies() {
@@ -446,10 +485,24 @@ class _HomeScreenState extends State<HomeScreen> {
               const SizedBox(height: 12),
 
               _MenuButton(
+                icon: Icons.settings,
+                label: 'Mon profil',
+                subtitle: 'Statistiques, parrainage, pseudo',
+                color: const Color(0xFF4a148c),
+                onTap: () => Navigator.push(context,
+                    MaterialPageRoute(
+                        builder: (_) => const ProfileScreen())),
+              ),
+              const SizedBox(height: 12),
+
+              _MenuButton(
                 icon: Icons.emoji_events,
                 label: 'Classement',
                 subtitle: 'Voir les meilleurs fermiers',
                 color: const Color(0xFF1565c0),
+                badge: _referralCount > 0
+                    ? '$_referralCount filleul${_referralCount > 1 ? 's' : ''}'
+                    : null,
                 onTap: () => Navigator.push(context,
                     MaterialPageRoute(
                         builder: (_) => const LeaderboardScreen())),
@@ -457,11 +510,11 @@ class _HomeScreenState extends State<HomeScreen> {
               const SizedBox(height: 12),
 
               _MenuButton(
-                icon: Icons.settings,
-                label: 'Mon profil',
-                subtitle: 'Modifier ton pseudo',
-                color: const Color(0xFF4a148c),
-                onTap: _showPseudoDialog,
+                icon: Icons.share,
+                label: 'Inviter un ami',
+                subtitle: 'Partage ton lien sur WhatsApp',
+                color: const Color(0xFF00695c),
+                onTap: _inviterAmi,
               ),
               const SizedBox(height: 12),
 

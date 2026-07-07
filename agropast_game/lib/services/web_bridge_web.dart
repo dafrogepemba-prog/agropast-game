@@ -21,6 +21,11 @@ class WebBridge {
     try { html.window.location.href = url; } catch (_) {}
   }
 
+  // Ouvre une URL dans un nouvel onglet (utilisé pour WhatsApp, partage, etc.)
+  static void share(String url) {
+    try { html.window.open(url, '_blank'); } catch (_) {}
+  }
+
   // ── Google H5 Games Ads — Rewarded Ad ───────────────────
   // Appelle window.flutterCallJs('showRewardedAd') défini dans index.html
   // onGranted : vidéo vue en entier → créditer la récompense
