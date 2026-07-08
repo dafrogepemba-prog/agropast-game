@@ -6,7 +6,7 @@ on:
       - main
 
 jobs:
-  # ── Job 1 : Déploiement FTP ────────────────────────────────
+  # ── Job 1 : Déploiement FTP ──────────────────────────────
   deploy:
     name: Deploy to LWS via FTP
     runs-on: ubuntu-latest
@@ -35,7 +35,7 @@ jobs:
             agropast_game/.dart_tool/**
             agropast_game/.flutter-plugins**
 
-  # ── Job 2 : Build APK Android ─────────────────────────────
+  # ── Job 2 : Build APK Android ───────────────────────────
   build-apk:
     name: Build Android APK
     runs-on: ubuntu-latest
@@ -43,7 +43,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Java 17
+      - name: Setup Java 21
         uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -56,7 +56,7 @@ jobs:
           channel: stable
           cache: true
 
-      - name: Get Flutter dependencies
+      - name: Flutter pub get
         run: flutter pub get
         working-directory: agropast_game
 
@@ -64,20 +64,9 @@ jobs:
         run: flutter build apk --release --no-tree-shake-icons
         working-directory: agropast_game
 
-      - name: Upload APK as artifact
+      - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: agropast-game-release
+          name: agropast-game-release-apk
           path: agropast_game/build/app/outputs/flutter-apk/app-release.apk
           retention-days: 30
-
-      - name: Upload APK to FTP
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: ftp.epsylon-cg.com
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          server-dir: /agropast-game.online/
-          local-dir: agropast_game/build/app/outputs/flutter-apk/
-          include: |
-            app-release.apk

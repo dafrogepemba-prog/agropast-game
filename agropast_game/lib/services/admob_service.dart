@@ -6,14 +6,13 @@ import 'package:flutter/material.dart';
 // App ID     : ca-app-pub-4115564366785475~5279911679
 // Ad Unit ID : ca-app-pub-4115564366785475/9740112422
 //
-// SDK google_mobile_ads compilé via GitHub Actions CI (Ubuntu)
-// Web : simulation 2s — AdSense H5 gère les pubs web
+// Sur web : simulation 2s (AdSense H5 gère les vraies pubs)
+// Sur Android : google_mobile_ads SDK de production
 // ============================================================
 
-// Imports conditionnels AdMob (mobile uniquement)
-// ignore: uri_does_not_exist
-import 'admob_stub.dart'
-    if (dart.library.io) 'admob_real.dart';
+// Import conditionnel propre Flutter
+import 'admob_impl.dart'
+    if (dart.library.html) 'admob_impl_web.dart';
 
 class AdMobService {
   static const String appId          = 'ca-app-pub-4115564366785475~5279911679';
@@ -28,7 +27,7 @@ class AdMobService {
   static Future<void> init() async {
     if (kIsWeb) return;
     await AdMobImpl.initialize();
-    debugPrint('[AdMob] SDK initialisé');
+    debugPrint('[AdMob] SDK initialisé — ${appId}');
   }
 
   void loadRewardedAd({VoidCallback? onLoaded, VoidCallback? onFailed}) {
@@ -38,12 +37,12 @@ class AdMobService {
       onLoaded: () {
         _isLoaded = true;
         onLoaded?.call();
-        debugPrint('[AdMob] Ad prête');
       },
       onFailed: () {
         _isLoaded = false;
         onFailed?.call();
-        Future.delayed(const Duration(seconds: 30), () => loadRewardedAd(onLoaded: onLoaded));
+        Future.delayed(const Duration(seconds: 30),
+            () => loadRewardedAd(onLoaded: onLoaded));
       },
     );
   }
@@ -59,7 +58,6 @@ class AdMobService {
     }
     _isShowing = true;
     _isLoaded  = false;
-
     AdMobImpl.showRewarded(
       onEarned: (amount, type) {
         _isShowing = false;
