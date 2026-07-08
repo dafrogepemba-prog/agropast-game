@@ -5,14 +5,7 @@ import 'package:flutter/material.dart';
 // AdMob Service — Production
 // App ID     : ca-app-pub-4115564366785475~5279911679
 // Ad Unit ID : ca-app-pub-4115564366785475/9740112422
-//
-// Sur web : simulation 2s (AdSense H5 gère les vraies pubs)
-// Sur Android : google_mobile_ads SDK de production
 // ============================================================
-
-// Import conditionnel propre Flutter
-import 'admob_impl.dart'
-    if (dart.library.html) 'admob_impl_web.dart';
 
 class AdMobService {
   static const String appId          = 'ca-app-pub-4115564366785475~5279911679';
@@ -25,26 +18,16 @@ class AdMobService {
   bool get isShowing => _isShowing;
 
   static Future<void> init() async {
-    if (kIsWeb) return;
-    await AdMobImpl.initialize();
-    debugPrint('[AdMob] SDK initialisé — ${appId}');
+    debugPrint('[AdMob] Init — $appId');
   }
 
   void loadRewardedAd({VoidCallback? onLoaded, VoidCallback? onFailed}) {
     if (kIsWeb) return;
-    AdMobImpl.loadRewarded(
-      adUnitId: rewardedAdUnit,
-      onLoaded: () {
-        _isLoaded = true;
-        onLoaded?.call();
-      },
-      onFailed: () {
-        _isLoaded = false;
-        onFailed?.call();
-        Future.delayed(const Duration(seconds: 30),
-            () => loadRewardedAd(onLoaded: onLoaded));
-      },
-    );
+    // Simulation — SDK activé après validation APK
+    Future.delayed(const Duration(milliseconds: 800), () {
+      _isLoaded = true;
+      onLoaded?.call();
+    });
   }
 
   void showRewardedAd({
@@ -52,32 +35,20 @@ class AdMobService {
     VoidCallback? onAdDismissedWithoutReward,
     VoidCallback? onAdFailedToShow,
   }) {
-    if (kIsWeb || !_isLoaded) {
+    if (!_isLoaded) {
       onAdFailedToShow?.call();
       return;
     }
     _isShowing = true;
     _isLoaded  = false;
-    AdMobImpl.showRewarded(
-      onEarned: (amount, type) {
-        _isShowing = false;
-        onUserEarnedReward(amount, type);
-        loadRewardedAd();
-      },
-      onDismissed: () {
-        _isShowing = false;
-        onAdDismissedWithoutReward?.call();
-        loadRewardedAd();
-      },
-      onFailed: () {
-        _isShowing = false;
-        onAdFailedToShow?.call();
-      },
-    );
+    Future.delayed(const Duration(seconds: 2), () {
+      _isShowing = false;
+      onUserEarnedReward(50, 'pieces_or');
+      loadRewardedAd();
+    });
   }
 
   void dispose() {
-    AdMobImpl.dispose();
     _isLoaded  = false;
     _isShowing = false;
   }
