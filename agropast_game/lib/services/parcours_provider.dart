@@ -28,12 +28,22 @@ class ParcoursQuotidienProvider extends ChangeNotifier {
   NiveauInfo? levelUpEvent;
 
   // ── Getters publics ───────────────────────────────────────
-  int     get cultureIndex  => _cultureIndex;
-  double  get progression   => _progression;
-  bool    get sessionDone   => _sessionDone;
-  int     get sessionScore  => _sessionScore;
-  bool    get initialized   => _initialized;
+  int     get cultureIndex    => _cultureIndex;
+  double  get progression     => _progression;
+  bool    get sessionDone     => _sessionDone;
+  int     get sessionScore    => _sessionScore;
+  bool    get initialized     => _initialized;
   Culture get cultureCourante => kCultures[_cultureIndex.clamp(0, 3)];
+
+  // Stats joueur depuis GameProvider
+  int get totalScore => _gameProvider.player.scoreTotal;
+  int get niveau     => _gameProvider.player.niveau;
+  int get recoltes   => _gameProvider.player.nombreRecoltes;
+  int get pieces     => _gameProvider.player.piecesOr;
+
+  // Nombre de cultures terminées aujourd'hui
+  int get culturesDoneCount =>
+      _sessionDone ? 4 : _cultureIndex;
 
   ParcoursQuotidienProvider(this._gameProvider);
 
