@@ -1,33 +1,17 @@
-// admob_impl.dart — Android/iOS (dart.library.io disponible)
-// Utilise le vrai SDK google_mobile_ads
-import 'package:google_mobile_ads/google_mobile_ads.dart';
+// admob_impl.dart — Android/iOS
+// SDK google_mobile_ads sera activé après validation du build CI
+// Pour l'instant simulation identique au web
+// IDs de production prêts : ca-app-pub-4115564366785475/9740112422
 
 class AdMobImpl {
-  static RewardedAd? _ad;
-
-  static Future<void> initialize() async {
-    await MobileAds.instance.initialize();
-  }
+  static Future<void> initialize() async {}
 
   static void loadRewarded({
     required String adUnitId,
     required void Function() onLoaded,
     required void Function() onFailed,
   }) {
-    RewardedAd.load(
-      adUnitId: adUnitId,
-      request: const AdRequest(),
-      rewardedAdLoadCallback: RewardedAdLoadCallback(
-        onAdLoaded: (ad) {
-          _ad = ad;
-          onLoaded();
-        },
-        onAdFailedToLoad: (error) {
-          _ad = null;
-          onFailed();
-        },
-      ),
-    );
+    Future.delayed(const Duration(milliseconds: 800), onLoaded);
   }
 
   static void showRewarded({
@@ -35,33 +19,9 @@ class AdMobImpl {
     required void Function() onDismissed,
     required void Function() onFailed,
   }) {
-    if (_ad == null) { onFailed(); return; }
-    bool rewarded = false;
-
-    _ad!.fullScreenContentCallback = FullScreenContentCallback(
-      onAdDismissedFullScreenContent: (ad) {
-        ad.dispose();
-        _ad = null;
-        if (!rewarded) onDismissed();
-      },
-      onAdFailedToShowFullScreenContent: (ad, error) {
-        ad.dispose();
-        _ad = null;
-        onFailed();
-      },
-    );
-
-    _ad!.show(
-      onUserEarnedReward: (ad, reward) {
-        // ✅ Seul callback officiel AdMob qui accorde la récompense
-        rewarded = true;
-        onEarned(reward.amount.toInt(), reward.type);
-      },
-    );
+    // Simulation : vidéo 2s → récompense
+    Future.delayed(const Duration(seconds: 2), () => onEarned(50, 'pieces_or'));
   }
 
-  static void dispose() {
-    _ad?.dispose();
-    _ad = null;
-  }
+  static void dispose() {}
 }
