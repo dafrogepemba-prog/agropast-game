@@ -15,8 +15,7 @@ dependencies:
   # Persistance locale (scores, progression)
   shared_preferences: ^2.3.2
   # AdMob Rewarded Ads (Android/iOS uniquement)
-  # Activé via GitHub Actions CI — build local désactivé (conflit JDK)
-  # google_mobile_ads: ^5.1.0
+  google_mobile_ads: ^5.1.0
   # Animations
   animate_do: ^3.3.4
   # HTTP pour leaderboard API
