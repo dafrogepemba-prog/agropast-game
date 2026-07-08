@@ -2,16 +2,21 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 // ============================================================
-// AdMob Service — Rewarded Ads
+// AdMob Service — Production
 // App ID     : ca-app-pub-4115564366785475~5279911679
 // Ad Unit ID : ca-app-pub-4115564366785475/9740112422
 //
-// SDK google_mobile_ads activé via GitHub Actions CI (build Android)
-// En local web : simulation — récompense après 2s
+// SDK google_mobile_ads compilé via GitHub Actions CI (Ubuntu)
+// Web : simulation 2s — AdSense H5 gère les pubs web
 // ============================================================
 
+// Imports conditionnels AdMob (mobile uniquement)
+// ignore: uri_does_not_exist
+import 'admob_stub.dart'
+    if (dart.library.io) 'admob_real.dart';
+
 class AdMobService {
-  static const String appId         = 'ca-app-pub-4115564366785475~5279911679';
+  static const String appId          = 'ca-app-pub-4115564366785475~5279911679';
   static const String rewardedAdUnit = 'ca-app-pub-4115564366785475/9740112422';
 
   bool _isLoaded  = false;
@@ -20,29 +25,29 @@ class AdMobService {
   bool get isLoaded  => _isLoaded && !kIsWeb;
   bool get isShowing => _isShowing;
 
-  // ── Init SDK (appelé dans main.dart) ────────────────────
   static Future<void> init() async {
     if (kIsWeb) return;
-    // MobileAds.instance.initialize() — activé dans le build CI Android
-    debugPrint('[AdMob] Init — App: $appId');
+    await AdMobImpl.initialize();
+    debugPrint('[AdMob] SDK initialisé');
   }
 
-  // ── Charger la pub récompensée ───────────────────────────
   void loadRewardedAd({VoidCallback? onLoaded, VoidCallback? onFailed}) {
     if (kIsWeb) return;
-
-    // En mode CI Android avec SDK actif :
-    // RewardedAd.load(adUnitId: rewardedAdUnit, ...)
-    // Pour l'instant simulation (SDK commenté)
-    Future.delayed(const Duration(milliseconds: 800), () {
-      _isLoaded = true;
-      onLoaded?.call();
-      debugPrint('[AdMob] Rewarded Ad ready');
-    });
+    AdMobImpl.loadRewarded(
+      adUnitId: rewardedAdUnit,
+      onLoaded: () {
+        _isLoaded = true;
+        onLoaded?.call();
+        debugPrint('[AdMob] Ad prête');
+      },
+      onFailed: () {
+        _isLoaded = false;
+        onFailed?.call();
+        Future.delayed(const Duration(seconds: 30), () => loadRewardedAd(onLoaded: onLoaded));
+      },
+    );
   }
 
-  // ── Afficher la pub récompensée ──────────────────────────
-  // RÈGLE ADMOB : récompense UNIQUEMENT via onUserEarnedReward
   void showRewardedAd({
     required Function(int amount, String type) onUserEarnedReward,
     VoidCallback? onAdDismissedWithoutReward,
@@ -52,20 +57,29 @@ class AdMobService {
       onAdFailedToShow?.call();
       return;
     }
-
     _isShowing = true;
     _isLoaded  = false;
 
-    // Simulation 2s (remplacé par vrai SDK dans CI) :
-    Future.delayed(const Duration(seconds: 2), () {
-      _isShowing = false;
-      onUserEarnedReward(50, 'pieces_or');
-      debugPrint('[AdMob] onUserEarnedReward (simulation)');
-      loadRewardedAd();
-    });
+    AdMobImpl.showRewarded(
+      onEarned: (amount, type) {
+        _isShowing = false;
+        onUserEarnedReward(amount, type);
+        loadRewardedAd();
+      },
+      onDismissed: () {
+        _isShowing = false;
+        onAdDismissedWithoutReward?.call();
+        loadRewardedAd();
+      },
+      onFailed: () {
+        _isShowing = false;
+        onAdFailedToShow?.call();
+      },
+    );
   }
 
   void dispose() {
+    AdMobImpl.dispose();
     _isLoaded  = false;
     _isShowing = false;
   }
