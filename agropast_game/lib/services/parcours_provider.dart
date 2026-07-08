@@ -6,9 +6,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/culture.dart';
 import '../models/player.dart';
 import 'game_provider.dart';
+import 'audio_service.dart';
 
 class ParcoursQuotidienProvider extends ChangeNotifier {
   final GameProvider _gameProvider;
+  final AudioService audio = AudioService(); // public pour accès depuis screen
 
   // ── Clés SharedPreferences ───────────────────────────────
   static const _kDate    = 'pq_last_date';
@@ -56,21 +58,33 @@ class ParcoursQuotidienProvider extends ChangeNotifier {
       _progression  = prefs.getDouble(_kProg)   ?? 0.0;
       _sessionDone  = prefs.getBool(_kDone)     ?? false;
       _sessionScore = prefs.getInt(_kScore)     ?? 0;
-    } catch (_) {
-      // continuer en mémoire — Req. 2.4
-    }
+    } catch (_) {}
     _checkReset(_todayStr());
+    // Précharger SFX pour latence < 50ms au premier tap
+    await audio.preload();
+    // BGM Android : démarrer immédiatement
+    // BGM Web : démarrer au premier tap (autoplay policy)
+    if (!kIsWeb) await audio.startBgm();
     _initialized = true;
     notifyListeners();
   }
 
   // ── Action principale ─────────────────────────────────────
   void onTapArrosoir() {
-    if (_sessionDone) return; // Req. 4.7
+    if (_sessionDone) return;
+
+    // Web : démarrer BGM au premier tap (autoplay policy)
+    if (kIsWeb && !audio.bgmStarted) audio.startBgm();
+
+    // SFX arrosoir immédiat
+    audio.playSfxArrosage();
+
     _incrementProgression();
     if (_progression >= 100.0) {
       _recolterCulture();
       _avancerCulture();
+      // Jingle succès à 100%
+      audio.playJingleRecolte();
     }
     _save();
     notifyListeners();
@@ -134,6 +148,7 @@ class ParcoursQuotidienProvider extends ChangeNotifier {
 
   @override
   void dispose() {
+    audio.dispose();
     super.dispose();
   }
 }
