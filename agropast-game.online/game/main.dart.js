@@ -37993,7 +37993,7 @@ break
 case 6:case 1:return A.N(q,r)
 case 2:return A.M(o,r)}})
 return A.O($async$vo,r)},
-a5O(){A.aJC("https://wa.me/?text="+A.EL(B.H0,"\ud83c\udf49 Rejoins-moi sur AgroPast-Game ! Cultive ta ferme et gagne des FCFA. Inscris-toi ici : "+("https://agropast-game.online?ref="+A.iL("apg_ref_id")),B.Z,!1))},
+a5O(){A.aJC("https://wa.me/?text="+A.EL(B.H0,"\ud83c\udf49 AgroPast-Game \u2014 Cultive ta ferme et converti tes points en FCFA. Inscris-toi ici : "+("https://agropast-game.online?ref="+A.iL("apg_ref_id")),B.Z,!1))},
 be(){this.dh()
 $.a6.k3$.push(new A.aix(this))},
 a5z(a){var s=this.c

@@ -51,8 +51,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final refId = WebBridge.getLocalStorage('apg_ref_id');
     final link = 'https://agropast-game.online?ref=$refId';
     final message = Uri.encodeComponent(
-        '🍉 Rejoins-moi sur AgroPast-Game ! '
-        'Cultive ta ferme et gagne des FCFA. '
+        '🍉 AgroPast-Game — Cultive ta ferme et converti tes points en FCFA. '
         'Inscris-toi ici : $link');
     WebBridge.share('https://wa.me/?text=$message');
   }
