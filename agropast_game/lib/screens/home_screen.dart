@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
 import '../services/game_provider.dart';
+import '../services/parcours_provider.dart';
 import '../services/web_bridge.dart';
 import '../models/player.dart';
 import 'game_screen.dart';
 import 'leaderboard_screen.dart';
 import 'profile_screen.dart';
+import 'parcours_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -481,6 +483,23 @@ class _HomeScreenState extends State<HomeScreen> {
                 color: const Color(0xFF2e7d32),
                 onTap: () => Navigator.push(context,
                     MaterialPageRoute(builder: (_) => const GameScreen())),
+              ),
+              const SizedBox(height: 12),
+
+              // ── Parcours Quotidien ───────────────────────
+              Consumer<ParcoursQuotidienProvider>(
+                builder: (ctx, pq, _) => _MenuButton(
+                  icon: Icons.water_drop,
+                  label: 'Parcours Quotidien',
+                  subtitle: pq.sessionDone
+                      ? '✅ Session du jour effectuée'
+                      : '🌱 4 cultures à arroser aujourd\'hui',
+                  color: const Color(0xFF1b5e20),
+                  badge: pq.sessionDone ? '✅ Fait' : null,
+                  onTap: () => Navigator.push(context,
+                      MaterialPageRoute(
+                          builder: (_) => const ParcoursQuotidienScreen())),
+                ),
               ),
               const SizedBox(height: 12),
 

@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'services/admob_service.dart';
 import 'services/game_provider.dart';
+import 'services/parcours_provider.dart';
 import 'screens/splash_screen.dart';
 
 void main() async {
@@ -18,8 +19,15 @@ void main() async {
   await AdMobService.init();
 
   runApp(
-    ChangeNotifierProvider(
-      create: (_) => GameProvider(),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => GameProvider()),
+        ChangeNotifierProxyProvider<GameProvider, ParcoursQuotidienProvider>(
+          create: (ctx) => ParcoursQuotidienProvider(
+              Provider.of<GameProvider>(ctx, listen: false)),
+          update: (ctx, gp, prev) => prev ?? ParcoursQuotidienProvider(gp),
+        ),
+      ],
       child: const AgroPastApp(),
     ),
   );

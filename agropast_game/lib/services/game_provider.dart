@@ -176,4 +176,7 @@ class GameProvider extends ChangeNotifier {
     _save();
     notifyListeners();
   }
+
+  // Exposé pour ParcoursQuotidienProvider
+  Future<void> savePublic() => _save();
 }
