@@ -1,6 +1,7 @@
+// admob_impl.dart — Android/iOS (dart.library.io disponible)
+// Utilise le vrai SDK google_mobile_ads
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
-// Implémentation réelle AdMob — Android/iOS uniquement
 class AdMobImpl {
   static RewardedAd? _ad;
 
@@ -35,14 +36,13 @@ class AdMobImpl {
     required void Function() onFailed,
   }) {
     if (_ad == null) { onFailed(); return; }
-
-    bool _rewarded = false;
+    bool rewarded = false;
 
     _ad!.fullScreenContentCallback = FullScreenContentCallback(
       onAdDismissedFullScreenContent: (ad) {
         ad.dispose();
         _ad = null;
-        if (!_rewarded) onDismissed();
+        if (!rewarded) onDismissed();
       },
       onAdFailedToShowFullScreenContent: (ad, error) {
         ad.dispose();
@@ -53,8 +53,8 @@ class AdMobImpl {
 
     _ad!.show(
       onUserEarnedReward: (ad, reward) {
-        // ✅ Seul callback officiel AdMob pour accorder la récompense
-        _rewarded = true;
+        // ✅ Seul callback officiel AdMob qui accorde la récompense
+        rewarded = true;
         onEarned(reward.amount.toInt(), reward.type);
       },
     );
