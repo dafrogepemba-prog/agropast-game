@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import '../services/game_provider.dart';
 import '../services/parcours_provider.dart';
 import '../services/web_bridge.dart';
@@ -132,8 +133,90 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  // ── Gate d'âge — vérifie que l'utilisateur a confirmé ≥18 ans ──
+  static const String _kAgeConfirmed = 'age_confirmed_18';
+
+  Future<bool> _checkAgeGate() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (prefs.getBool(_kAgeConfirmed) == true) return true;
+
+    // Afficher la déclaration d'âge
+    final confirmed = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => AlertDialog(
+        backgroundColor: const Color(0xFF1b2a1b),
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16)),
+        title: const Text('Vérification d\'âge',
+            style: TextStyle(
+                color: Colors.white, fontWeight: FontWeight.bold)),
+        content: Column(mainAxisSize: MainAxisSize.min, children: [
+          const Icon(Icons.verified_user,
+              color: Color(0xFF4caf50), size: 48),
+          const SizedBox(height: 14),
+          const Text(
+            'Le programme de récompense FCFA est réservé aux personnes '
+            'âgées de 18 ans ou plus.\n\n'
+            'En continuant, vous confirmez avoir au moins 18 ans.',
+            style: TextStyle(color: Colors.white70, height: 1.5),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: Colors.white10,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Text(
+              '⚠️ Toute fausse déclaration entraîne l\'annulation '
+              'des gains et la suspension du compte.',
+              style: TextStyle(color: Colors.white38, fontSize: 11),
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ]),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('J\'ai moins de 18 ans',
+                style: TextStyle(color: Colors.white38)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF2e7d32)),
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('J\'ai 18 ans ou plus'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      await prefs.setBool(_kAgeConfirmed, true);
+      return true;
+    }
+    return false;
+  }
+
   // ── Dialog retrait ────────────────────────────────────────
-  void _showWithdrawDialog() {
+  void _showWithdrawDialog() async {
+    // Gate d'âge obligatoire avant tout accès au retrait
+    final ageOk = await _checkAgeGate();
+    if (!ageOk) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+                'Le retrait est réservé aux joueurs de 18 ans ou plus.'),
+            backgroundColor: Color(0xFFc62828),
+          ),
+        );
+      }
+      return;
+    }
+
     final gp    = context.read<GameProvider>();
     final score = gp.player.scoreTotal;
     const seuil   = 33334;
@@ -441,9 +524,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       color: const Color(0xFF4caf50),
                     ),
                     _StatBox(
-                      icon: Icons.account_balance,
-                      value: player.revenusFcfaStr,
-                      label: 'FCFA estimé',
+                      icon: Icons.emoji_events,
+                      value: 'Niv. ${player.niveau}',
+                      label: 'Niveau',
                       color: const Color(0xFF29b6f6),
                     ),
                   ],
@@ -451,7 +534,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               const SizedBox(height: 6),
               Text(
-                '* 60 FCFA / 1 000 pts — estimation indicative',
+                'Consultez votre profil pour les détails du programme de récompense',
                 style: TextStyle(
                     color: Colors.white.withOpacity(.2), fontSize: 10),
                 textAlign: TextAlign.center,
