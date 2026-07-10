@@ -37,12 +37,13 @@ android {
 
     signingConfigs {
         release {
-            keyAlias      = keystoreProperties['keyAlias']      ?: System.getenv('KEY_ALIAS')
-            keyPassword   = keystoreProperties['keyPassword']   ?: System.getenv('KEY_PASSWORD')
-            storePassword = keystoreProperties['storePassword'] ?: System.getenv('STORE_PASSWORD')
-            storeFile     = keystoreProperties['storeFile']
+            keyAlias      = keystoreProperties['keyAlias']      ?: System.getenv('KEY_ALIAS')      ?: 'androiddebugkey'
+            keyPassword   = keystoreProperties['keyPassword']   ?: System.getenv('KEY_PASSWORD')   ?: 'android'
+            storePassword = keystoreProperties['storePassword'] ?: System.getenv('STORE_PASSWORD') ?: 'android'
+            def ksFile = keystoreProperties['storeFile']
                 ? rootProject.file(keystoreProperties['storeFile'])
                 : (System.getenv('KEYSTORE_PATH') ? file(System.getenv('KEYSTORE_PATH')) : null)
+            storeFile = ksFile ?: new File(System.getProperty('user.home') + '/.android/debug.keystore')
         }
     }
 
