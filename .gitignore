@@ -14,6 +14,10 @@ ftp-delete-reset.txt
 winscp-game.txt
 api/reset_test.php
 
+# Keystore Android — NE JAMAIS COMMITTER
+agropast_game/android/agropast_release.jks
+agropast_game/android/key.properties
+
 # OS
 .DS_Store
 Thumbs.db

@@ -1,4 +1,4 @@
-name: Deploy + Build APK
+name: Deploy + Build AAB
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
       - main
 
 jobs:
-  # ── Job 1 : FTP ──────────────────────────────────────────
+  # ── Job 1 : Déploiement FTP ──────────────────────────────
   deploy:
     name: Deploy to LWS via FTP
     runs-on: ubuntu-latest
@@ -28,12 +28,14 @@ jobs:
             agropast_game/build/**
             agropast_game/.dart_tool/**
             agropast_game/.flutter-plugins**
+            agropast_game/android/agropast_release.jks
+            agropast_game/android/key.properties
 
-  # ── Job 2 : APK ──────────────────────────────────────────
-  build-apk:
-    name: Build Android APK
+  # ── Job 2 : Build AAB Android (production) ───────────────
+  build-aab:
+    name: Build Android App Bundle
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
 
@@ -57,17 +59,41 @@ jobs:
           key: gradle-${{ runner.os }}-${{ hashFiles('agropast_game/android/**/*.gradle*') }}
           restore-keys: gradle-${{ runner.os }}-
 
+      # Recréer key.properties depuis les secrets GitHub
+      - name: Setup keystore
+        run: |
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > agropast_game/android/agropast_release.jks
+          cat > agropast_game/android/key.properties << EOF
+          storePassword=${{ secrets.STORE_PASSWORD }}
+          keyPassword=${{ secrets.KEY_PASSWORD }}
+          keyAlias=agropast
+          storeFile=agropast_release.jks
+          EOF
+
       - name: Flutter pub get
         run: flutter pub get
         working-directory: agropast_game
 
-      - name: Flutter build APK
+      # Build AAB (obligatoire pour Google Play)
+      - name: Build App Bundle (AAB)
+        run: flutter build appbundle --release
+        working-directory: agropast_game
+
+      - name: Upload AAB artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: agropast-game-release-aab
+          path: agropast_game/build/app/outputs/bundle/release/app-release.aab
+          retention-days: 30
+
+      # Build APK aussi pour les tests directs
+      - name: Build APK (tests)
         run: flutter build apk --release
         working-directory: agropast_game
 
-      - name: Upload APK
+      - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: agropast-game-apk
+          name: agropast-game-release-apk
           path: agropast_game/build/app/outputs/flutter-apk/app-release.apk
           retention-days: 30
