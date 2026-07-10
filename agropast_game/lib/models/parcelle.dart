@@ -67,9 +67,9 @@ class Parcelle {
   }
 
   int _calculerScore() {
-    // Score aléatoire pondéré entre 500 et 3000
-    final base = 500 + (DateTime.now().millisecondsSinceEpoch % 2500);
-    return base.toInt();
+    // Score FIXE par parcelle — conforme Google Play Gamified Loyalty
+    // Le joueur connaît exactement ce qu'il obtient : toujours 800 pts
+    return 800;
   }
 
   void reset() {

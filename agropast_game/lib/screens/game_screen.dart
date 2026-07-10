@@ -106,12 +106,12 @@ class _GameScreenState extends State<GameScreen> {
             );
           }
         } else {
-          // Pas de pub dispo → bonus journalier minimal
+          // Pas de pub dispo → bonus fixe de consolation
           context.read<GameProvider>().appliquerBonusAdMob(5, 'web_fallback');
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
-                content: Text('Bonus +5 pts ! Pub indisponible pour l\'instant.'),
+                content: Text('Bonus : +5 pièces & +50 pts'),
                 backgroundColor: Color(0xFF546e7a),
                 duration: Duration(seconds: 3),
               ),
@@ -282,8 +282,8 @@ class _GameScreenState extends State<GameScreen> {
                           color: Color(0xFFf9a825), size: 20),
                       label: Text(
                         _adMob.isLoaded
-                            ? 'Booster\n+50 +500 pts'
-                            : 'Bonus\n+10 +100 pts',
+                            ? 'Booster\n+50 pièces +500 pts'
+                            : 'Bonus\n+5 pièces +50 pts',
                         textAlign: TextAlign.center,
                         style: const TextStyle(fontSize: 11),
                       ),
