@@ -1,84 +1,79 @@
 // ============================================================
-// audio_service.dart — BGM + SFX Parcours Quotidien (P1)
-// 2 instances AudioPlayer distinctes : BGM loop + SFX one-shot
-// Web : BGM démarrée seulement après le premier tap utilisateur
-//       (contrainte autoplay policy des navigateurs)
+// audio_service.dart — BGM + SFX Parcours Quotidien
+// Compatible Flutter Web (6.x) + Android
 // ============================================================
 import 'package:flutter/foundation.dart';
 import 'package:audioplayers/audioplayers.dart';
 
 class AudioService {
-  // ── Deux instances séparées pour éviter les conflits ─────
   final AudioPlayer _bgm = AudioPlayer();
   final AudioPlayer _sfx = AudioPlayer();
 
-  bool _bgmStarted  = false;
-  bool _sfxReady    = false;
+  bool _bgmStarted = false;
 
-  // ── Fichiers audio (à placer dans assets/sounds/) ────────
-  // Budget total < 500 Ko (mono, 64-96 kbps)
   static const String _bgmFile    = 'sounds/bgm_parcours.mp3';
   static const String _sfxFile    = 'sounds/sfx_arrosage.mp3';
   static const String _jingleFile = 'sounds/jingle_recolte.mp3';
 
   bool get bgmStarted => _bgmStarted;
 
-  // ── Précharger le SFX pour latence < 50ms au premier tap ─
+  // ── Précharger les sons ───────────────────────────────────
   Future<void> preload() async {
     try {
       await _sfx.setSource(AssetSource(_sfxFile));
-      _sfxReady = true;
-    } catch (_) {
-      // Fichier absent → mode silencieux (Req. 7.6)
-    }
+    } catch (_) {}
   }
 
-  // ── Démarrer la BGM en boucle ────────────────────────────
-  // Sur web : appeler APRÈS le premier tap (autoplay policy)
-  // Sur Android : appeler dans initState
+  // ── Démarrer BGM (web : après premier tap) ────────────────
   Future<void> startBgm() async {
     if (_bgmStarted) return;
     try {
       await _bgm.setReleaseMode(ReleaseMode.loop);
-      await _bgm.setVolume(0.4);
+      await _bgm.setVolume(0.35);
       await _bgm.play(AssetSource(_bgmFile));
       _bgmStarted = true;
     } catch (_) {}
   }
 
-  // ── Jouer SFX arrosoir (one-shot, sans interrompre BGM) ──
+  // ── SFX tap arrosoir ─────────────────────────────────────
+  // Sur web : nouveau AudioPlayer à chaque tap car
+  // audioplayers 6.x ne supporte pas stop+replay fiable sur web
   Future<void> playSfxArrosage() async {
     try {
-      if (_sfxReady) {
+      if (kIsWeb) {
+        final p = AudioPlayer()..setVolume(0.8);
+        await p.play(AssetSource(_sfxFile));
+        Future.delayed(const Duration(seconds: 3), () => p.dispose());
+      } else {
         await _sfx.stop();
         await _sfx.play(AssetSource(_sfxFile));
       }
     } catch (_) {}
   }
 
-  // ── Jingle à 100% : baisse BGM 2s puis retour ────────────
+  // ── Jingle récolte 100% ───────────────────────────────────
   Future<void> playJingleRecolte() async {
     try {
-      // Baisser le volume de la BGM
       await _bgm.setVolume(0.1);
-      // Jouer le jingle via le SFX player
-      await _sfx.play(AssetSource(_jingleFile));
-      // Remonter le volume après 2s
-      await Future.delayed(const Duration(seconds: 2));
-      await _bgm.setVolume(0.4);
+      final p = AudioPlayer();
+      await p.play(AssetSource(_jingleFile));
+      Future.delayed(const Duration(seconds: 3), () async {
+        await p.dispose();
+        await _bgm.setVolume(0.35);
+      });
     } catch (_) {}
   }
 
-  // ── Pause / reprise (quand pub AdMob s'affiche) ───────────
-  Future<void> pauseBgm()  async => _bgm.pause();
-  Future<void> resumeBgm() async => _bgm.resume();
+  Future<void> pauseBgm()  async { try { await _bgm.pause();  } catch (_) {} }
+  Future<void> resumeBgm() async { try { await _bgm.resume(); } catch (_) {} }
 
-  // ── Arrêt et libération des ressources ───────────────────
   Future<void> dispose() async {
-    await _bgm.stop();
-    await _sfx.stop();
-    await _bgm.dispose();
-    await _sfx.dispose();
-    _bgmStarted = false;
+    try {
+      await _bgm.stop();
+      await _sfx.stop();
+      await _bgm.dispose();
+      await _sfx.dispose();
+      _bgmStarted = false;
+    } catch (_) {}
   }
 }
