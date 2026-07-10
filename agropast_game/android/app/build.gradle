@@ -37,12 +37,12 @@ android {
 
     signingConfigs {
         release {
-            keyAlias     = keystoreProperties['keyAlias']     ?: System.getenv('KEY_ALIAS')
-            keyPassword  = keystoreProperties['keyPassword']  ?: System.getenv('KEY_PASSWORD')
-            storeFile    = keystoreProperties['storeFile']
-                ? file(keystoreProperties['storeFile'])
-                : (System.getenv('KEYSTORE_PATH') ? file(System.getenv('KEYSTORE_PATH')) : null)
+            keyAlias      = keystoreProperties['keyAlias']      ?: System.getenv('KEY_ALIAS')
+            keyPassword   = keystoreProperties['keyPassword']   ?: System.getenv('KEY_PASSWORD')
             storePassword = keystoreProperties['storePassword'] ?: System.getenv('STORE_PASSWORD')
+            storeFile     = keystoreProperties['storeFile']
+                ? rootProject.file(keystoreProperties['storeFile'])
+                : (System.getenv('KEYSTORE_PATH') ? file(System.getenv('KEYSTORE_PATH')) : null)
         }
     }
 
