@@ -1,0 +1,33 @@
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="cornBody" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffe680"/>
+      <stop offset="55%" stop-color="#f7c948"/>
+      <stop offset="100%" stop-color="#d9a627"/>
+    </linearGradient>
+    <linearGradient id="huskGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#8fe08f"/>
+      <stop offset="100%" stop-color="#3f9142"/>
+    </linearGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#000" flood-opacity="0.28"/>
+    </filter>
+  </defs>
+
+  <g filter="url(#shadow)">
+    <path d="M46 112 C34 96 32 70 40 46 C46 30 60 20 60 20 C60 20 74 30 80 46 C88 70 86 96 74 112 C68 118 52 118 46 112 Z" fill="url(#cornBody)"/>
+
+    <g fill="#c98a1f" opacity="0.55">
+      <circle cx="52" cy="42" r="3.4"/><circle cx="62" cy="40" r="3.4"/><circle cx="72" cy="42" r="3.4"/>
+      <circle cx="48" cy="52" r="3.4"/><circle cx="58" cy="50" r="3.4"/><circle cx="68" cy="52" r="3.4"/><circle cx="76" cy="50" r="3.4"/>
+      <circle cx="46" cy="62" r="3.4"/><circle cx="56" cy="60" r="3.4"/><circle cx="66" cy="62" r="3.4"/><circle cx="76" cy="60" r="3.4"/>
+      <circle cx="45" cy="72" r="3.4"/><circle cx="55" cy="70" r="3.4"/><circle cx="65" cy="72" r="3.4"/><circle cx="75" cy="70" r="3.4"/>
+      <circle cx="46" cy="82" r="3.4"/><circle cx="56" cy="80" r="3.4"/><circle cx="66" cy="82" r="3.4"/><circle cx="74" cy="80" r="3.4"/>
+      <circle cx="48" cy="92" r="3.4"/><circle cx="58" cy="90" r="3.4"/><circle cx="68" cy="92" r="3.4"/>
+      <circle cx="52" cy="100" r="3.4"/><circle cx="62" cy="99" r="3.4"/>
+    </g>
+
+    <path d="M60 20 C50 12 34 12 24 22 C36 24 46 30 56 38 Z" fill="url(#huskGrad)"/>
+    <path d="M60 20 C70 10 88 10 100 20 C86 22 74 30 64 38 Z" fill="url(#huskGrad)"/>
+  </g>
+</svg>

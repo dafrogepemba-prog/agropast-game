@@ -1,0 +1,11 @@
+<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="coinGrad" cx="35%" cy="30%" r="75%">
+      <stop offset="0%" stop-color="#ffe680"/>
+      <stop offset="60%" stop-color="#f0b93a"/>
+      <stop offset="100%" stop-color="#c98a1f"/>
+    </radialGradient>
+  </defs>
+  <circle cx="32" cy="32" r="24" fill="url(#coinGrad)" stroke="#a86e14" stroke-width="2"/>
+  <text x="32" y="41" font-family="system-ui,sans-serif" font-size="24" font-weight="800" text-anchor="middle" fill="#a86e14">F</text>
+</svg>

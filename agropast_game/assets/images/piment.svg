@@ -1,0 +1,31 @@
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="chiliBody" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ff6a5a"/>
+      <stop offset="55%" stop-color="#e8321f"/>
+      <stop offset="100%" stop-color="#a81d10"/>
+    </linearGradient>
+    <linearGradient id="chiliStem" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#8fe08f"/>
+      <stop offset="100%" stop-color="#3f9142"/>
+    </linearGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#000" flood-opacity="0.28"/>
+    </filter>
+  </defs>
+
+  <g filter="url(#shadow)">
+    <path d="M52 30
+             C40 34 32 46 34 60
+             C36 76 46 92 62 104
+             C74 112 90 108 96 96
+             C102 84 96 70 82 64
+             C86 56 84 46 76 40
+             C68 34 58 30 52 30 Z"
+          fill="url(#chiliBody)"/>
+    <path d="M60 46 C56 60 58 78 70 92" stroke="#ffffff" stroke-width="4" opacity="0.25" fill="none" stroke-linecap="round"/>
+
+    <path d="M52 30 C46 20 50 12 60 10 C56 18 56 24 58 30 Z" fill="url(#chiliStem)"/>
+    <ellipse cx="53" cy="28" rx="9" ry="6" fill="url(#chiliStem)" transform="rotate(-20 53 28)"/>
+  </g>
+</svg>

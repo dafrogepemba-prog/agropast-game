@@ -1,0 +1,30 @@
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="tomatoBody" cx="38%" cy="32%" r="75%">
+      <stop offset="0%" stop-color="#ff8a70"/>
+      <stop offset="45%" stop-color="#f0442c"/>
+      <stop offset="100%" stop-color="#b5251a"/>
+    </radialGradient>
+    <linearGradient id="leafGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#8fe08f"/>
+      <stop offset="100%" stop-color="#3f9142"/>
+    </linearGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#000" flood-opacity="0.28"/>
+    </filter>
+  </defs>
+
+  <g filter="url(#shadow)">
+    <ellipse cx="64" cy="74" rx="42" ry="38" fill="url(#tomatoBody)"/>
+    <ellipse cx="48" cy="58" rx="12" ry="8" fill="#ffffff" opacity="0.25"/>
+
+    <g fill="url(#leafGrad)">
+      <path d="M64 40 C58 26 46 22 36 28 C46 32 52 38 56 44 Z"/>
+      <path d="M64 40 C70 24 84 20 96 28 C84 32 76 38 70 46 Z"/>
+      <path d="M64 40 C64 24 64 18 64 12 C58 20 58 32 62 42 Z"/>
+      <path d="M64 40 C56 34 48 34 42 40 C50 42 56 44 62 46 Z"/>
+      <path d="M64 40 C72 34 80 34 86 40 C78 42 72 44 66 46 Z"/>
+    </g>
+    <circle cx="64" cy="40" r="5" fill="#2e6b32"/>
+  </g>
+</svg>
