@@ -63,12 +63,10 @@ jobs:
       - name: Setup keystore
         run: |
           echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > agropast_game/android/agropast_release.jks
-          cat > agropast_game/android/key.properties << EOF
-          storePassword=${{ secrets.STORE_PASSWORD }}
-          keyPassword=${{ secrets.KEY_PASSWORD }}
-          keyAlias=agropast
-          storeFile=agropast_release.jks
-          EOF
+          printf 'storePassword=%s\nkeyPassword=%s\nkeyAlias=agropast\nstoreFile=agropast_release.jks\n' \
+            "${{ secrets.STORE_PASSWORD }}" \
+            "${{ secrets.KEY_PASSWORD }}" \
+            > agropast_game/android/key.properties
 
       - name: Flutter pub get
         run: flutter pub get
