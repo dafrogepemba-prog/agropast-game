@@ -6,6 +6,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 import '../models/culture.dart';
 import '../models/player.dart';
@@ -261,10 +262,10 @@ class _AppBarParcours extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _StatChip('Niv. $niveau', 'Niveau'),
-              _StatChip('$recoltes', 'Récoltes'),
-              _StatChip('$done/4', "Aujourd'hui"),
-              _StatChip('$pieces 💰', ''),
+              _StatChip(null, 'Niv. $niveau', 'Niveau'),
+              _StatChip(null, '$recoltes', 'Récoltes'),
+              _StatChip(null, '$done/4', "Aujourd'hui"),
+              _StatChip(null, '$pieces', 'FCFA', coinSvg: true),
             ],
           ),
         ],
@@ -277,15 +278,30 @@ class _AppBarParcours extends StatelessWidget {
 }
 
 class _StatChip extends StatelessWidget {
+  final String? icon;
   final String value, label;
-  const _StatChip(this.value, this.label);
+  final bool coinSvg;
+  const _StatChip(this.icon, this.value, this.label, {this.coinSvg = false});
+
   @override
   Widget build(BuildContext context) => Column(
     children: [
-      Text(value,
-          style: const TextStyle(
-              color: Colors.white, fontWeight: FontWeight.bold,
-              fontSize: 14)),
+      Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (coinSvg)
+            SvgPicture.asset('assets/images/coin_f.svg',
+                width: 16, height: 16)
+          else if (icon != null)
+            Text(icon!, style: const TextStyle(fontSize: 14)),
+          const SizedBox(width: 3),
+          Text(value,
+              style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14)),
+        ],
+      ),
       if (label.isNotEmpty)
         Text(label,
             style: const TextStyle(color: Colors.white38, fontSize: 10)),
@@ -338,12 +354,10 @@ class _CultureCard extends StatelessWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // Icône
+                    // Icône SVG ou emoji fallback
                     isLocked
-                        ? const Text('🔒',
-                            style: TextStyle(fontSize: 28))
-                        : Text(culture.emoji,
-                            style: const TextStyle(fontSize: 36)),
+                        ? const Text('🔒', style: TextStyle(fontSize: 28))
+                        : _CultureIcon(culture: culture, size: 48),
                     const SizedBox(height: 6),
                     Text(culture.label,
                         style: const TextStyle(
@@ -610,9 +624,9 @@ class _CultureScreenState extends State<_CultureScreen>
 
                     const Spacer(),
 
-                    // ── Zone centrale étoiles + emoji ────────
+                    // ── Zone centrale étoiles + icône SVG ────────
                     _PlantZone(
-                        emoji: culture.emoji,
+                        culture: culture,
                         progression: prog,
                         starsAnim: _starsCtrl),
 
@@ -682,9 +696,15 @@ class _CultureScreenState extends State<_CultureScreen>
                                     ),
                                   ],
                                 ),
-                                child: const Center(
-                                  child: Text('🚿',
-                                      style: TextStyle(fontSize: 38)),
+                                child: Center(
+                                  child: SvgPicture.asset(
+                                    'assets/images/arrosoir.svg',
+                                    width: 44, height: 44,
+                                    colorFilter: const ColorFilter.mode(
+                                      Color(0xFF29b6f6),
+                                      BlendMode.srcIn,
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
@@ -725,14 +745,31 @@ class _CultureScreenState extends State<_CultureScreen>
   }
 }
 
+// ── Icône culture SVG avec fallback emoji ──────────────────
+class _CultureIcon extends StatelessWidget {
+  final Culture culture;
+  final double size;
+  const _CultureIcon({required this.culture, this.size = 36});
+
+  @override
+  Widget build(BuildContext context) {
+    return SvgPicture.asset(
+      culture.svgAsset,
+      width: size, height: size,
+      placeholderBuilder: (_) =>
+          Text(culture.emoji, style: TextStyle(fontSize: size * 0.7)),
+    );
+  }
+}
+
 // ── Zone plante avec étoiles ───────────────────────────────
 class _PlantZone extends StatelessWidget {
-  final String emoji;
+  final Culture culture;
   final double progression;
   final AnimationController starsAnim;
 
   const _PlantZone({
-    required this.emoji,
+    required this.culture,
     required this.progression,
     required this.starsAnim,
   });
@@ -761,15 +798,20 @@ class _PlantZone extends StatelessWidget {
           // Étoiles animées
           AnimatedBuilder(
             animation: starsAnim,
-            builder: (_, __) {
-              return CustomPaint(
-                size: const Size(180, 180),
-                painter: _StarsPainter(starsAnim.value),
-              );
-            },
+            builder: (_, __) => CustomPaint(
+              size: const Size(180, 180),
+              painter: _StarsPainter(starsAnim.value),
+            ),
           ),
-          // Emoji plante
-          Text(emoji, style: const TextStyle(fontSize: 72)),
+          // Icône SVG de la culture (grande)
+          SvgPicture.asset(
+            culture.svgAsset,
+            width: 90, height: 90,
+            placeholderBuilder: (_) => Text(
+              culture.emoji,
+              style: const TextStyle(fontSize: 72),
+            ),
+          ),
         ],
       ),
     );

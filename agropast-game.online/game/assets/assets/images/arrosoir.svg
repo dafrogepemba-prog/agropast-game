@@ -1,0 +1,40 @@
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="canBody" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#6fc3f7"/>
+      <stop offset="55%" stop-color="#2f8fd6"/>
+      <stop offset="100%" stop-color="#1b5f96"/>
+    </linearGradient>
+    <linearGradient id="waterDrop" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#a6e3ff"/>
+      <stop offset="100%" stop-color="#4ea8de"/>
+    </linearGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#000" flood-opacity="0.28"/>
+    </filter>
+  </defs>
+
+  <g filter="url(#shadow)">
+    <!-- body -->
+    <path d="M30 60 C30 46 42 38 58 38 L80 38 C86 38 90 42 90 48 C90 54 86 58 80 58
+             L64 58 C68 70 68 84 62 96 C58 104 46 106 38 100 C48 96 52 84 48 72
+             C44 66 36 68 30 60 Z" fill="url(#canBody)"/>
+
+    <!-- handle -->
+    <path d="M52 34 C52 24 64 18 74 22 C82 25 86 34 82 42" fill="none" stroke="url(#canBody)" stroke-width="7" stroke-linecap="round"/>
+
+    <!-- spout -->
+    <path d="M88 46 L112 34 C116 32 120 34 118 38 L106 56 C102 60 96 60 92 56 Z" fill="url(#canBody)"/>
+
+    <!-- rose (sprinkler head) -->
+    <circle cx="114" cy="34" r="8" fill="#1b5f96"/>
+
+    <!-- water drops -->
+    <path d="M110 50 C112 54 116 56 116 60 C116 63 113 65 111 63 C109 61 110 55 110 50 Z" fill="url(#waterDrop)"/>
+    <path d="M100 56 C102 60 105 61 105 64 C105 67 102 69 100 67 C98 65 99 60 100 56 Z" fill="url(#waterDrop)"/>
+    <circle cx="118" cy="66" r="3" fill="url(#waterDrop)"/>
+
+    <!-- highlight -->
+    <ellipse cx="44" cy="50" rx="8" ry="5" fill="#ffffff" opacity="0.3"/>
+  </g>
+</svg>
