@@ -49,10 +49,10 @@ android {
     buildTypes {
         release {
             signingConfig    = signingConfigs.release
-            minifyEnabled    = true
-            shrinkResources  = true
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'),
-                          'proguard-rules.pro'
+            // R8 désactivé — Flutter --release minifie déjà le code Dart
+            // R8 Java sera activé progressivement après tests sur appareil réel
+            minifyEnabled    = false
+            shrinkResources  = false
         }
     }
 }
