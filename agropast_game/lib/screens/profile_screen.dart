@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 import '../services/game_provider.dart';
 import '../services/web_bridge.dart';
@@ -266,7 +267,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                     const _Divider(),
                     _StatRow(
-                      icon: Icons.monetization_on,
+                      icon: null,
+                      assetPath: 'assets/images/coin_f.svg',
                       label: 'Pièces d\'or',
                       value: '${player.piecesOr}',
                       color: const Color(0xFFf9a825),

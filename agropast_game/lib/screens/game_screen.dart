@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 import '../services/game_provider.dart';
 import '../services/ad_mediation_service.dart';
@@ -262,31 +263,29 @@ class _GameScreenState extends State<GameScreen> {
                 children: [
                   _PlayerBar(player: gp.player),
                   const SizedBox(height: 12),
-
-              // Message action
-              AnimatedSwitcher(
-                duration: const Duration(milliseconds: 300),
-                child: gp.message.isNotEmpty
-                    ? Container(
-                        key: ValueKey(gp.message),
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 10),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF2d4a1e),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Text(gp.message,
-                            style: const TextStyle(
-                                color: Color(0xFFf9a825),
-                                fontWeight: FontWeight.w600),
-                            textAlign: TextAlign.center),
-                      )
-                    : const SizedBox(height: 36),
-              ),
-              const SizedBox(height: 12),
-
-              // Grille 2×3
+                  // Message action
+                  AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 300),
+                    child: gp.message.isNotEmpty
+                        ? Container(
+                            key: ValueKey(gp.message),
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 10),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF2d4a1e),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Text(gp.message,
+                                style: const TextStyle(
+                                    color: Color(0xFFf9a825),
+                                    fontWeight: FontWeight.w600),
+                                textAlign: TextAlign.center),
+                          )
+                        : const SizedBox(height: 36),
+                  ),
+                  const SizedBox(height: 12),
+                  // Grille 2×3
               Expanded(
                 child: GridView.builder(
                   gridDelegate:
@@ -396,22 +395,29 @@ class _PlayerBar extends StatelessWidget {
           _Stat(Icons.person, player.pseudo),
           _Stat(Icons.star, 'Niv. ${player.niveau}'),
           _Stat(Icons.agriculture, '${player.nombreRecoltes} rec.'),
-          _Stat(Icons.monetization_on, '${player.piecesOr}'),
+          _StatWidget.iconAsset('assets/images/coin_f.svg', '${player.piecesOr}'),
         ],
       ),
     );
   }
 }
 
-class _Stat extends StatelessWidget {
-  final IconData icon;
+class _StatWidget extends StatelessWidget {
+  final IconData? icon;
+  final String? assetPath;
   final String value;
-  const _Stat(this.icon, this.value);
+  const _StatWidget._(this.icon, this.assetPath, this.value);
+
+  factory _StatWidget.icon(IconData icon, String value) => _StatWidget._(icon, null, value);
+  factory _StatWidget.iconAsset(String assetPath, String value) => _StatWidget._(null, assetPath, value);
 
   @override
   Widget build(BuildContext context) => Column(
         children: [
-          Icon(icon, color: const Color(0xFF4caf50), size: 18),
+          if (assetPath != null)
+            SvgPicture.asset(assetPath!, width: 18, height: 18)
+          else
+            Icon(icon, color: const Color(0xFF4caf50), size: 18),
           const SizedBox(height: 2),
           Text(value,
               style:
