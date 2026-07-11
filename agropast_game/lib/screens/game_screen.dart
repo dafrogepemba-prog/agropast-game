@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/game_provider.dart';
-import '../services/admob_service.dart';
+import '../services/ad_mediation_service.dart';
 import '../models/parcelle.dart';
 import '../widgets/parcelle_widget.dart';
 import '../services/web_bridge.dart';
@@ -13,19 +13,21 @@ class GameScreen extends StatefulWidget {
 }
 
 class _GameScreenState extends State<GameScreen> {
-  final AdMobService _adMob = AdMobService();
+  final AdMediationService _adService = AdMediationService();
 
   @override
   void initState() {
     super.initState();
-    _adMob.loadRewardedAd(onLoaded: () {
+    _adService.loadAds(onLoaded: () {
+      if (mounted) setState(() {});
+    }, onAllFailed: () {
       if (mounted) setState(() {});
     });
   }
 
   @override
   void dispose() {
-    _adMob.dispose();
+    _adService.dispose();
     super.dispose();
   }
 
@@ -122,44 +124,6 @@ class _GameScreenState extends State<GameScreen> {
     );
   }
 
-  // ── Pub AdMob (mobile uniquement) ───────────────────────
-  void _showAd(BuildContext context) {
-    if (!_adMob.isLoaded) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Pub en chargement, reessaie.'),
-          duration: Duration(seconds: 2),
-        ),
-      );
-      return;
-    }
-    _adMob.showRewardedAd(
-      onUserEarnedReward: (amount, type) {
-        context.read<GameProvider>().appliquerBonusAdMob(amount, type);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('+$amount pieces & +${amount * 10} pts !'),
-            backgroundColor: const Color(0xFF2e7d32),
-            duration: const Duration(seconds: 3),
-          ),
-        );
-      },
-      onAdDismissedWithoutReward: () {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Regarde la pub jusqu\'a la fin.'),
-            duration: Duration(seconds: 2),
-          ),
-        );
-      },
-      onAdFailedToShow: () {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Pub non disponible.')),
-        );
-      },
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final gp = context.watch<GameProvider>();
@@ -176,6 +140,31 @@ class _GameScreenState extends State<GameScreen> {
             const Text('Ma Ferme',
                 style: TextStyle(fontWeight: FontWeight.bold)),
             const Spacer(),
+            // Ad counter
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: gp.isAdCapReached
+                    ? const Color(0xFFc62828).withOpacity(0.2)
+                    : const Color(0xFF4caf50).withOpacity(0.2),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: gp.isAdCapReached
+                      ? const Color(0xFFc62828).withOpacity(0.4)
+                      : const Color(0xFF4caf50).withOpacity(0.4),
+                ),
+              ),
+              child: Text('${gp.adsWatchedToday}/8',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                    color: gp.isAdCapReached
+                        ? const Color(0xFFc62828)
+                        : const Color(0xFF4caf50),
+                  )),
+            ),
+            const SizedBox(width: 8),
+            // Score
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
@@ -212,12 +201,67 @@ class _GameScreenState extends State<GameScreen> {
         ),
       ),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            children: [
-              _PlayerBar(player: gp.player),
-              const SizedBox(height: 12),
+        child: Column(
+          children: [
+            // Version démo banner
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    const Color(0xFFf9a825),
+                    const Color(0xFFffd54f),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.info, color: Colors.black87, size: 20),
+                  const SizedBox(width: 8),
+                  const Expanded(
+                    child: Text(
+                      'Version démo — récompenses limitées',
+                      style: TextStyle(
+                        color: Colors.black87,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      // TODO: Open Play Store link
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.black87,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                    ),
+                    icon: const Icon(Icons.android, size: 16),
+                    label: const Text(
+                      'App Android',
+                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  _PlayerBar(player: gp.player),
+                  const SizedBox(height: 12),
 
               // Message action
               AnimatedSwitcher(
@@ -265,25 +309,33 @@ class _GameScreenState extends State<GameScreen> {
                 children: [
                   // Bonus / pub
                   Expanded(
-                    child: OutlinedButton.icon(
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: const Color(0xFFf9a825),
-                        side:
-                            const BorderSide(color: Color(0xFFf9a825)),
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: gp.isAdCapReached || !gp.isAdLoaded
+                            ? Colors.white12
+                            : const Color(0xFFf9a825),
+                        disabledBackgroundColor: Colors.white12,
+                        foregroundColor: gp.isAdCapReached || !gp.isAdLoaded
+                            ? Colors.white54
+                            : Colors.black,
                         padding:
                             const EdgeInsets.symmetric(vertical: 12),
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12)),
                       ),
-                      onPressed: _adMob.isLoaded
-                          ? () => _showAd(context)
-                          : () => _showWebBonus(context),
-                      icon: const Icon(Icons.play_circle_outline,
-                          color: Color(0xFFf9a825), size: 20),
+                      onPressed: gp.isAdCapReached || !gp.isAdLoaded
+                          ? () => _showWebBonus(context)
+                          : () => gp.showRewardedAd(context),
+                      icon: Icon(gp.isAdCapReached || !gp.isAdLoaded
+                          ? Icons.card_giftcard
+                          : Icons.play_circle,
+                          size: 20),
                       label: Text(
-                        _adMob.isLoaded
-                            ? 'Booster\n+50 pièces +500 pts'
-                            : 'Bonus\n+5 pièces +50 pts',
+                        gp.isAdCapReached
+                            ? 'Cap atteint'
+                            : (gp.isAdLoaded
+                                ? 'Booster\n+50 pièces +500 pts'
+                                : 'Bonus\n+5 pièces +50 pts'),
                         textAlign: TextAlign.center,
                         style: const TextStyle(fontSize: 11),
                       ),
@@ -316,10 +368,10 @@ class _GameScreenState extends State<GameScreen> {
                   ),
                 ],
               ),
-            ],
-          ),
-        ),
-      ),
+            ), // End of Padding
+          ], // End of Column
+        ), // End of SafeArea child
+      ), // End of Scaffold body
     );
   }
 }

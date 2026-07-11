@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'ad_mediation_service.dart';
 
 class ApiService {
   static const String _baseUrl = 'https://agropast-game.online/api';
@@ -49,6 +50,47 @@ class ApiService {
       return [];
     } catch (_) {
       return [];
+    }
+  }
+
+  // Get today's ad view count
+  static Future<Map<String, dynamic>> getAdViewsToday(String token) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$_baseUrl/ad_view.php?token=$token'),
+      ).timeout(const Duration(seconds: 8));
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      }
+      return {'success': false, 'ads_watched_today': 0};
+    } catch (_) {
+      return {'success': false, 'ads_watched_today': 0};
+    }
+  }
+
+  // Record an ad view
+  static Future<Map<String, dynamic>> recordAdView({
+    required String token,
+    required AdNetwork adNetwork,
+  }) async {
+    try {
+      final networkString = adNetwork.toString().split('.').last;
+      final response = await http.post(
+        Uri.parse('$_baseUrl/ad_view.php'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'token': token,
+          'ad_network': networkString,
+        }),
+      ).timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      }
+      return {'success': false};
+    } catch (_) {
+      return {'success': false};
     }
   }
 }
