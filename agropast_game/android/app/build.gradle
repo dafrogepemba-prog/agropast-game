@@ -43,13 +43,17 @@ android {
             def ksFile = keystoreProperties['storeFile']
                 ? rootProject.file(keystoreProperties['storeFile'])
                 : (System.getenv('KEYSTORE_PATH') ? file(System.getenv('KEYSTORE_PATH')) : null)
-            storeFile = ksFile ?: new File(System.getProperty('user.home') + '/.android/debug.keystore')
+            def debugKeystore = new File(System.getProperty('user.home') + '/.android/debug.keystore')
+            storeFile = (ksFile != null && ksFile.exists()) ? ksFile
+                : (debugKeystore.exists() ? debugKeystore : null)
         }
     }
 
     buildTypes {
         release {
-            signingConfig    = signingConfigs.release
+            if (signingConfigs.release.storeFile != null) {
+                signingConfig = signingConfigs.release
+            }
             // R8 désactivé — Flutter --release minifie déjà le code Dart
             // R8 Java sera activé progressivement après tests sur appareil réel
             minifyEnabled    = false
