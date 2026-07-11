@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../models/parcelle.dart';
 
 class ParcelleWidget extends StatefulWidget {
@@ -44,81 +45,106 @@ class _ParcelleWidgetState extends State<ParcelleWidget>
   Widget build(BuildContext context) {
     final p = widget.parcelle;
     final isMure = p.etat == ParcelleEtat.mure;
+    final isVide = p.etat == ParcelleEtat.vide;
+    final isRecoltee = p.etat == ParcelleEtat.recoltee;
 
     return ScaleTransition(
       scale: _scale,
       child: GestureDetector(
-        onTap: p.etat == ParcelleEtat.recoltee ? null : _onTap,
+        onTap: isRecoltee ? null : _onTap,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 300),
           decoration: BoxDecoration(
-            color: _bgColor(p.etat),
-            borderRadius: BorderRadius.circular(12),
+            gradient: isVide || isRecoltee
+                ? null
+                : LinearGradient(
+                    colors: [
+                      const Color(0xFF1b5e20),
+                      const Color(0xFF2e7d32),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+            color: isVide
+                ? const Color(0xFF1a2f1a)
+                : (isRecoltee
+                    ? const Color(0xFF0d1f0d).withOpacity(0.7)
+                    : null),
+            borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: isMure
                   ? const Color(0xFFf9a825)
-                  : const Color(0xFF3a5c24),
-              width: isMure ? 2.5 : 1.5,
+                  : (isVide
+                      ? Colors.white24
+                      : const Color(0xFF66bb6a)),
+              width: isMure ? 3 : 2,
             ),
             boxShadow: isMure
                 ? [
                     BoxShadow(
-                      color: const Color(0xFFf9a825).withOpacity(.4),
-                      blurRadius: 12,
-                      spreadRadius: 2,
+                      color: const Color(0xFFf9a825).withOpacity(.5),
+                      blurRadius: 16,
+                      spreadRadius: 3,
                     )
                   ]
-                : [],
+                : (isVide
+                    ? []
+                    : [
+                        BoxShadow(
+                          color: const Color(0xFF4caf50).withOpacity(.25),
+                          blurRadius: 8,
+                          spreadRadius: 1,
+                        ),
+                      ]),
           ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+          child: Stack(
+            fit: StackFit.expand,
             children: [
-              _ParcelleIcon(etat: p.etat),
-              if (p.waterProgress > 0 &&
-                  p.etat != ParcelleEtat.mure &&
-                  p.etat != ParcelleEtat.recoltee) ...[
-                const SizedBox(height: 6),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(4),
-                    child: LinearProgressIndicator(
-                      value: p.waterProgress,
-                      backgroundColor: Colors.white12,
-                      color: const Color(0xFF64b5f6),
-                      minHeight: 5,
-                    ),
+              if (isVide)
+                Center(
+                  child: CustomPaint(
+                    size: const Size(double.infinity, double.infinity),
+                    painter: _HatchPainter(),
                   ),
                 ),
-              ],
-              if (p.etat == ParcelleEtat.recoltee && p.score > 0) ...[
-                const SizedBox(height: 4),
-                Text('+${p.score}',
-                    style: const TextStyle(
-                        color: Color(0xFF4caf50),
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold)),
-              ],
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  _ParcelleIcon(etat: p.etat),
+                  if (p.waterProgress > 0 && !isMure && !isRecoltee) ...[
+                    const SizedBox(height: 8),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(6),
+                        child: LinearProgressIndicator(
+                          value: p.waterProgress,
+                          backgroundColor: Colors.white12,
+                          color: const Color(0xFF64b5f6),
+                          minHeight: 6,
+                        ),
+                      ),
+                    ),
+                  ],
+                  if (isRecoltee && p.score > 0) ...[
+                    const SizedBox(height: 6),
+                    Text('+${p.score}',
+                        style: const TextStyle(
+                            color: Color(0xFF4caf50),
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold)),
+                  ],
+                ],
+              ),
             ],
           ),
         ),
       ),
     );
   }
-
-  Color _bgColor(ParcelleEtat e) {
-    switch (e) {
-      case ParcelleEtat.vide:
-        return const Color(0xFF2d4a1e);
-      case ParcelleEtat.recoltee:
-        return const Color(0xFF1b5e20).withOpacity(.5);
-      default:
-        return const Color(0xFF2d4a1e);
-    }
-  }
 }
 
-// ── Icône de parcelle sans emoji (compatible Flutter Web CanvasKit) ──
+// ── Icône de parcelle avec SVG (compatible Flutter Web CanvasKit) ──
 class _ParcelleIcon extends StatelessWidget {
   final ParcelleEtat etat;
   const _ParcelleIcon({required this.etat});
@@ -127,27 +153,84 @@ class _ParcelleIcon extends StatelessWidget {
   Widget build(BuildContext context) {
     switch (etat) {
       case ParcelleEtat.vide:
-        return const Icon(Icons.grid_on, color: Color(0xFF8d6e63), size: 40);
+        return const Icon(
+          Icons.add_circle_outline,
+          color: Colors.white54,
+          size: 48,
+        );
       case ParcelleEtat.semee:
-        return const Icon(Icons.spa_outlined, color: Color(0xFF81c784), size: 40);
+        return SvgPicture.asset(
+          'assets/images/seedling.svg',
+          height: 40,
+          width: 40,
+          colorFilter: const ColorFilter.mode(
+            Color(0xFF81c784),
+            BlendMode.srcIn,
+          ),
+        );
       case ParcelleEtat.arrosee1:
-        return const Icon(Icons.eco_outlined, color: Color(0xFF66bb6a), size: 40);
+        return SvgPicture.asset(
+          'assets/images/seedling.svg',
+          height: 42,
+          width: 42,
+          colorFilter: const ColorFilter.mode(
+            Color(0xFF66bb6a),
+            BlendMode.srcIn,
+          ),
+        );
       case ParcelleEtat.arrosee2:
-        return const Icon(Icons.eco, color: Color(0xFF43a047), size: 40);
+        return SvgPicture.asset(
+          'assets/images/carotte.svg',
+          height: 44,
+          width: 44,
+        );
       case ParcelleEtat.arrosee3:
-        return const Icon(Icons.local_florist, color: Color(0xFF2e7d32), size: 40);
+        return SvgPicture.asset(
+          'assets/images/tomato.svg',
+          height: 46,
+          width: 46,
+        );
       case ParcelleEtat.mure:
         return Container(
-          width: 48, height: 48,
+          padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: const Color(0xFF1b5e20),
-            border: Border.all(color: const Color(0xFFf9a825), width: 2),
+            color: const Color(0xFFf9a825).withOpacity(0.2),
           ),
-          child: const Icon(Icons.circle, color: Color(0xFF4caf50), size: 32),
+          child: SvgPicture.asset(
+            'assets/images/tomato.svg',
+            height: 40,
+            width: 40,
+          ),
         );
       case ParcelleEtat.recoltee:
-        return const Icon(Icons.check_circle, color: Color(0xFF4caf50), size: 40);
+        return SvgPicture.asset(
+          'assets/images/check_badge.svg',
+          height: 44,
+          width: 44,
+        );
     }
   }
+}
+
+// ── Hatch pattern painter for empty parcelle ──
+class _HatchPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.white12
+      ..strokeWidth = 1.5;
+
+    const spacing = 12.0;
+    for (double x = -size.height; x < size.width + size.height; x += spacing) {
+      canvas.drawLine(
+        Offset(x, 0),
+        Offset(x + size.height, size.height),
+        paint,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(_) => false;
 }

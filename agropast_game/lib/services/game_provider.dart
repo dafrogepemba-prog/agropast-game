@@ -6,6 +6,7 @@ import '../models/parcelle.dart';
 import '../models/player.dart';
 import 'api_service.dart';
 import 'web_bridge.dart';
+import 'ad_mediation_service.dart';
 
 class GameProvider extends ChangeNotifier {
   List<Parcelle> parcelles = List.generate(6, (i) => Parcelle(id: i));
@@ -15,9 +16,16 @@ class GameProvider extends ChangeNotifier {
   String message = '';
   String _webToken = '';
   NiveauInfo? _levelUpEvent; // non-null = montée de niveau à afficher
+  int _adsWatchedToday = 0;
+  bool _isAdShowing = false;
+  final AdMediationService _adService = AdMediationService();
 
   bool get loading => _loading;
   NiveauInfo? get levelUpEvent => _levelUpEvent;
+  int get adsWatchedToday => _adsWatchedToday;
+  bool get isAdCapReached => _adsWatchedToday >= AdMediationServiceBase.dailyCap;
+  bool get isAdLoaded => _adService.isLoaded;
+  bool get isAdShowing => _isAdShowing;
   void clearLevelUpEvent() { _levelUpEvent = null; }
 
   // ── Init : charge joueur + état des parcelles ────────────
@@ -60,6 +68,26 @@ class GameProvider extends ChangeNotifier {
         });
       } catch (_) {
         parcelles = List.generate(6, (i) => Parcelle(id: i));
+      }
+    }
+
+    // Initialize ad mediation
+    await AdMediationServiceBase.init();
+    _adService.loadAds(
+      onLoaded: () {
+        notifyListeners();
+      },
+      onAllFailed: () {
+        notifyListeners();
+      },
+    );
+
+    // Load today's ad count from server
+    if (_webToken.isNotEmpty) {
+      final adData = await ApiService.getAdViewsToday(_webToken);
+      if (adData['success'] == true) {
+        _adsWatchedToday = adData['ads_watched_today'] ?? 0;
+        _adService.updateAdsWatchedToday(_adsWatchedToday);
       }
     }
 
@@ -111,7 +139,76 @@ class GameProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // ---- Bonus AdMob -------------------------------------------
+  // ── Show Rewarded Ad -------------------------------------------
+  void showRewardedAd(BuildContext context) {
+    if (isAdCapReached) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Cap quotidien de pubs atteint !')),
+      );
+      return;
+    }
+
+    if (!_adService.isLoaded) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Aucune pub disponible pour le moment.')),
+      );
+      return;
+    }
+
+    _isAdShowing = true;
+    notifyListeners();
+
+    _adService.showRewardedAd(
+      onUserEarnedReward: (amount, type, network) async {
+        // First record the view on server
+        final recordResult = await ApiService.recordAdView(
+          token: _webToken,
+          adNetwork: network,
+        );
+
+        if (recordResult['success'] == true) {
+          _adsWatchedToday = recordResult['ads_watched_today'] ?? _adsWatchedToday + 1;
+          _adService.updateAdsWatchedToday(_adsWatchedToday);
+
+          // Apply reward
+          player.piecesOr += amount;
+          final bonusScore = amount * 10;
+          final montee = player.ajouterScore(bonusScore);
+          message = '🎬 Pub regardée ! +$amount 🪙 & +$bonusScore pts';
+          _save();
+          _syncScore(eventType: 'ad_reward', bonusPoints: bonusScore);
+          if (montee != null) _levelUpEvent = montee;
+        }
+
+        _isAdShowing = false;
+        notifyListeners();
+      },
+      onAdDismissedWithoutReward: () {
+        _isAdShowing = false;
+        notifyListeners();
+      },
+      onAdFailedToShow: () {
+        _isAdShowing = false;
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Erreur lors de l\\'affichage de la pub.')),
+          );
+        }
+        notifyListeners();
+      },
+      onNoAdsAvailable: () {
+        _isAdShowing = false;
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Aucune pub disponible pour le moment.')),
+          );
+        }
+        notifyListeners();
+      },
+    );
+  }
+
+  // ── Bonus AdMob -------------------------------------------
   // Appelé UNIQUEMENT depuis onUserEarnedReward (callback officiel AdMob)
   // Règle stricte : pas de récompense si la pub est fermée avant la fin
   void appliquerBonusAdMob(int amount, String type) {

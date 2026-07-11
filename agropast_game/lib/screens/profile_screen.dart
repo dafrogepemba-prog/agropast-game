@@ -435,6 +435,38 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
               const SizedBox(height: 24),
 
+              // ── Conditions du programme ─────────────────
+              _SectionTitle(title: '📜 Conditions du programme de récompense'),
+              const SizedBox(height: 10),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF0d1f0d),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: const Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('• Points gagnés en jouant et en regardant des pubs',
+                        style: TextStyle(color: Colors.white70, fontSize: 13)),
+                    SizedBox(height: 8),
+                    Text('• Pubs quotidiennes : 8 pubs/jour maximum (AdMob + Unity Ads)',
+                        style: TextStyle(color: Colors.white70, fontSize: 13)),
+                    SizedBox(height: 8),
+                    Text('• Taux de conversion actuel : 60 FCFA / 1 000 pts',
+                        style: TextStyle(color: Colors.white70, fontSize: 13)),
+                    SizedBox(height: 8),
+                    Text('• Retrait minimum : 33 334 pts = 2 000 FCFA',
+                        style: TextStyle(color: Colors.white70, fontSize: 13)),
+                    SizedBox(height: 8),
+                    Text('• Programme réservé aux joueurs de 18 ans ou plus',
+                        style: TextStyle(color: Colors.white70, fontSize: 13)),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 24),
+
               // ── Bouton Modifier pseudo (raccourci) ──────
               OutlinedButton.icon(
                 style: OutlinedButton.styleFrom(

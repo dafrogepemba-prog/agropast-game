@@ -424,219 +424,374 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFF1b2a1b),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-
-              // ── En-tête joueur ──────────────────────────
-              Row(
+        child: Column(
+          children: [
+            // Version démo banner
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    const Color(0xFFf9a825),
+                    const Color(0xFFffd54f),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+              ),
+              child: Row(
                 children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Bonjour, ${player.pseudo} ${info.emoji}',
-                            style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 17,
-                                fontWeight: FontWeight.bold)),
-                        Text('${info.nom} • Niv. ${player.niveau}',
-                            style: const TextStyle(
-                                color: Colors.white54, fontSize: 12)),
-                      ],
+                  const Icon(Icons.info, color: Colors.black87, size: 20),
+                  const SizedBox(width: 8),
+                  const Expanded(
+                    child: Text(
+                      'Version démo — récompenses limitées',
+                      style: TextStyle(
+                        color: Colors.black87,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
                     ),
                   ),
-                  // Pièces d'or
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFf9a825).withOpacity(.15),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                          color: const Color(0xFFf9a825).withOpacity(.4)),
+                  const SizedBox(width: 8),
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      // TODO: Open Play Store link
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.black87,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
                     ),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.monetization_on,
-                            color: Color(0xFFf9a825), size: 16),
-                        const SizedBox(width: 4),
-                        Text('${player.piecesOr}',
-                            style: const TextStyle(
-                                color: Color(0xFFf9a825),
-                                fontWeight: FontWeight.bold,
-                                fontSize: 13)),
-                      ],
+                    icon: const Icon(Icons.android, size: 16),
+                    label: const Text(
+                      'App Android',
+                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
-
-              // ── Barre de progression niveau ─────────────
-              if (player.niveau < kNiveaux.length) ...[
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            ),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Text('Niv. ${player.niveau} → ${player.niveau + 1}',
-                        style: const TextStyle(
-                            color: Colors.white38, fontSize: 11)),
-                    Text('${player.ptsVersProchainNiveau} pts restants',
-                        style: const TextStyle(
-                            color: Colors.white38, fontSize: 11)),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(6),
-                  child: LinearProgressIndicator(
-                    value: player.progressionNiveau,
-                    backgroundColor: Colors.white12,
-                    color: const Color(0xFF4caf50),
-                    minHeight: 6,
-                  ),
-                ),
-                const SizedBox(height: 16),
-              ],
+                    // ── En-tête joueur ──────────────────────────
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('Bonjour, ${player.pseudo} ${info.emoji}',
+                                  style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 17,
+                                      fontWeight: FontWeight.bold)),
+                              Text('${info.nom} • Niv. ${player.niveau}',
+                                  style: const TextStyle(
+                                      color: Colors.white54, fontSize: 12)),
+                            ],
+                          ),
+                        ),
+                        // Pièces d'or
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFf9a825).withOpacity(.15),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                                color: const Color(0xFFf9a825).withOpacity(.4)),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.monetization_on,
+                                  color: Color(0xFFf9a825), size: 16),
+                              const SizedBox(width: 4),
+                              Text('${player.piecesOr}',
+                                  style: const TextStyle(
+                                      color: Color(0xFFf9a825),
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 13)),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
 
-              // ── Carte stats + FCFA ───────────────────────
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF0d1f0d),
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    _StatBox(
-                      icon: Icons.stars,
-                      value: _fmt(player.scoreTotal),
-                      label: 'Points',
-                      color: const Color(0xFFf9a825),
+                    // ── Barre de progression niveau ─────────────
+                    if (player.niveau < kNiveaux.length) ...[
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text('Niv. ${player.niveau} → ${player.niveau + 1}',
+                              style: const TextStyle(
+                                  color: Colors.white38, fontSize: 11)),
+                          Text('${player.ptsVersProchainNiveau} pts restants',
+                              style: const TextStyle(
+                                  color: Colors.white38, fontSize: 11)),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(6),
+                        child: LinearProgressIndicator(
+                          value: player.progressionNiveau,
+                          backgroundColor: Colors.white12,
+                          color: const Color(0xFF4caf50),
+                          minHeight: 6,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+
+                    // ── Score principal (dominant) ────────────────────
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            const Color(0xFFf9a825).withOpacity(0.15),
+                            const Color(0xFFffd54f).withOpacity(0.05),
+                          ],
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: const Color(0xFFf9a825).withOpacity(0.3),
+                        ),
+                      ),
+                      child: Column(
+                        children: [
+                          Text(
+                            _fmt(player.scoreTotal),
+                            style: const TextStyle(
+                              color: Color(0xFFf9a825),
+                              fontSize: 36,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          const Text(
+                            'Points',
+                            style: TextStyle(
+                              color: Colors.white70,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                    _StatBox(
-                      icon: Icons.agriculture,
-                      value: '${player.nombreRecoltes}',
-                      label: 'Récoltes',
-                      color: const Color(0xFF4caf50),
+                    const SizedBox(height: 12),
+
+                    // ── Stats secondaires (discrètes) ───────────────────────
+                    Consumer<ParcoursQuotidienProvider>(
+                      builder: (ctx, pq, _) => Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF0d1f0d),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: [
+                            _StatBox(
+                              icon: Icons.emoji_events,
+                              value: 'Niv. ${player.niveau}',
+                              label: 'Niveau',
+                              color: const Color(0xFF29b6f6),
+                            ),
+                            _StatBox(
+                              icon: Icons.agriculture,
+                              value: '${player.nombreRecoltes}',
+                              label: 'Récoltes',
+                              color: const Color(0xFF4caf50),
+                            ),
+                            _StatBox(
+                              icon: Icons.calendar_today,
+                              value: '${pq.culturesDoneCount}/4',
+                              label: "Aujourd'hui",
+                              color: const Color(0xFFf9a825),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
-                    _StatBox(
+                    const SizedBox(height: 6),
+                    Text(
+                      'Consultez votre profil pour les détails du programme de récompense',
+                      style: TextStyle(
+                          color: Colors.white.withOpacity(.2), fontSize: 10),
+                      textAlign: TextAlign.center,
+                    ),
+
+                    // Ad counter and button
+                    const SizedBox(height: 16),
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF2d4a1e),
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text('Pubs quotidiennes',
+                                  style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold)),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: gp.isAdCapReached
+                                      ? const Color(0xFFc62828).withOpacity(.2)
+                                      : const Color(0xFF4caf50).withOpacity(.2),
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(
+                                      color: gp.isAdCapReached
+                                          ? const Color(0xFFc62828).withOpacity(.4)
+                                          : const Color(0xFF4caf50).withOpacity(.4)),
+                                ),
+                                child: Text(
+                                  '${gp.adsWatchedToday}/8',
+                                  style: TextStyle(
+                                      color: gp.isAdCapReached
+                                          ? const Color(0xFFc62828)
+                                          : const Color(0xFF4caf50),
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 14),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          ElevatedButton.icon(
+                            icon: const Icon(Icons.play_circle, color: Colors.black),
+                            label: Text(gp.isAdCapReached
+                                ? 'Cap atteint'
+                                : (gp.isAdLoaded
+                                    ? 'Regarder une pub'
+                                    : 'Chargement...')),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: gp.isAdCapReached || !gp.isAdLoaded
+                                  ? Colors.white12
+                                  : const Color(0xFFf9a825),
+                              disabledBackgroundColor: Colors.white12,
+                              minimumSize: const Size.fromHeight(48),
+                            ),
+                            onPressed: gp.isAdCapReached || !gp.isAdLoaded || gp.isAdShowing
+                                ? null
+                                : () => gp.showRewardedAd(context),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // ── Logo ────────────────────────────────────
+                    const Icon(Icons.grass, color: Color(0xFF4caf50), size: 64),
+                    const SizedBox(height: 8),
+                    const Text('AgroPast-Game',
+                        style: TextStyle(
+                            color: Color(0xFFf9a825),
+                            fontSize: 26,
+                            fontWeight: FontWeight.w900),
+                        textAlign: TextAlign.center),
+                    const Text('Gère ta ferme. Vendange ta vigne.',
+                        style: TextStyle(color: Colors.white60, fontSize: 12),
+                        textAlign: TextAlign.center),
+
+                    const SizedBox(height: 28),
+
+                    // ── Menu principal ───────────────────────────
+                    Consumer<ParcoursQuotidienProvider>(
+                      builder: (ctx, pq, _) => _MenuButton(
+                        icon: Icons.play_circle,
+                        label: 'Jouer',
+                        subtitle: pq.sessionDone
+                            ? '✅ Session du jour effectuée'
+                            : '🌱 Cultive tes 4 récoltes du jour',
+                        color: const Color(0xFF2e7d32),
+                        badge: pq.sessionDone ? '✅ Fait' : null,
+                        onTap: () => Navigator.push(context,
+                            MaterialPageRoute(
+                                builder: (_) => const ParcoursQuotidienScreen())),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+
+                    _MenuButton(
+                      icon: Icons.settings,
+                      label: 'Mon profil',
+                      subtitle: 'Statistiques, parrainage, pseudo',
+                      color: const Color(0xFF4a148c),
+                      onTap: () => Navigator.push(context,
+                          MaterialPageRoute(
+                              builder: (_) => const ProfileScreen())),
+                    ),
+                    const SizedBox(height: 12),
+
+                    _MenuButton(
                       icon: Icons.emoji_events,
-                      value: 'Niv. ${player.niveau}',
-                      label: 'Niveau',
-                      color: const Color(0xFF29b6f6),
+                      label: 'Classement',
+                      subtitle: 'Voir les meilleurs fermiers',
+                      color: const Color(0xFF1565c0),
+                      badge: _referralCount > 0
+                          ? '$_referralCount filleul${_referralCount > 1 ? 's' : ''}'
+                          : null,
+                      onTap: () => Navigator.push(context,
+                          MaterialPageRoute(
+                              builder: (_) => const LeaderboardScreen())),
                     ),
+                    const SizedBox(height: 12),
+
+                    _MenuButton(
+                      icon: Icons.share,
+                      label: 'Inviter un ami',
+                      subtitle: 'Partage ton lien sur WhatsApp',
+                      color: const Color(0xFF00695c),
+                      onTap: _inviterAmi,
+                    ),
+                    const SizedBox(height: 12),
+
+                    _MenuButton(
+                      icon: Icons.account_balance_wallet,
+                      label: 'Retirer mes gains',
+                      subtitle:
+                          '${player.revenusFcfaStr} estimé • Min. 2 000 FCFA',
+                      color: const Color(0xFF827717),
+                      badge: player.scoreTotal >= 33334 ? '✓ Éligible' : null,
+                      onTap: _showWithdrawDialog,
+                    ),
+
+                    const SizedBox(height: 20),
+                    const Text('v1.0.0 • Gratuit • Financé par la pub',
+                        style: TextStyle(color: Colors.white24, fontSize: 11),
+                        textAlign: TextAlign.center),
                   ],
                 ),
               ),
-              const SizedBox(height: 6),
-              Text(
-                'Consultez votre profil pour les détails du programme de récompense',
-                style: TextStyle(
-                    color: Colors.white.withOpacity(.2), fontSize: 10),
-                textAlign: TextAlign.center,
-              ),
-
-              const SizedBox(height: 24),
-
-              // ── Logo ────────────────────────────────────
-              const Icon(Icons.grass, color: Color(0xFF4caf50), size: 64),
-              const SizedBox(height: 8),
-              const Text('AgroPast-Game',
-                  style: TextStyle(
-                      color: Color(0xFFf9a825),
-                      fontSize: 26,
-                      fontWeight: FontWeight.w900),
-                  textAlign: TextAlign.center),
-              const Text('Gère ta ferme. Vendange ta vigne.',
-                  style: TextStyle(color: Colors.white60, fontSize: 12),
-                  textAlign: TextAlign.center),
-
-              const SizedBox(height: 28),
-
-              // ── Menu principal ───────────────────────────
-              _MenuButton(
-                icon: Icons.sports_esports,
-                label: 'Jouer',
-                subtitle: '${player.nombreRecoltes} récoltes • Culture : ${info.culture}',
-                color: const Color(0xFF2e7d32),
-                onTap: () => Navigator.push(context,
-                    MaterialPageRoute(builder: (_) => const GameScreen())),
-              ),
-              const SizedBox(height: 12),
-
-              // ── Parcours Quotidien ───────────────────────
-              Consumer<ParcoursQuotidienProvider>(
-                builder: (ctx, pq, _) => _MenuButton(
-                  icon: Icons.water_drop,
-                  label: 'Parcours Quotidien',
-                  subtitle: pq.sessionDone
-                      ? '✅ Session du jour effectuée'
-                      : '🌱 4 cultures à arroser aujourd\'hui',
-                  color: const Color(0xFF1b5e20),
-                  badge: pq.sessionDone ? '✅ Fait' : null,
-                  onTap: () => Navigator.push(context,
-                      MaterialPageRoute(
-                          builder: (_) => const ParcoursQuotidienScreen())),
-                ),
-              ),
-              const SizedBox(height: 12),
-
-              _MenuButton(
-                icon: Icons.settings,
-                label: 'Mon profil',
-                subtitle: 'Statistiques, parrainage, pseudo',
-                color: const Color(0xFF4a148c),
-                onTap: () => Navigator.push(context,
-                    MaterialPageRoute(
-                        builder: (_) => const ProfileScreen())),
-              ),
-              const SizedBox(height: 12),
-
-              _MenuButton(
-                icon: Icons.emoji_events,
-                label: 'Classement',
-                subtitle: 'Voir les meilleurs fermiers',
-                color: const Color(0xFF1565c0),
-                badge: _referralCount > 0
-                    ? '$_referralCount filleul${_referralCount > 1 ? 's' : ''}'
-                    : null,
-                onTap: () => Navigator.push(context,
-                    MaterialPageRoute(
-                        builder: (_) => const LeaderboardScreen())),
-              ),
-              const SizedBox(height: 12),
-
-              _MenuButton(
-                icon: Icons.share,
-                label: 'Inviter un ami',
-                subtitle: 'Partage ton lien sur WhatsApp',
-                color: const Color(0xFF00695c),
-                onTap: _inviterAmi,
-              ),
-              const SizedBox(height: 12),
-
-              _MenuButton(
-                icon: Icons.account_balance_wallet,
-                label: 'Retirer mes gains',
-                subtitle:
-                    '${player.revenusFcfaStr} estimé • Min. 2 000 FCFA',
-                color: const Color(0xFF827717),
-                badge: player.scoreTotal >= 33334 ? '✓ Éligible' : null,
-                onTap: _showWithdrawDialog,
-              ),
-
-              const SizedBox(height: 20),
-              const Text('v1.0.0 • Gratuit • Financé par la pub',
-                  style: TextStyle(color: Colors.white24, fontSize: 11),
-                  textAlign: TextAlign.center),
-            ],
-          ),
-        ),
-      ),
+            ), // End of Expanded
+          ], // End of Column
+        ), // End of SafeArea child
+      ), // End of Scaffold body
     );
   }
 

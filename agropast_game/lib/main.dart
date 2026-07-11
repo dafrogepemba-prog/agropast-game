@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import 'services/admob_service.dart';
+import 'services/ad_mediation_service.dart';
 import 'services/game_provider.dart';
 import 'services/parcours_provider.dart';
 import 'screens/splash_screen.dart';
@@ -15,8 +15,8 @@ void main() async {
     DeviceOrientation.portraitDown,
   ]);
 
-  // Init AdMob SDK de production
-  await AdMobService.init();
+  // Init Ad Mediation SDK (AdMob + Unity Ads)
+  await AdMediationServiceBase.init();
 
   runApp(
     MultiProvider(
