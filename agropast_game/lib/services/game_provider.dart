@@ -191,7 +191,7 @@ class GameProvider extends ChangeNotifier {
         _isAdShowing = false;
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Erreur lors de l\\'affichage de la pub.')),
+            const SnackBar(content: Text("Erreur lors de l'affichage de la pub.")),
           );
         }
         notifyListeners();

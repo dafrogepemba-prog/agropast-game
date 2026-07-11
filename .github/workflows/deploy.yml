@@ -1,4 +1,4 @@
-name: Deploy + Build AAB
+name: Deploy + Build Web + AAB
 
 on:
   push:
@@ -6,30 +6,42 @@ on:
       - main
 
 jobs:
-  # ── Job 1 : Déploiement FTP ──────────────────────────────
-  deploy:
-    name: Deploy to LWS via FTP
+  # ── Job 1 : Build web + déploiement FTP ──────────────────
+  deploy-web:
+    name: Build web and deploy to LWS via FTP
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
-      - uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.4'
+          channel: stable
+          cache: true
+
+      - name: Flutter pub get
+        run: flutter pub get
+        working-directory: agropast_game
+
+      - name: Build web release
+        run: flutter build web --release
+        working-directory: agropast_game
+
+      - name: Deploy web build to FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ftp.epsylon-cg.com
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          server-dir: /agropast-game.online/
+          server-dir: /agropast-game.online/game/
+          local-dir: agropast_game/build/web/
           exclude: |
             **/.git*
             **/.git*/**
             **/node_modules/**
-            api/config.php
-            .github/**
-            agropast_game/build/**
-            agropast_game/.dart_tool/**
-            agropast_game/.flutter-plugins**
-            agropast_game/android/agropast_release.jks
-            agropast_game/android/key.properties
+            **/assets/**
+            **/*.map
 
   # ── Job 2 : Build AAB Android (production) ───────────────
   build-aab:

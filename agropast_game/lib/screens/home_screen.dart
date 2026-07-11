@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -104,8 +105,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.monetization_on,
-                        color: Color(0xFFf9a825), size: 20),
+                    SvgPicture.asset('assets/images/coin_f.svg',
+                        width: 20, height: 20),
                     const SizedBox(width: 8),
                     Text('+${info.bonusPiecesOr} pièces d\'or !',
                         style: const TextStyle(
@@ -515,8 +516,8 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                           child: Row(
                             children: [
-                              const Icon(Icons.monetization_on,
-                                  color: Color(0xFFf9a825), size: 16),
+                              SvgPicture.asset('assets/images/coin_f.svg',
+                                  width: 16, height: 16),
                               const SizedBox(width: 4),
                               Text('${player.piecesOr}',
                                   style: const TextStyle(
@@ -724,10 +725,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     Consumer<ParcoursQuotidienProvider>(
                       builder: (ctx, pq, _) => _MenuButton(
                         icon: Icons.play_circle,
-                        label: 'Jouer',
+                        label: 'Parcours Quotidien',
                         subtitle: pq.sessionDone
                             ? '✅ Session du jour effectuée'
-                            : '🌱 Cultive tes 4 récoltes du jour',
+                            : '🌱 4 cultures à arroser aujourd\'hui',
                         color: const Color(0xFF2e7d32),
                         badge: pq.sessionDone ? '✅ Fait' : null,
                         onTap: () => Navigator.push(context,
