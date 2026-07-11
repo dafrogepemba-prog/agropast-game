@@ -74,7 +74,14 @@ jobs:
               > agropast_game/android/key.properties
             echo "key.properties created successfully"
           else
-            echo "No keystore secret found, will use debug signing fallback"
+            echo "No keystore secret found — creating debug keystore for CI fallback signing"
+            mkdir -p "$HOME/.android"
+            keytool -genkeypair -v \
+              -keystore "$HOME/.android/debug.keystore" \
+              -storepass android -alias androiddebugkey -keypass android \
+              -keyalg RSA -keysize 2048 -validity 10000 \
+              -dname "CN=AgroPast CI,O=AgroPast,C=CG"
+            echo "Debug keystore created at $HOME/.android/debug.keystore"
           fi
 
       - name: Flutter pub get
