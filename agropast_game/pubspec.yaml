@@ -16,6 +16,8 @@ dependencies:
   shared_preferences: ^2.3.2
   # AdMob Rewarded Ads (Android/iOS)
   google_mobile_ads: ^5.1.0
+  # Unity Ads (Android/iOS)
+  unity_ads_plugin: ^0.3.14
   # Audio — Parcours Quotidien (P1)
   audioplayers: ^6.1.0
   # SVG pour icônes cultures

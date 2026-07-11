@@ -276,101 +276,103 @@ class _GameScreenState extends State<GameScreen> {
                               color: const Color(0xFF2d4a1e),
                               borderRadius: BorderRadius.circular(10),
                             ),
-                            child: Text(gp.message,
-                                style: const TextStyle(
-                                    color: Color(0xFFf9a825),
-                                    fontWeight: FontWeight.w600),
-                                textAlign: TextAlign.center),
+                            child: Text(
+                              gp.message,
+                              style: const TextStyle(
+                                color: Color(0xFFf9a825),
+                                fontWeight: FontWeight.w600,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
                           )
                         : const SizedBox(height: 36),
                   ),
                   const SizedBox(height: 12),
                   // Grille 2×3
-              Expanded(
-                child: GridView.builder(
-                  gridDelegate:
-                      const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 3,
-                    crossAxisSpacing: 10,
-                    mainAxisSpacing: 10,
-                  ),
-                  itemCount: gp.parcelles.length,
-                  itemBuilder: (ctx, i) => ParcelleWidget(
-                    parcelle: gp.parcelles[i],
-                    onTap: () => gp.interagir(i),
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 12),
-
-              Row(
-                children: [
-                  // Bonus / pub
                   Expanded(
-                    child: ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: gp.isAdCapReached || !gp.isAdLoaded
-                            ? Colors.white12
-                            : const Color(0xFFf9a825),
-                        disabledBackgroundColor: Colors.white12,
-                        foregroundColor: gp.isAdCapReached || !gp.isAdLoaded
-                            ? Colors.white54
-                            : Colors.black,
-                        padding:
-                            const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12)),
+                    child: GridView.builder(
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 3,
+                        crossAxisSpacing: 10,
+                        mainAxisSpacing: 10,
                       ),
-                      onPressed: gp.isAdCapReached || !gp.isAdLoaded
-                          ? () => _showWebBonus(context)
-                          : () => gp.showRewardedAd(context),
-                      icon: Icon(gp.isAdCapReached || !gp.isAdLoaded
-                          ? Icons.card_giftcard
-                          : Icons.play_circle,
-                          size: 20),
-                      label: Text(
-                        gp.isAdCapReached
-                            ? 'Cap atteint'
-                            : (gp.isAdLoaded
-                                ? 'Booster\n+50 pièces +500 pts'
-                                : 'Bonus\n+5 pièces +50 pts'),
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(fontSize: 11),
+                      itemCount: gp.parcelles.length,
+                      itemBuilder: (ctx, i) => ParcelleWidget(
+                        parcelle: gp.parcelles[i],
+                        onTap: () => gp.interagir(i),
                       ),
                     ),
                   ),
-                  const SizedBox(width: 12),
-
-                  // Nouvelle saison
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: gp.saisonTerminee
-                            ? const Color(0xFF2e7d32)
-                            : Colors.grey.shade700,
-                        padding:
-                            const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12)),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      // Bonus / pub
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: gp.isAdCapReached || !gp.isAdLoaded
+                                ? Colors.white12
+                                : const Color(0xFFf9a825),
+                            disabledBackgroundColor: Colors.white12,
+                            foregroundColor: gp.isAdCapReached || !gp.isAdLoaded
+                                ? Colors.white54
+                                : Colors.black,
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          onPressed: gp.isAdCapReached || !gp.isAdLoaded
+                              ? () => _showWebBonus(context)
+                              : () => gp.showRewardedAd(context),
+                          icon: Icon(
+                            gp.isAdCapReached || !gp.isAdLoaded
+                                ? Icons.card_giftcard
+                                : Icons.play_circle,
+                            size: 20,
+                          ),
+                          label: Text(
+                            gp.isAdCapReached
+                                ? 'Cap atteint'
+                                : (gp.isAdLoaded
+                                    ? 'Booster\n+50 pièces +500 pts'
+                                    : 'Bonus\n+5 pièces +50 pts'),
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(fontSize: 11),
+                          ),
+                        ),
                       ),
-                      onPressed: gp.saisonTerminee
-                          ? () => gp.nouvelleSaison()
-                          : null,
-                      icon: const Icon(Icons.agriculture,
-                          color: Colors.white, size: 20),
-                      label: const Text('Nouvelle\nsaison',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                              fontSize: 12, color: Colors.white)),
-                    ),
+                      const SizedBox(width: 12),
+                      // Nouvelle saison
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: gp.saisonTerminee
+                                ? const Color(0xFF2e7d32)
+                                : Colors.grey.shade700,
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          onPressed: gp.saisonTerminee ? () => gp.nouvelleSaison() : null,
+                          icon: const Icon(Icons.agriculture, color: Colors.white, size: 20),
+                          label: const Text(
+                            'Nouvelle\nsaison',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(fontSize: 12, color: Colors.white),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
-            ), // End of Padding
-          ], // End of Column
-        ), // End of SafeArea child
-      ), // End of Scaffold body
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -392,9 +394,9 @@ class _PlayerBar extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          _Stat(Icons.person, player.pseudo),
-          _Stat(Icons.star, 'Niv. ${player.niveau}'),
-          _Stat(Icons.agriculture, '${player.nombreRecoltes} rec.'),
+          _StatWidget.icon(Icons.person, player.pseudo),
+          _StatWidget.icon(Icons.star, 'Niv. ${player.niveau}'),
+          _StatWidget.icon(Icons.agriculture, '${player.nombreRecoltes} rec.'),
           _StatWidget.iconAsset('assets/images/coin_f.svg', '${player.piecesOr}'),
         ],
       ),
