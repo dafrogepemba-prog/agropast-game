@@ -531,19 +531,25 @@ class _Divider extends StatelessWidget {
 }
 
 class _StatRow extends StatelessWidget {
-  final IconData icon;
+  final IconData? icon;
+  final String? assetPath;
   final String label, value;
   final Color color;
-  const _StatRow(
-      {required this.icon,
-      required this.label,
-      required this.value,
-      required this.color});
+  const _StatRow({
+    this.icon,
+    this.assetPath,
+    required this.label,
+    required this.value,
+    required this.color,
+  });
 
   @override
   Widget build(BuildContext context) => Row(
         children: [
-          Icon(icon, color: color, size: 18),
+          if (assetPath != null)
+            SvgPicture.asset(assetPath!, width: 18, height: 18)
+          else
+            Icon(icon, color: color, size: 18),
           const SizedBox(width: 10),
           Text(label,
               style: const TextStyle(color: Colors.white54, fontSize: 13)),
