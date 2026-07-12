@@ -1,4 +1,4 @@
-name: Deploy + Build Web + AAB
+﻿name: Deploy + Build Web + AAB
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
       - main
 
 jobs:
-  # ── Job 1 : Build web + déploiement FTP ──────────────────
+  # â”€â”€ Job 1 : Build web + dÃ©ploiement FTP â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   deploy-web:
     name: Build web and deploy to LWS via FTP
     runs-on: ubuntu-latest
@@ -43,29 +43,15 @@ jobs:
             **/assets/**
             **/*.map
 
-     - name: Prepare API server config (inject secrets)
-       if: ${{ env.HAS_SECRET == 'true' }}
-       env:
-         HAS_SECRET: ${{ secrets.APP_SECRET_KEY != '' }}
-         APP_SECRET_KEY: ${{ secrets.APP_SECRET_KEY }}
-       run: |
+      - name: Prepare API server config (inject secrets)
+        if: ${{ env.HAS_SECRET == 'true' }}
+        env:
+          HAS_SECRET: ${{ secrets.APP_SECRET_KEY != '' }}
+          APP_SECRET_KEY: ${{ secrets.APP_SECRET_KEY }}
+        run: |
           echo "Preparing API server config files (not committed)"
-          # Create a .htaccess to export APP_SECRET_KEY to Apache/PHP
-          cat > api/.htaccess <<HTA
-          <IfModule mod_env.c>
-            SetEnv APP_SECRET_KEY "${APP_SECRET_KEY}"
-          </IfModule>
-          HTA
-            # Fallback: write a PHP file that sets the env var for PHP (putenv + _ENV)
-            cat > api/server_config.php <<PHP
-            <?php
-            // Ensure getenv('APP_SECRET_KEY') returns the secret when .htaccess isn't available
-            if (getenv('APP_SECRET_KEY') === false && !empty('${APP_SECRET_KEY}')) {
-              putenv('APP_SECRET_KEY=${APP_SECRET_KEY}');
-              $_ENV['APP_SECRET_KEY'] = '${APP_SECRET_KEY}';
-            }
-            PHP
-
+          printf '<IfModule mod_env.c>\n  SetEnv APP_SECRET_KEY "%s"\n</IfModule>\n' "$APP_SECRET_KEY" > api/.htaccess
+          printf '<?php if (getenv("APP_SECRET_KEY") === false) { putenv("APP_SECRET_KEY=%s"); }' "$APP_SECRET_KEY" > api/server_config.php
       - name: Deploy API to FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
@@ -80,7 +66,7 @@ jobs:
             **/node_modules/**
             **/*.log
 
-  # ── Job 2 : Build AAB Android (production) ───────────────
+  # â”€â”€ Job 2 : Build AAB Android (production) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   build-aab:
     name: Build Android App Bundle
     runs-on: ubuntu-latest
@@ -108,7 +94,7 @@ jobs:
           key: gradle-${{ runner.os }}-${{ hashFiles('agropast_game/android/**/*.gradle*') }}
           restore-keys: gradle-${{ runner.os }}-
 
-      # Recréer key.properties depuis les secrets GitHub (optionnel)
+      # RecrÃ©er key.properties depuis les secrets GitHub (optionnel)
       - name: Setup keystore
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
@@ -123,7 +109,7 @@ jobs:
               > agropast_game/android/key.properties
             echo "key.properties created successfully"
           else
-            echo "No keystore secret found — creating debug keystore for CI fallback signing"
+            echo "No keystore secret found â€” creating debug keystore for CI fallback signing"
             mkdir -p "$HOME/.android"
             keytool -genkeypair -v \
               -keystore "$HOME/.android/debug.keystore" \
