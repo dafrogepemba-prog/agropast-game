@@ -44,13 +44,17 @@ jobs:
             **/*.map
 
       - name: Prepare API server config (inject secrets)
-        if: ${{ secrets.APP_SECRET_KEY != '' }}
         env:
           APP_SECRET_KEY: ${{ secrets.APP_SECRET_KEY }}
         run: |
+          if [ -z "$APP_SECRET_KEY" ]; then
+            echo "APP_SECRET_KEY absent — etape ignoree"
+            exit 0
+          fi
           echo "Preparing API server config files (not committed)"
           printf '<IfModule mod_env.c>\n  SetEnv APP_SECRET_KEY "%s"\n</IfModule>\n' "$APP_SECRET_KEY" > api/.htaccess
           printf '<?php if (getenv("APP_SECRET_KEY") === false) { putenv("APP_SECRET_KEY=%s"); }' "$APP_SECRET_KEY" > api/server_config.php
+          echo "API config generated successfully"
       - name: Deploy API to FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
