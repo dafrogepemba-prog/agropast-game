@@ -10,7 +10,7 @@ import 'audio_service.dart';
 
 class ParcoursQuotidienProvider extends ChangeNotifier {
   final GameProvider _gameProvider;
-  final AudioService audio = AudioService(); // public pour accès depuis screen
+  final AudioServiceBase audio; // public pour accès depuis screen
 
   // ── Clés SharedPreferences ───────────────────────────────
   static const _kDate    = 'pq_last_date';
@@ -47,7 +47,8 @@ class ParcoursQuotidienProvider extends ChangeNotifier {
   int get culturesDoneCount =>
       _sessionDone ? 4 : _cultureIndex;
 
-  ParcoursQuotidienProvider(this._gameProvider);
+  ParcoursQuotidienProvider(this._gameProvider, {AudioServiceBase? audioService})
+      : audio = audioService ?? AudioService();
 
   // ── Init ──────────────────────────────────────────────────
   Future<void> init() async {
@@ -109,6 +110,8 @@ class ParcoursQuotidienProvider extends ChangeNotifier {
     } else {
       _sessionDone = true;    // Req. 5.6
       _gameProvider.savePublic(); // Req. 9.3
+      // Sync serveur à la fin de la session — fire & forget (silencieux si hors connexion)
+      _gameProvider.syncScorePublic(eventType: 'parcours_quotidien');
     }
   }
 
