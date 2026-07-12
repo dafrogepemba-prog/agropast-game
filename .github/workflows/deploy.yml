@@ -43,11 +43,12 @@ jobs:
             **/assets/**
             **/*.map
 
-      - name: Prepare API server config (inject secrets)
-        if: ${{ secrets.APP_SECRET_KEY != '' }}
-        env:
-          APP_SECRET_KEY: ${{ secrets.APP_SECRET_KEY }}
-        run: |
+     - name: Prepare API server config (inject secrets)
+       if: ${{ env.HAS_SECRET == 'true' }}
+       env:
+         HAS_SECRET: ${{ secrets.APP_SECRET_KEY != '' }}
+         APP_SECRET_KEY: ${{ secrets.APP_SECRET_KEY }}
+       run: |
           echo "Preparing API server config files (not committed)"
           # Create a .htaccess to export APP_SECRET_KEY to Apache/PHP
           cat > api/.htaccess <<HTA
