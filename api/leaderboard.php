@@ -2,6 +2,7 @@
 // ============================================================
 // ENDPOINT : GET /api/leaderboard.php
 // Retourne le top 20 des joueurs avec leur score réel
+// v2 — 2026-07-12
 // ============================================================
 
 require_once __DIR__ . '/config.php';
