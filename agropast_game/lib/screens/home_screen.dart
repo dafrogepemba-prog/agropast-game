@@ -22,10 +22,37 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _referralCount = 0; // nombre de filleuls
 
+  // ── Bandeau incident retrait ─────────────────────────────
+  // Affiché du 11/07/2026 au 19/07/2026 (7 jours), puis masqué définitivement
+  static const String _kWithdrawNoticeDismissed = 'withdraw_notice_dismissed';
+  static final DateTime _kNoticeStart = DateTime(2026, 7, 11);
+  static final DateTime _kNoticeEnd   = DateTime(2026, 7, 19);
+  static const String _kSupportWhatsApp = 'https://wa.me/24250416661';
+  bool _showWithdrawNotice = false;
+
   @override
   void initState() {
     super.initState();
     _loadReferralCount();
+    _checkWithdrawNotice();
+  }
+
+  // Affiche le bandeau uniquement dans la fenêtre de 7 jours
+  // et si l'utilisateur ne l'a pas déjà fermé
+  Future<void> _checkWithdrawNotice() async {
+    final now = DateTime.now();
+    if (now.isBefore(_kNoticeStart) || now.isAfter(_kNoticeEnd)) return;
+    final prefs = await SharedPreferences.getInstance();
+    final dismissed = prefs.getBool(_kWithdrawNoticeDismissed) ?? false;
+    if (!dismissed && mounted) {
+      setState(() => _showWithdrawNotice = true);
+    }
+  }
+
+  Future<void> _dismissWithdrawNotice() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_kWithdrawNoticeDismissed, true);
+    if (mounted) setState(() => _showWithdrawNotice = false);
   }
 
   // ── Charger le nombre de filleuls depuis l'API ───────────
@@ -261,6 +288,62 @@ class _HomeScreenState extends State<HomeScreen> {
                             color: Colors.white38, fontSize: 12)),
                   ])
                 : Column(mainAxisSize: MainAxisSize.min, children: [
+                    // ── Notice incident retrait ───────────────
+                    if (_showWithdrawNotice) ...[
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFb71c1c).withOpacity(.2),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                              color: const Color(0xFFe53935).withOpacity(.4)),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Retraits rétablis',
+                              style: TextStyle(
+                                  color: Color(0xFFef9a9a),
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 13),
+                            ),
+                            const SizedBox(height: 6),
+                            const Text(
+                              'Entre le 11/07/2026 et le 12/07/2026, une erreur technique '
+                              'a pu bloquer certaines demandes de retrait sans les enregistrer. '
+                              'Si vous avez tenté un retrait pendant cette période et qu\'il '
+                              'n\'apparaît pas dans votre historique, réessayez dès maintenant — '
+                              'votre score n\'a pas été affecté.',
+                              style: TextStyle(
+                                  color: Colors.white60,
+                                  fontSize: 11,
+                                  height: 1.5),
+                            ),
+                            const SizedBox(height: 8),
+                            GestureDetector(
+                              onTap: () => WebBridge.share(
+                                  _HomeScreenState._kSupportWhatsApp),
+                              child: const Row(
+                                children: [
+                                  Icon(Icons.chat,
+                                      color: Color(0xFF4caf50), size: 14),
+                                  SizedBox(width: 4),
+                                  Text(
+                                    'Contacter le support WhatsApp',
+                                    style: TextStyle(
+                                        color: Color(0xFF4caf50),
+                                        fontSize: 11,
+                                        decoration: TextDecoration.underline),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                    ],
                     const Text(
                       'Entre ton numéro Airtel Money\npour recevoir le paiement.',
                       style: TextStyle(color: Colors.white70),
@@ -480,6 +563,37 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
             ),
+
+            // ── Bandeau incident retrait (auto-masqué après 7 jours) ──
+            if (_showWithdrawNotice)
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                color: const Color(0xFFb71c1c),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Icon(Icons.warning_amber_rounded,
+                        color: Colors.white, size: 18),
+                    const SizedBox(width: 8),
+                    const Expanded(
+                      child: Text(
+                        '⚠️ Un problème technique a temporairement empêché certains retraits. '
+                        'C\'est résolu — si votre demande a échoué récemment, réessayez maintenant.',
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                            height: 1.4),
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: _dismissWithdrawNotice,
+                      child: const Icon(Icons.close,
+                          color: Colors.white70, size: 18),
+                    ),
+                  ],
+                ),
+              ),
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
