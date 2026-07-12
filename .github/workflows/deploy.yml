@@ -43,6 +43,42 @@ jobs:
             **/assets/**
             **/*.map
 
+      - name: Prepare API server config (inject secrets)
+        if: ${{ secrets.APP_SECRET_KEY != '' }}
+        env:
+          APP_SECRET_KEY: ${{ secrets.APP_SECRET_KEY }}
+        run: |
+          echo "Preparing API server config files (not committed)"
+          # Create a .htaccess to export APP_SECRET_KEY to Apache/PHP
+          cat > api/.htaccess <<HTA
+          <IfModule mod_env.c>
+            SetEnv APP_SECRET_KEY "${APP_SECRET_KEY}"
+          </IfModule>
+          HTA
+            # Fallback: write a PHP file that sets the env var for PHP (putenv + _ENV)
+            cat > api/server_config.php <<PHP
+            <?php
+            // Ensure getenv('APP_SECRET_KEY') returns the secret when .htaccess isn't available
+            if (getenv('APP_SECRET_KEY') === false && !empty('${APP_SECRET_KEY}')) {
+              putenv('APP_SECRET_KEY=${APP_SECRET_KEY}');
+              $_ENV['APP_SECRET_KEY'] = '${APP_SECRET_KEY}';
+            }
+            PHP
+
+      - name: Deploy API to FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ftp.epsylon-cg.com
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          server-dir: /agropast-game.online/api/
+          local-dir: api/
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/node_modules/**
+            **/*.log
+
   # ── Job 2 : Build AAB Android (production) ───────────────
   build-aab:
     name: Build Android App Bundle
