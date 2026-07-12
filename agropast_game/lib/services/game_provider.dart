@@ -276,4 +276,8 @@ class GameProvider extends ChangeNotifier {
 
   // Exposé pour ParcoursQuotidienProvider
   Future<void> savePublic() => _save();
+
+  // Exposé pour ParcoursQuotidienProvider — sync serveur fin de session
+  Future<void> syncScorePublic({required String eventType}) =>
+      _syncScore(eventType: eventType);
 }

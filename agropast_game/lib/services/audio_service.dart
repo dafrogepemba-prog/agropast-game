@@ -5,7 +5,19 @@
 import 'package:flutter/foundation.dart';
 import 'package:audioplayers/audioplayers.dart';
 
-class AudioService {
+// Interface abstraite — permet le mock dans les tests
+abstract class AudioServiceBase {
+  bool get bgmStarted;
+  Future<void> preload();
+  Future<void> startBgm();
+  Future<void> playSfxArrosage();
+  Future<void> playJingleRecolte();
+  Future<void> pauseBgm();
+  Future<void> resumeBgm();
+  Future<void> dispose();
+}
+
+class AudioService implements AudioServiceBase {
   final AudioPlayer _bgm = AudioPlayer();
   final AudioPlayer _sfx = AudioPlayer();
 
