@@ -1,6 +1,5 @@
 <?php
 // DIAGNOSTIC TEMPORAIRE — supprimer après usage
-// Accessible uniquement avec le bon token
 $token = $_GET['t'] ?? '';
 if ($token !== 'diag_' . date('Ymd')) {
     http_response_code(403);
@@ -9,29 +8,47 @@ if ($token !== 'diag_' . date('Ymd')) {
 
 header('Content-Type: application/json');
 
-// Inclure config pour voir ce qui se passe
 $result = [
-    'php_version'    => PHP_VERSION,
+    'php_version'          => PHP_VERSION,
     'server_config_exists' => file_exists(__DIR__ . '/server_config.php'),
     'htaccess_exists'      => file_exists(__DIR__ . '/.htaccess'),
+    'config_php_exists'    => file_exists(__DIR__ . '/config.php'),
 ];
 
-// Lire les vars sans inclure config.php (pour voir l'état brut)
+// Etat brut des vars env
 foreach (['APP_SECRET_KEY','DB_HOST','DB_NAME','DB_USER','DB_PASS'] as $var) {
     $val = getenv($var);
-    $result['env'][$var] = $val === false ? 'NOT_SET' : (strlen($val) > 0 ? 'SET(len=' . strlen($val) . ')' : 'EMPTY');
+    $result['env_raw'][$var] = $val === false ? 'NOT_SET' : (strlen($val) > 0 ? 'SET(len=' . strlen($val) . ')' : 'EMPTY');
 }
 
-// Essayer d'inclure server_config.php et re-checker
+// Inclure server_config.php et re-checker
 if (file_exists(__DIR__ . '/server_config.php')) {
     require_once __DIR__ . '/server_config.php';
     foreach (['APP_SECRET_KEY','DB_HOST','DB_NAME','DB_USER','DB_PASS'] as $var) {
         $val = getenv($var);
-        $result['after_server_config'][$var] = $val === false ? 'NOT_SET' : (strlen($val) > 0 ? 'SET(len=' . strlen($val) . ')' : 'EMPTY');
+        $result['env_after_server_config'][$var] = $val === false ? 'NOT_SET' : (strlen($val) > 0 ? 'SET(len=' . strlen($val) . ')' : 'EMPTY');
     }
 }
 
-// Tenter connexion DB avec ce qu'on a
+// Tester config.php lui-meme
+if (file_exists(__DIR__ . '/config.php')) {
+    try {
+        require_once __DIR__ . '/config.php';
+        $result['config_php_loaded'] = 'OK';
+        $result['constants'] = [
+            'DB_HOST' => defined('DB_HOST') ? 'SET(len=' . strlen(DB_HOST) . ')' : 'NOT_DEFINED',
+            'DB_NAME' => defined('DB_NAME') ? 'SET(len=' . strlen(DB_NAME) . ')' : 'NOT_DEFINED',
+            'DB_USER' => defined('DB_USER') ? 'SET(len=' . strlen(DB_USER) . ')' : 'NOT_DEFINED',
+            'DB_PASS' => defined('DB_PASS') ? 'SET(len=' . strlen(DB_PASS) . ')' : 'NOT_DEFINED',
+        ];
+    } catch (Throwable $e) {
+        $result['config_php_loaded'] = 'FAILED: ' . $e->getMessage();
+    }
+} else {
+    $result['config_php_loaded'] = 'FILE_NOT_FOUND';
+}
+
+// Connexion PDO directe (sans config.php)
 $host = getenv('DB_HOST');
 $name = getenv('DB_NAME');
 $user = getenv('DB_USER');
@@ -40,12 +57,25 @@ if ($host && $name && $user) {
     try {
         $pdo = new PDO("mysql:host=$host;dbname=$name;charset=utf8mb4", $user, $pass,
             [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
-        $result['db_connect'] = 'SUCCESS';
+        $result['db_direct'] = 'SUCCESS';
     } catch (PDOException $e) {
-        $result['db_connect'] = 'FAILED: ' . $e->getMessage();
+        $result['db_direct'] = 'FAILED: ' . $e->getMessage();
     }
 } else {
-    $result['db_connect'] = 'SKIPPED: missing vars';
+    $result['db_direct'] = 'SKIPPED';
+}
+
+// Connexion PDO via constantes (comme leaderboard.php le fait)
+if (defined('DB_HOST') && defined('DB_NAME') && defined('DB_USER') && defined('DB_PASS')) {
+    try {
+        $pdo2 = new PDO('mysql:host=' . DB_HOST . ';dbname=' . DB_NAME . ';charset=utf8mb4',
+            DB_USER, DB_PASS, [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
+        $result['db_via_constants'] = 'SUCCESS';
+    } catch (PDOException $e) {
+        $result['db_via_constants'] = 'FAILED: ' . $e->getMessage();
+    }
+} else {
+    $result['db_via_constants'] = 'SKIPPED: constants not defined';
 }
 
 echo json_encode($result, JSON_PRETTY_PRINT);
