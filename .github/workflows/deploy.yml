@@ -75,6 +75,8 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           server-dir: /agropast-game.online/api/
           local-dir: api/
+          state-name: .ftp-deploy-sync-state-v2.json
+          log-level: verbose
           exclude: |
             **/.git*
             **/.git*/**
