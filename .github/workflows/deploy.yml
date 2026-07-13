@@ -46,14 +46,26 @@ jobs:
       - name: Prepare API server config (inject secrets)
         env:
           APP_SECRET_KEY: ${{ secrets.APP_SECRET_KEY }}
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASS: ${{ secrets.DB_PASS }}
         run: |
-          if [ -z "$APP_SECRET_KEY" ]; then
-            echo "APP_SECRET_KEY absent — etape ignoree"
+          MISSING=""
+          [ -z "$APP_SECRET_KEY" ] && MISSING="$MISSING APP_SECRET_KEY"
+          [ -z "$DB_HOST" ]        && MISSING="$MISSING DB_HOST"
+          [ -z "$DB_NAME" ]        && MISSING="$MISSING DB_NAME"
+          [ -z "$DB_USER" ]        && MISSING="$MISSING DB_USER"
+          [ -z "$DB_PASS" ]        && MISSING="$MISSING DB_PASS"
+          if [ -n "$MISSING" ]; then
+            echo "Secrets manquants :$MISSING — etape ignoree"
             exit 0
           fi
-          echo "Preparing API server config files (not committed)"
-          printf '<IfModule mod_env.c>\n  SetEnv APP_SECRET_KEY "%s"\n</IfModule>\n' "$APP_SECRET_KEY" > api/.htaccess
-          printf '<?php if (getenv("APP_SECRET_KEY") === false) { putenv("APP_SECRET_KEY=%s"); }' "$APP_SECRET_KEY" > api/server_config.php
+          echo "Generating api/.htaccess with all DB + APP secrets..."
+          printf '<IfModule mod_env.c>\n  SetEnv APP_SECRET_KEY "%s"\n  SetEnv DB_HOST "%s"\n  SetEnv DB_NAME "%s"\n  SetEnv DB_USER "%s"\n  SetEnv DB_PASS "%s"\n</IfModule>\n' \
+            "$APP_SECRET_KEY" "$DB_HOST" "$DB_NAME" "$DB_USER" "$DB_PASS" > api/.htaccess
+          printf '<?php\nif (getenv("APP_SECRET_KEY") === false) { putenv("APP_SECRET_KEY=%s"); }\nif (getenv("DB_HOST") === false) { putenv("DB_HOST=%s"); }\nif (getenv("DB_NAME") === false) { putenv("DB_NAME=%s"); }\nif (getenv("DB_USER") === false) { putenv("DB_USER=%s"); }\nif (getenv("DB_PASS") === false) { putenv("DB_PASS=%s"); }\n' \
+            "$APP_SECRET_KEY" "$DB_HOST" "$DB_NAME" "$DB_USER" "$DB_PASS" > api/server_config.php
           echo "API config generated successfully"
       - name: Deploy API to FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
