@@ -14,8 +14,6 @@ header('Access-Control-Allow-Headers: Content-Type');
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { http_response_code(204); exit; }
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') { http_response_code(405); exit; }
 
-if (!defined('SECRET_KEY')) define('SECRET_KEY', 'AgroPast_S3cr3t_2025!');
-
 // Connexion DB
 try {
     $pdo = new PDO(

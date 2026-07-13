@@ -75,9 +75,6 @@ function generateToken(string $whatsapp): string {
     return hash('sha256', $whatsapp . SECRET_KEY . time() . random_bytes(8));
 }
 
-// Clé secrète pour signer les tokens (à définir dans config.php)
-if (!defined('SECRET_KEY')) define('SECRET_KEY', 'AgroPast_S3cr3t_2025!');
-
 // --- Lire le body JSON ou POST form -------------------------
 $body = [];
 $raw  = file_get_contents('php://input');
