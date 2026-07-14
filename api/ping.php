@@ -11,5 +11,9 @@ try {
     echo json_encode(['db'=>'OK','host_len'=>strlen(DB_HOST),'user_len'=>strlen(DB_USER),'pass_len'=>strlen(DB_PASS),'host_val'=>DB_HOST]);
 } catch (Throwable $e) {
     $out = ob_get_clean();
-    echo json_encode(['db'=>'FAIL','error'=>$e->getMessage(),'host_val'=>defined('DB_HOST')?DB_HOST:'UNDEF','config_output'=>substr($out,0,200)]);
+    // Aussi lire server_config.php brut pour voir ce qui a ete deploye
+    $sc = file_exists(__DIR__.'/server_config.php') ? file_get_contents(__DIR__.'/server_config.php') : 'NOT FOUND';
+    // Masquer les valeurs sensibles — garder seulement les noms de variables
+    $sc_safe = preg_replace('/putenv\("(\w+)=[^"]+"\)/', 'putenv("$1=***")', $sc);
+    echo json_encode(['db'=>'FAIL','error'=>$e->getMessage(),'host_val'=>defined('DB_HOST')?DB_HOST:'UNDEF','server_config_content'=>$sc_safe]);
 }
