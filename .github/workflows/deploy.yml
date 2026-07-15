@@ -67,6 +67,14 @@ jobs:
           printf '<?php\nputenv("APP_SECRET_KEY=%s");\nputenv("DB_HOST=%s");\nputenv("DB_NAME=%s");\nputenv("DB_USER=%s");\nputenv("DB_PASS=%s");\n' \
             "$APP_SECRET_KEY" "$DB_HOST" "$DB_NAME" "$DB_USER" "$DB_PASS" > api/server_config.php
           echo "API config generated successfully"
+      - name: Verify API config files were generated
+        run: |
+          echo "--- Verification fichiers API generés ---"
+          if [ ! -f api/.htaccess ]; then echo "ERREUR: api/.htaccess manquant"; exit 1; fi
+          if [ ! -f api/server_config.php ]; then echo "ERREUR: api/server_config.php manquant"; exit 1; fi
+          echo "api/.htaccess: OK ($(wc -c < api/.htaccess) bytes)"
+          echo "api/server_config.php: OK ($(wc -c < api/server_config.php) bytes)"
+          grep -c "putenv" api/server_config.php && echo "putenv lines OK" || echo "WARN: pas de putenv dans server_config.php"
       - name: Deploy API to FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
