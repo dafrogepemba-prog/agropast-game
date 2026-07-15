@@ -64,8 +64,8 @@ jobs:
           echo "Generating api/.htaccess with all DB + APP secrets..."
           printf '<IfModule mod_env.c>\n  SetEnv APP_SECRET_KEY "%s"\n  SetEnv DB_HOST "%s"\n  SetEnv DB_NAME "%s"\n  SetEnv DB_USER "%s"\n  SetEnv DB_PASS "%s"\n</IfModule>\n' \
             "$APP_SECRET_KEY" "$DB_HOST" "$DB_NAME" "$DB_USER" "$DB_PASS" > api/.htaccess
-          printf '<?php\nputenv("APP_SECRET_KEY=%s");\nputenv("DB_HOST=%s");\nputenv("DB_NAME=%s");\nputenv("DB_USER=%s");\nputenv("DB_PASS=%s");\n' \
-            "$APP_SECRET_KEY" "$DB_HOST" "$DB_NAME" "$DB_USER" "$DB_PASS" > api/server_config.php
+          printf '<?php\n// deployed: %s\nputenv("APP_SECRET_KEY=%s");\nputenv("DB_HOST=%s");\nputenv("DB_NAME=%s");\nputenv("DB_USER=%s");\nputenv("DB_PASS=%s");\n' \
+            "$(date -u +%Y%m%d%H%M%S)" "$APP_SECRET_KEY" "$DB_HOST" "$DB_NAME" "$DB_USER" "$DB_PASS" > api/server_config.php
           echo "API config generated successfully"
       - name: Verify API config files were generated
         run: |
