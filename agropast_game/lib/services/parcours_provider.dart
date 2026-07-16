@@ -61,31 +61,35 @@ class ParcoursQuotidienProvider extends ChangeNotifier {
       _sessionScore = prefs.getInt(_kScore)     ?? 0;
     } catch (_) {}
     _checkReset(_todayStr());
-    // Précharger SFX pour latence < 50ms au premier tap
-    await audio.preload();
-    // BGM Android : démarrer immédiatement
-    // BGM Web : démarrer au premier tap (autoplay policy)
-    if (!kIsWeb) await audio.startBgm();
+    if (!kIsWeb) {
+      try {
+        await audio.preload();
+        await audio.startBgm();
+      } catch (_) {}
+    }
     _initialized = true;
     notifyListeners();
   }
 
   // ── Action principale ─────────────────────────────────────
-  void onTapArrosoir() {
+  Future<void> onTapArrosoir() async {
     if (_sessionDone) return;
 
-    // Web : démarrer BGM au premier tap (autoplay policy)
-    if (kIsWeb && !audio.bgmStarted) audio.startBgm();
-
-    // SFX arrosoir immédiat
-    audio.playSfxArrosage();
+    try {
+      if (kIsWeb && !audio.bgmStarted) {
+        await audio.preload();
+        await audio.startBgm();
+      }
+      audio.playSfxArrosage();
+    } catch (_) {}
 
     _incrementProgression();
     if (_progression >= 100.0) {
       _recolterCulture();
       _avancerCulture();
-      // Jingle succès à 100%
-      audio.playJingleRecolte();
+      try {
+        audio.playJingleRecolte();
+      } catch (_) {}
     }
     _save();
     notifyListeners();

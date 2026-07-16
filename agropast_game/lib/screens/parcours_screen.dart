@@ -577,7 +577,7 @@ class _CultureScreenState extends State<_CultureScreen>
         final bgColor = Color.lerp(
           const Color(0xFF0d1b0f),
           const Color(0xFF0d2a10),
-          prog / 100,
+          (prog / 100).clamp(0.0, 1.0),
         )!;
 
         return Scaffold(
@@ -659,7 +659,7 @@ class _CultureScreenState extends State<_CultureScreen>
                               color: Color.lerp(
                                 const Color(0xFF4caf50),
                                 const Color(0xFFb9f6ca),
-                                prog / 100,
+                                (prog / 100).clamp(0.0, 1.0),
                               ),
                               minHeight: 14,
                             ),
@@ -788,7 +788,7 @@ class _PlantZone extends StatelessWidget {
               gradient: RadialGradient(
                 colors: [
                   Color.lerp(const Color(0xFF1c3320),
-                      const Color(0xFF2e7d32), progression / 100)!,
+                      const Color(0xFF2e7d32), (progression / 100).clamp(0.0, 1.0))!,
                   const Color(0xFF0d1b0f),
                 ],
                 radius: 0.8,
