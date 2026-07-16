@@ -58,6 +58,7 @@ class AudioService implements AudioServiceBase {
         Future.delayed(const Duration(seconds: 3), () => p.dispose());
       } else {
         await _sfx.stop();
+        await _sfx.setVolume(0.8);
         await _sfx.play(AssetSource(_sfxFile));
       }
     } catch (_) {}
@@ -68,6 +69,7 @@ class AudioService implements AudioServiceBase {
     try {
       await _bgm.setVolume(0.1);
       final p = AudioPlayer();
+      await p.setVolume(1.0);
       await p.play(AssetSource(_jingleFile));
       Future.delayed(const Duration(seconds: 3), () async {
         await p.dispose();
