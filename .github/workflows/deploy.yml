@@ -36,6 +36,8 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           server-dir: /agropast-game.online/game/
           local-dir: agropast_game/build/web/
+          state-name: .ftp-deploy-sync-state-web.json
+          log-level: verbose
           exclude: |
             **/.git*
             **/.git*/**
