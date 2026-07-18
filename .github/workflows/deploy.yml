@@ -142,7 +142,7 @@ jobs:
       - name: Flutter pub get
         run: flutter pub get
         working-directory: agropast_game
-      # Build AAB (obligatoire pour Google Play)
+      # Build AAB (obligatoire pour Google Play, pret pour plus tard)
       - name: Build App Bundle (AAB)
         run: flutter build appbundle --release
         working-directory: agropast_game
@@ -152,8 +152,8 @@ jobs:
           name: agropast-game-release-aab
           path: agropast_game/build/app/outputs/bundle/release/app-release.aab
           retention-days: 30
-      # Build APK aussi pour les tests directs
-      - name: Build APK (tests)
+      # Build APK aussi pour les tests directs ET le telechargement direct web
+      - name: Build APK (tests + telechargement direct)
         run: flutter build apk --release
         working-directory: agropast_game
       - name: Upload APK artifact
@@ -162,3 +162,26 @@ jobs:
           name: agropast-game-release-apk
           path: agropast_game/build/app/outputs/flutter-apk/app-release.apk
           retention-days: 30
+      # Renommer avec un nom stable pour que le lien de telechargement
+      # ne change jamais entre les versions
+      - name: Rename APK for stable download link
+        run: cp agropast_game/build/app/outputs/flutter-apk/app-release.apk agropast_game/build/app/outputs/flutter-apk/agropast-game-latest.apk
+      # Deployer l'APK sur le serveur pour telechargement direct
+      # (en attendant la publication officielle sur le Play Store)
+      # ATTENTION : cible le dossier reellement servi, verifie le
+      # 17/07/2026 via la technique du fichier marqueur (test_probe.txt)
+      - name: Deploy APK for direct download
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ftp.epsylon-cg.com
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          server-dir: /agropast-game.online/downloads/
+          local-dir: agropast_game/build/app/outputs/flutter-apk/
+          state-name: .ftp-deploy-sync-state-apk.json
+          log-level: verbose
+          exclude: |
+            **/.git*
+            **/.git*/**
+            app-release.apk
+            output-metadata.json
