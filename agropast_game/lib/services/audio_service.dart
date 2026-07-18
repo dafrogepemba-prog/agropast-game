@@ -6,8 +6,10 @@ import 'package:flutter/foundation.dart';
 import 'package:audioplayers/audioplayers.dart';
 
 // Interface abstraite — permet le mock dans les tests
-abstract class AudioServiceBase {
+  abstract class AudioServiceBase {
   bool get bgmStarted;
+  bool get muted;
+  Future<void> toggleMute();
   Future<void> preload();
   Future<void> startBgm();
   Future<void> playSfxArrosage();
@@ -28,6 +30,19 @@ class AudioService implements AudioServiceBase {
   static const String _jingleFile = 'sounds/jingle_recolte.mp3';
 
   bool get bgmStarted => _bgmStarted;
+  bool _muted = false;
+  bool get muted => _muted;
+
+  Future<void> toggleMute() async {
+    _muted = !_muted;
+    try {
+      if (_muted) {
+        await _bgm.setVolume(0.0);
+      } else {
+        await _bgm.setVolume(0.35);
+      }
+    } catch (_) {}
+  }
 
   // ── Précharger les sons ───────────────────────────────────
   Future<void> preload() async {
