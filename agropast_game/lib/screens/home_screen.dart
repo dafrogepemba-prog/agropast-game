@@ -37,11 +37,13 @@ class _HomeScreenState extends State<HomeScreen> {
     _checkWithdrawNotice();
   }
 
-  // Affiche le bandeau uniquement dans la fenêtre de 7 jours
+ // Affiche le bandeau uniquement dans la fenêtre prévue
   // et si l'utilisateur ne l'a pas déjà fermé
   Future<void> _checkWithdrawNotice() async {
     final now = DateTime.now();
-    if (now.isBefore(_kNoticeStart) || now.isAfter(_kNoticeEnd)) return;
+    final inWindow = now.isAfter(_kNoticeStart) && now.isBefore(_kNoticeEnd);
+    if (!inWindow) return; // hors fenêtre : ne jamais afficher
+
     final prefs = await SharedPreferences.getInstance();
     final dismissed = prefs.getBool(_kWithdrawNoticeDismissed) ?? false;
     if (!dismissed && mounted) {
