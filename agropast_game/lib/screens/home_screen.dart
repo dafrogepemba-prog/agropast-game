@@ -28,7 +28,8 @@ class _HomeScreenState extends State<HomeScreen> {
   static final DateTime _kNoticeStart = DateTime(2026, 7, 11);
   static final DateTime _kNoticeEnd   = DateTime(2026, 7, 19);
   static const String _kSupportWhatsApp = 'https://wa.me/24250416661';
-  static const String _kPlayStoreUrl = ''; // à renseigner une fois l'app publiée
+  static const String _kPlayStoreUrl = 'https://agropast-game.online/downloads/agropast-game-latest.apk'; 
+// à renseigner une fois l'app publiée
   bool _showWithdrawNotice = false;
 
   @override
@@ -513,6 +514,22 @@ class _HomeScreenState extends State<HomeScreen> {
       body: SafeArea(
         child: Column(
           children: [
+            Consumer<ParcoursQuotidienProvider>(
+              builder: (ctx, pq, _) => Align(
+                alignment: Alignment.centerRight,
+                child: IconButton(
+                  icon: Icon(
+                    pq.audio.muted ? Icons.volume_off : Icons.volume_up,
+                    color: Colors.white70,
+                    size: 20,
+                  ),
+                  onPressed: () async {
+                    await pq.audio.toggleMute();
+                    (ctx as Element).markNeedsBuild();
+                  },
+                ),
+              ),
+            ),
             // Version démo banner
             Container(
               width: double.infinity,
@@ -545,7 +562,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   ElevatedButton.icon(
                     onPressed: () {
                       // TODO: Open Play Store link
-                      if (_kPlayStoreUrl.isEmpty) {
+                      if (!gp.isRegistered) {
+                        WebBridge.share('/login.html');
+                      } else if (_kPlayStoreUrl.isEmpty) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
                             content: Text(
@@ -898,7 +917,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                         Expanded(
                                           child: ElevatedButton(
                                             onPressed: () =>
-                                                WebBridge.navigateTo('/login.html'),
+                                                WebBridge.share('/login.html'),
                                             style: ElevatedButton.styleFrom(
                                               backgroundColor:
                                                   const Color(0xFF4caf50),
