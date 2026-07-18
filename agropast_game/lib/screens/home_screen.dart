@@ -28,6 +28,7 @@ class _HomeScreenState extends State<HomeScreen> {
   static final DateTime _kNoticeStart = DateTime(2026, 7, 11);
   static final DateTime _kNoticeEnd   = DateTime(2026, 7, 19);
   static const String _kSupportWhatsApp = 'https://wa.me/24250416661';
+  static const String _kPlayStoreUrl = ''; // à renseigner une fois l'app publiée
   bool _showWithdrawNotice = false;
 
   @override
@@ -544,6 +545,16 @@ class _HomeScreenState extends State<HomeScreen> {
                   ElevatedButton.icon(
                     onPressed: () {
                       // TODO: Open Play Store link
+                      if (_kPlayStoreUrl.isEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                                'App Android bientôt disponible ! En attendant, continue sur le web 🌱'),
+                          ),
+                        );
+                      } else {
+                        WebBridge.share(_kPlayStoreUrl);
+                      }
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.black87,
@@ -852,6 +863,120 @@ class _HomeScreenState extends State<HomeScreen> {
                                 builder: (_) => const ParcoursQuotidienScreen())),
                       ),
                     ),
+
+                    if (!gp.isRegistered)
+                      Consumer<ParcoursQuotidienProvider>(
+                        builder: (ctx, pq, _) => pq.sessionDone
+                            ? Container(
+                                margin: const EdgeInsets.only(top: 12),
+                                padding: const EdgeInsets.all(14),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF2e7d32).withOpacity(.15),
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(
+                                      color: const Color(0xFF4caf50).withOpacity(.4)),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      '🌾 Envie de faire fructifier tes points ?',
+                                      style: TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 14),
+                                    ),
+                                    const SizedBox(height: 6),
+                                    const Text(
+                                      'Inscris-toi en 30 secondes pour rejoindre le programme de fidélité AgroPast — sans perdre ta partie en cours.',
+                                      style: TextStyle(
+                                          color: Colors.white70, fontSize: 12),
+                                    ),
+                                    const SizedBox(height: 10),
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: ElevatedButton(
+                                            onPressed: () =>
+                                                WebBridge.navigateTo('/login.html'),
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor:
+                                                  const Color(0xFF4caf50),
+                                              foregroundColor: Colors.white,
+                                            ),
+                                            child: const Text("S'inscrire"),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              )
+                            : const SizedBox.shrink(),
+                      ),
+                    if (gp.isRegistered)
+                      Container(
+                        margin: const EdgeInsets.only(top: 12),
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFf9a825).withOpacity(.15),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                              color: const Color(0xFFf9a825).withOpacity(.4)),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              '✅ Bienvenue dans le programme de fidélité !',
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14),
+                            ),
+                            const SizedBox(height: 6),
+                            const Text(
+                              'Tes points comptent désormais pour de vrai. Télécharge l\'app Android pour suivre ta progression et accéder au programme de récompense complet.',
+                              style: TextStyle(color: Colors.white70, fontSize: 12),
+                            ),
+                            const SizedBox(height: 6),
+                            const Text(
+                              'Rappel : programme de fidélité à ratio fixe. Les points ne représentent pas un revenu garanti indépendant de votre activité de jeu.',
+                              style: TextStyle(
+                                  color: Colors.white38,
+                                  fontSize: 10,
+                                  fontStyle: FontStyle.italic),
+                            ),
+                            const SizedBox(height: 10),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: ElevatedButton.icon(
+                                    onPressed: () {
+                                      if (_kPlayStoreUrl.isEmpty) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          const SnackBar(
+                                            content: Text(
+                                                'App Android bientôt disponible ! En attendant, continue sur le web 🌱'),
+                                          ),
+                                        );
+                                      } else {
+                                        WebBridge.share(_kPlayStoreUrl);
+                                      }
+                                    },
+                                    icon: const Icon(Icons.android, size: 16),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.black87,
+                                      foregroundColor: Colors.white,
+                                    ),
+                                    label: const Text('Télécharger l\'app Android'),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
                     const SizedBox(height: 12),
 
                     _MenuButton(

@@ -24,6 +24,7 @@ class GameProvider extends ChangeNotifier {
   NiveauInfo? get levelUpEvent => _levelUpEvent;
   int get adsWatchedToday => _adsWatchedToday;
   bool get isAdCapReached => _adsWatchedToday >= AdMediationServiceBase.dailyCap;
+  bool get isRegistered => _webToken.isNotEmpty;
   bool get isAdLoaded => _adService.isLoaded;
   bool get isAdShowing => _isAdShowing;
   void clearLevelUpEvent() { _levelUpEvent = null; }
