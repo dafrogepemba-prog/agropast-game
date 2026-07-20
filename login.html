@@ -63,8 +63,8 @@
     input::placeholder { color: rgba(255,255,255,.3); }
     input:focus { outline: none; border-color: var(--green-l); }
     input.no-icon { padding-left: .9rem; }
-    .pin-wrap { display: flex; gap: .5rem; justify-content: center; }
-    .pin-wrap input {
+    .code-wrap { display: flex; gap: .5rem; justify-content: center; }
+    .code-wrap input {
       width: 52px; padding: .7rem .4rem;
       text-align: center; font-size: 1.4rem; font-weight: 700;
       letter-spacing: 2px;
@@ -81,6 +81,11 @@
     }
     .btn-submit:hover { background: #1b5e20; transform: translateY(-1px); }
     .btn-submit:disabled { background: #555; cursor: not-allowed; transform: none; }
+    .btn-link {
+      background: none; border: none; color: var(--green-l);
+      font-size: .85rem; cursor: pointer; margin-top: .8rem;
+      text-decoration: underline;
+    }
 
     /* Messages */
     .msg {
@@ -90,9 +95,16 @@
     }
     .msg.error   { background: rgba(198,40,40,.2); color: #ef9a9a; display: block; }
     .msg.success { background: rgba(46,125,50,.2);  color: #a5d6a7;  display: block; }
+    .msg.info    { background: rgba(249,168,37,.15); color: #ffcc80; display: block; }
 
     .optional { font-size: .75rem; opacity: .5; margin-left: 4px; }
     .divider { opacity: .2; margin: 1.2rem 0; }
+    .pin-display {
+      background: rgba(249,168,37,.15); border: 1px solid rgba(249,168,37,.4);
+      border-radius: 10px; padding: 1rem; margin: 1rem 0;
+      font-size: 1.6rem; font-weight: 800; letter-spacing: 3px;
+      color: var(--yellow);
+    }
   </style>
 </head>
 <body>
@@ -101,7 +113,8 @@
   <h1>AgroPast-Game</h1>
   <p class="sub">Cultive. Récolte. Domine.</p>
 
-  <div class="tabs">
+  <!-- ONGLET CONNEXION / INSCRIPTION -->
+  <div class="tabs" id="tabs-main">
     <button class="tab active" onclick="switchTab('login')"  id="tab-login">Connexion</button>
     <button class="tab"        onclick="switchTab('register')" id="tab-register">S'inscrire</button>
   </div>
@@ -109,19 +122,19 @@
   <!-- FORMULAIRE CONNEXION -->
   <form id="form-login" onsubmit="submitLogin(event)">
     <div class="form-group">
-      <label>Numéro WhatsApp</label>
+      <label>Numéro WhatsApp ou Email</label>
       <div class="input-wrap">
-        <span class="flag">📱</span>
-        <input type="tel" id="login-phone" placeholder="+242 06 123 45 67"
-               autocomplete="tel" required />
+        <span class="flag">👤</span>
+        <input type="text" id="login-identifier" placeholder="+242 06 123 45 67 ou email"
+               autocomplete="username" required />
       </div>
     </div>
     <div class="form-group">
-      <label>PIN (4 chiffres)</label>
+      <label>PIN (6 chiffres)</label>
       <div class="input-wrap">
-        <span class="flag">🔐</span>
-        <input type="password" id="login-pin" placeholder="••••"
-               maxlength="4" pattern="\d{4}" class="no-icon"
+        <span class="flag">🔑</span>
+        <input type="password" id="login-pin" placeholder="••••••"
+               maxlength="6" pattern="\d{6}" class="no-icon"
                style="padding-left:2.6rem" required />
       </div>
     </div>
@@ -142,17 +155,17 @@
     <div class="form-group">
       <label>Pseudo <span class="optional">(optionnel)</span></label>
       <div class="input-wrap">
-        <span class="flag">👤</span>
+        <span class="flag">😊</span>
         <input type="text" id="reg-nom" placeholder="Ex: AgriKing_Brazza"
                maxlength="60" />
       </div>
     </div>
     <div class="form-group">
-      <label>Email <span class="optional">(optionnel)</span></label>
+      <label>Email <span class="optional">(obligatoire — sert à confirmer ton compte)</span></label>
       <div class="input-wrap">
         <span class="flag">✉️</span>
         <input type="email" id="reg-email" placeholder="ton@email.com"
-               autocomplete="email" />
+               autocomplete="email" required />
       </div>
     </div>
     <div class="form-group">
@@ -164,47 +177,53 @@
             border:1.5px solid rgba(255,255,255,.2);border-radius:8px;
             color:#fff;font-size:1rem">
           <option value="">-- Sélectionner --</option>
-          <option value="Congo-Brazzaville">Congo-Brazzaville 🇨🇬</option>
-          <option value="RDC">RD Congo 🇨🇩</option>
-          <option value="Sénégal">Sénégal 🇸🇳</option>
-          <option value="Côte d'Ivoire">Côte d'Ivoire 🇨🇮</option>
-          <option value="Cameroun">Cameroun 🇨🇲</option>
-          <option value="Gabon">Gabon 🇬🇦</option>
-          <option value="Bénin">Bénin 🇧🇯</option>
-          <option value="Burkina Faso">Burkina Faso 🇧🇫</option>
-          <option value="Mali">Mali 🇲🇱</option>
+          <option value="Congo-Brazzaville">Congo-Brazzaville</option>
+          <option value="RDC">RD Congo</option>
+          <option value="Sénégal">Sénégal</option>
+          <option value="Côte d'Ivoire">Côte d'Ivoire</option>
+          <option value="Cameroun">Cameroun</option>
+          <option value="Gabon">Gabon</option>
+          <option value="Bénin">Bénin</option>
+          <option value="Burkina Faso">Burkina Faso</option>
           <option value="Autre">Autre</option>
         </select>
       </div>
     </div>
-    <hr class="divider" />
-    <div class="form-group">
-      <label>Crée ton PIN secret (4 chiffres)</label>
-      <div class="input-wrap">
-        <span class="flag">🔐</span>
-        <input type="password" id="reg-pin" placeholder="••••"
-               maxlength="4" pattern="\d{4}"
-               style="padding-left:2.6rem" required />
-      </div>
-    </div>
-    <div class="form-group">
-      <label>Confirme ton PIN</label>
-      <div class="input-wrap">
-        <span class="flag">🔐</span>
-        <input type="password" id="reg-pin2" placeholder="••••"
-               maxlength="4" pattern="\d{4}"
-               style="padding-left:2.6rem" required />
-      </div>
-    </div>
+    <p style="font-size:.75rem;opacity:.6;text-align:left;margin-bottom:.5rem">
+      🔑 Ton PIN de connexion sera généré automatiquement et envoyé par email + WhatsApp.
+    </p>
     <button type="submit" class="btn-submit" id="btn-register">✅ Créer mon compte</button>
     <div class="msg" id="msg-register"></div>
   </form>
+
+  <!-- ÉTAPE VÉRIFICATION EMAIL (affichée après inscription) -->
+  <div id="step-verify" style="display:none">
+    <div class="pin-display" id="pin-display"></div>
+    <p style="font-size:.85rem;opacity:.8;margin-bottom:1rem">
+      Ton PIN ci-dessus a été envoyé par email et via WhatsApp. Entre le code de confirmation reçu par email pour valider ton compte :
+    </p>
+    <form onsubmit="submitVerifyCode(event)">
+      <div class="form-group">
+        <label>Code de confirmation (6 chiffres)</label>
+        <div class="input-wrap">
+          <span class="flag">✉️</span>
+          <input type="text" id="verify-code" placeholder="123456"
+                 maxlength="6" pattern="\d{6}" class="no-icon"
+                 style="padding-left:2.6rem;letter-spacing:3px;text-align:center" required />
+        </div>
+      </div>
+      <button type="submit" class="btn-submit" id="btn-verify">✅ Confirmer mon compte</button>
+      <button type="button" class="btn-link" onclick="resendCode()">Renvoyer le code</button>
+      <div class="msg" id="msg-verify"></div>
+    </form>
+    <button type="button" class="btn-link" onclick="goHomeNow()">Continuer sans confirmer pour l'instant →</button>
+  </div>
 </div>
 
 <script>
 // ============================================================
 // Auth — login.html
-// Connexion/Inscription par numéro WhatsApp + PIN
+// Connexion/Inscription — PIN généré serveur + vérification email
 // Session stockée dans localStorage (token 30 jours)
 // ============================================================
 
@@ -214,7 +233,6 @@ const API = 'https://agropast-game.online/api/auth.php';
 (function () {
   const token = localStorage.getItem('apg_token');
   if (token) {
-    // Vérifier côté serveur que le token est encore valide
     fetch(API, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -245,22 +263,25 @@ function setLoading(btnId, loading) {
   btn.textContent = loading ? '⏳ Chargement…' : btn.dataset.label;
 }
 
-// Sauvegarder label initial
 document.addEventListener('DOMContentLoaded', () => {
-  ['btn-login','btn-register'].forEach(id => {
+  ['btn-login','btn-register','btn-verify'].forEach(id => {
     const btn = document.getElementById(id);
     if (btn) btn.dataset.label = btn.textContent;
   });
 });
 
+function goHomeNow() {
+  window.location.href = '/';
+}
+
 // ---- CONNEXION ---------------------------------------------
 async function submitLogin(e) {
   e.preventDefault();
-  const phone = document.getElementById('login-phone').value.trim();
-  const pin   = document.getElementById('login-pin').value.trim();
+  const identifier = document.getElementById('login-identifier').value.trim();
+  const pin        = document.getElementById('login-pin').value.trim();
 
-  if (pin.length !== 4 || !/^\d{4}$/.test(pin)) {
-    showMsg('msg-login', 'Le PIN doit être 4 chiffres.', 'error');
+  if (pin.length !== 6 || !/^\d{6}$/.test(pin)) {
+    showMsg('msg-login', 'Le PIN doit être 6 chiffres.', 'error');
     return;
   }
 
@@ -270,12 +291,11 @@ async function submitLogin(e) {
     const res  = await fetch(API, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'login', whatsapp: phone, pin }),
+      body: JSON.stringify({ action: 'login', identifier, pin }),
     });
     const data = await res.json();
 
     if (data.success) {
-      // Stocker la session dans localStorage
       localStorage.setItem('apg_token',    data.token);
       localStorage.setItem('apg_whatsapp', data.whatsapp);
       localStorage.setItem('apg_nom',      data.nom);
@@ -293,22 +313,16 @@ async function submitLogin(e) {
   }
 }
 
-// ---- INSCRIPTION -------------------------------------------
+// ---- INSCRIPTION ---------------------------------------------
 async function submitRegister(e) {
   e.preventDefault();
   const phone = document.getElementById('reg-phone').value.trim();
   const nom   = document.getElementById('reg-nom').value.trim();
   const email = document.getElementById('reg-email').value.trim();
   const pays  = document.getElementById('reg-pays').value;
-  const pin   = document.getElementById('reg-pin').value.trim();
-  const pin2  = document.getElementById('reg-pin2').value.trim();
 
-  if (!/^\d{4}$/.test(pin)) {
-    showMsg('msg-register', 'Le PIN doit être exactement 4 chiffres.', 'error');
-    return;
-  }
-  if (pin !== pin2) {
-    showMsg('msg-register', 'Les deux PIN ne correspondent pas.', 'error');
+  if (!email) {
+    showMsg('msg-register', 'Email requis pour confirmer ton compte.', 'error');
     return;
   }
 
@@ -318,7 +332,7 @@ async function submitRegister(e) {
     const res  = await fetch(API, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'register', whatsapp: phone, nom, email, pays, pin }),
+      body: JSON.stringify({ action: 'register', whatsapp: phone, nom, email, pays }),
     });
     const data = await res.json();
 
@@ -328,25 +342,21 @@ async function submitRegister(e) {
       localStorage.setItem('apg_nom',      data.nom);
       localStorage.setItem('apg_ref_id',   data.ref_id);
 
-      // Construire lien wa.me avec le PIN pour sauvegarde
-      const tel      = data.whatsapp.replace(/[^0-9]/g, '');
-      const shareUrl = 'https://agropast-game.online?ref=' + encodeURIComponent(data.ref_id);
-      const msg      = '🍉 AgroPast-Game — Mon inscription\n\n'
-                     + 'Voici mes informations de connexion :\n'
-                     + '👤 Pseudo : ' + data.nom + '\n'
-                     + '📱 Numéro : ' + data.whatsapp + '\n'
-                     + '🔑 Mon PIN : ' + pin + '\n'
-                     + '🔗 Mon lien parrain : ' + shareUrl + '\n\n'
-                     + '⚠️ Garde ce message pour te connecter !';
-      const waUrl = 'https://wa.me/' + tel + '?text=' + encodeURIComponent(msg);
+      // Ouvrir le lien WhatsApp pré-rempli (rappel du PIN)
+      if (data.whatsapp_url) window.open(data.whatsapp_url, '_blank');
 
-      // Afficher bouton WhatsApp avant redirection
-      showMsg('msg-register', `✅ Compte créé ! Bienvenue ${data.nom} 🍉`, 'success');
-      const btn = document.getElementById('btn-register');
-      btn.textContent = '💬 Sauvegarder mon PIN sur WhatsApp';
-      btn.disabled = false;
-      btn.style.background = '#25d366';
-      btn.onclick = () => { window.open(waUrl, '_blank'); setTimeout(() => window.location.href = '/', 1500); };
+      // Afficher l'étape de vérification email
+      document.getElementById('tabs-main').style.display    = 'none';
+      document.getElementById('form-login').style.display   = 'none';
+      document.getElementById('form-register').style.display= 'none';
+      document.getElementById('step-verify').style.display  = 'block';
+      document.getElementById('pin-display').textContent    = data.pin || '';
+
+      if (data.email_sent) {
+        showMsg('msg-verify', 'Code envoyé par email ! Vérifie ta boîte (et les spams).', 'info');
+      } else {
+        showMsg('msg-verify', 'L\'email n\'a pas pu être envoyé pour le moment, réessaie avec "Renvoyer le code".', 'error');
+      }
     } else {
       if (data.code === 'ALREADY_EXISTS') {
         showMsg('msg-register', 'Ce numéro est déjà inscrit. Utilise "Connexion".', 'error');
@@ -359,6 +369,54 @@ async function submitRegister(e) {
   } catch (_) {
     showMsg('msg-register', 'Erreur réseau. Vérifie ta connexion.', 'error');
     setLoading('btn-register', false);
+  }
+}
+
+// ---- VÉRIFICATION EMAIL ---------------------------------------
+async function submitVerifyCode(e) {
+  e.preventDefault();
+  const code  = document.getElementById('verify-code').value.trim();
+  const token = localStorage.getItem('apg_token');
+
+  setLoading('btn-verify', true);
+
+  try {
+    const res  = await fetch(API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'verify_email', token, code }),
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      showMsg('msg-verify', '✅ Compte confirmé !', 'success');
+      setTimeout(() => window.location.href = '/', 1200);
+    } else {
+      showMsg('msg-verify', data.error || 'Code invalide.', 'error');
+      setLoading('btn-verify', false);
+    }
+  } catch (_) {
+    showMsg('msg-verify', 'Erreur réseau.', 'error');
+    setLoading('btn-verify', false);
+  }
+}
+
+async function resendCode() {
+  const token = localStorage.getItem('apg_token');
+  try {
+    const res  = await fetch(API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'resend_verification', token }),
+    });
+    const data = await res.json();
+    if (data.success) {
+      showMsg('msg-verify', 'Nouveau code envoyé !', 'info');
+    } else {
+      showMsg('msg-verify', data.error || 'Impossible de renvoyer le code.', 'error');
+    }
+  } catch (_) {
+    showMsg('msg-verify', 'Erreur réseau.', 'error');
   }
 }
 </script>
