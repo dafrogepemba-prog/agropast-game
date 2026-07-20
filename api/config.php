@@ -14,7 +14,7 @@
 // If the CI wrote a server_config.php during deployment, include it so
 // it can populate environment variables (putenv/$_ENV) or provide fallbacks.
 if (file_exists(__DIR__ . '/server_config.php')) {
-	require_once __DIR__ . '/server_config.php';
+        require_once __DIR__ . '/server_config.php';
 }
 
 // Environment and secret handling
@@ -61,21 +61,26 @@ if (!defined('APP_SECRET_KEY') && isset($env['APP_SECRET_KEY'])) define('APP_SEC
 
 // APP_SECRET_KEY / SECRET_KEY handling
 if (!defined('APP_SECRET_KEY')) {
-	if (APP_ENV === 'local') {
-		// Development fallback only
-		define('APP_SECRET_KEY', 'valeur_par_defaut_dev_uniquement');
-	} else {
-		error_log('ERROR: Missing APP_SECRET_KEY environment variable in production. Aborting request.');
-		if (php_sapi_name() !== 'cli') {
-			http_response_code(500);
-			header('Content-Type: application/json; charset=utf-8');
-			echo json_encode(['success' => false, 'error' => 'Server misconfiguration: missing APP_SECRET_KEY']);
-		}
-		exit(1);
-	}
+        if (APP_ENV === 'local') {
+                // Development fallback only
+                define('APP_SECRET_KEY', 'valeur_par_defaut_dev_uniquement');
+        } else {
+                error_log('ERROR: Missing APP_SECRET_KEY environment variable in production. Aborting request.');
+                if (php_sapi_name() !== 'cli') {
+                        http_response_code(500);
+                        header('Content-Type: application/json; charset=utf-8');
+                        echo json_encode(['success' => false, 'error' => 'Server misconfiguration: missing APP_SECRET_KEY']);
+                }
+                exit(1);
+        }
 }
 
 if (!defined('SECRET_KEY')) define('SECRET_KEY', APP_SECRET_KEY);
+
+// Identifiants Brevo (SMTP transactionnel) — optionnels, l'envoi d'email
+// est simplement désactivé si absents (pas d'erreur bloquante).
+if (!defined('BREVO_SMTP_LOGIN')) define('BREVO_SMTP_LOGIN', getenv('BREVO_SMTP_LOGIN') ?: '');
+if (!defined('BREVO_SMTP_KEY'))   define('BREVO_SMTP_KEY',   getenv('BREVO_SMTP_KEY')   ?: '');
 
 // Préfixe obligatoire : base partagée avec epsylon-cg.com
 // Toutes les tables AgroPast-Game commencent par apg_
