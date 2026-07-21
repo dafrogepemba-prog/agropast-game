@@ -121,7 +121,7 @@ function sendEmail(string $to, string $subject, string $htmlBody): bool {
         $mail->Port       = 587;
         $mail->CharSet    = 'UTF-8';
 
-        $mail->setFrom('no-reply@agropast-game.online', 'AgroPast-Game');
+        $mail->setFrom('reddympassi@gmail.com', 'AgroPast-Game');
         $mail->addAddress($to);
         $mail->isHTML(true);
         $mail->Subject = $subject;
