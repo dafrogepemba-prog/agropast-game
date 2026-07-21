@@ -2,6 +2,8 @@
 // ============================================================
 // admin/index.php — Page de login du dashboard
 // Accès : https://agropast-game.online/admin/
+// Identifiants lus depuis l'environnement (injectés par le CI
+// depuis les GitHub Secrets ADMIN_USERNAME / ADMIN_PASSWORD).
 // ============================================================
 session_start();
 
@@ -13,15 +15,22 @@ if (!empty($_SESSION['admin_logged_in'])) {
 
 $error = '';
 
+// Identifiants admin — lus depuis l'environnement, avec repli
+// de secours uniquement pour le développement local (jamais utilisé
+// en production tant que ADMIN_USERNAME/ADMIN_PASSWORD sont définis).
+$admin_user     = getenv('ADMIN_USERNAME') ?: 'admin';
+$admin_password = getenv('ADMIN_PASSWORD') ?: null;
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $user = trim($_POST['username'] ?? '');
     $pass = $_POST['password'] ?? '';
 
-    // Identifiants admin
-    $admin_user     = 'admin';
-    $admin_password = 'admin'; // mot de passe temporaire en clair
-
-    if ($user === $admin_user && $pass === $admin_password) {
+    if ($admin_password === null) {
+        // Sécurité : si aucun mot de passe n'est configuré côté serveur,
+        // on refuse toute connexion plutôt que d'accepter n'importe quoi.
+        $error = 'Configuration serveur incomplète. Contacte l\'administrateur.';
+        error_log('admin/index.php: ADMIN_PASSWORD non defini dans l\'environnement');
+    } elseif ($user === $admin_user && hash_equals($admin_password, $pass)) {
         session_regenerate_id(true);
         $_SESSION['admin_logged_in'] = true;
         $_SESSION['admin_user']      = $user;
@@ -101,7 +110,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       <label for="password">Mot de passe</label>
       <input type="password" id="password" name="password" required autocomplete="current-password" />
 
-      <button type="submit">🔐 Se connecter</button>
+      <button type="submit">🔓 Se connecter</button>
     </form>
   </div>
 </body>

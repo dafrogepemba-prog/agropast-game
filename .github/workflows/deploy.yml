@@ -53,6 +53,8 @@ jobs:
           DB_PASS: ${{ secrets.DB_PASS }}
           BREVO_SMTP_LOGIN: ${{ secrets.BREVO_SMTP_LOGIN }}
           BREVO_SMTP_KEY: ${{ secrets.BREVO_SMTP_KEY }}
+          ADMIN_USERNAME: ${{ secrets.ADMIN_USERNAME }}
+          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
         run: |
           MISSING=""
           [ -z "$APP_SECRET_KEY" ] && MISSING="$MISSING APP_SECRET_KEY"
@@ -65,10 +67,10 @@ jobs:
             exit 0
           fi
           echo "Generating api/.htaccess with all DB + APP secrets..."
-          printf '<IfModule mod_env.c>\n  SetEnv APP_SECRET_KEY "%s"\n  SetEnv DB_HOST "127.0.0.1"\n  SetEnv DB_NAME "%s"\n  SetEnv DB_USER "%s"\n  SetEnv DB_PASS "%s"\n  SetEnv BREVO_SMTP_LOGIN "%s"\n  SetEnv BREVO_SMTP_KEY "%s"\n</IfModule>\n' \
-            "$APP_SECRET_KEY" "$DB_NAME" "$DB_USER" "$DB_PASS" "$BREVO_SMTP_LOGIN" "$BREVO_SMTP_KEY" > api/.htaccess
-          printf '<?php\n// deployed: %s\nputenv("APP_SECRET_KEY=%s");\nputenv("DB_HOST=127.0.0.1");\nputenv("DB_NAME=%s");\nputenv("DB_USER=%s");\nputenv("DB_PASS=%s");\nputenv("BREVO_SMTP_LOGIN=%s");\nputenv("BREVO_SMTP_KEY=%s");\n' \
-            "$(date -u +%Y%m%d%H%M%S)" "$APP_SECRET_KEY" "$DB_NAME" "$DB_USER" "$DB_PASS" "$BREVO_SMTP_LOGIN" "$BREVO_SMTP_KEY" > api/server_config.php
+          printf '<IfModule mod_env.c>\n  SetEnv APP_SECRET_KEY "%s"\n  SetEnv DB_HOST "127.0.0.1"\n  SetEnv DB_NAME "%s"\n  SetEnv DB_USER "%s"\n  SetEnv DB_PASS "%s"\n  SetEnv BREVO_SMTP_LOGIN "%s"\n  SetEnv BREVO_SMTP_KEY "%s"\n  SetEnv ADMIN_USERNAME "%s"\n  SetEnv ADMIN_PASSWORD "%s"\n</IfModule>\n' \
+            "$APP_SECRET_KEY" "$DB_NAME" "$DB_USER" "$DB_PASS" "$BREVO_SMTP_LOGIN" "$BREVO_SMTP_KEY" "$ADMIN_USERNAME" "$ADMIN_PASSWORD" > api/.htaccess
+          printf '<?php\n// deployed: %s\nputenv("APP_SECRET_KEY=%s");\nputenv("DB_HOST=127.0.0.1");\nputenv("DB_NAME=%s");\nputenv("DB_USER=%s");\nputenv("DB_PASS=%s");\nputenv("BREVO_SMTP_LOGIN=%s");\nputenv("BREVO_SMTP_KEY=%s");\nputenv("ADMIN_USERNAME=%s");\nputenv("ADMIN_PASSWORD=%s");\n' \
+            "$(date -u +%Y%m%d%H%M%S)" "$APP_SECRET_KEY" "$DB_NAME" "$DB_USER" "$DB_PASS" "$BREVO_SMTP_LOGIN" "$BREVO_SMTP_KEY" "$ADMIN_USERNAME" "$ADMIN_PASSWORD" > api/server_config.php
           echo "API config generated successfully"
       - name: Verify API config files were generated
         run: |
@@ -93,6 +95,47 @@ jobs:
             **/.git*/**
             **/node_modules/**
             **/*.log
+      - name: Deploy Admin dashboard to FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ftp.epsylon-cg.com
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          server-dir: /agropast-game.online/admin/
+          local-dir: admin/
+          state-name: .ftp-deploy-sync-state-admin.json
+          log-level: verbose
+          exclude: |
+            **/.git*
+            **/.git*/**
+      # Deploiement des fichiers racine du site (login.html, index.html,
+      # merci.html, etc.) — jusqu'ici ils n'etaient mis a jour que
+      # manuellement par FTP, ce qui a cause un oubli le 20/07/2026.
+      - name: Deploy root site files to FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ftp.epsylon-cg.com
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          server-dir: /agropast-game.online/agropast-game.online/
+          local-dir: ./
+          state-name: .ftp-deploy-sync-state-root.json
+          log-level: verbose
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/node_modules/**
+            agropast_game/**
+            api/**
+            admin/**
+            .github/**
+            .kiro/**
+            .idea/**
+            .vscode/**
+            maintenance/**
+            *.md
+            *.txt
+            *.bat
   # ── Job 2 : Build AAB Android (production) ──────────────
   build-aab:
     name: Build Android App Bundle
