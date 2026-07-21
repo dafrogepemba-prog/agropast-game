@@ -51,6 +51,8 @@ jobs:
           DB_NAME: ${{ secrets.DB_NAME }}
           DB_USER: ${{ secrets.DB_USER }}
           DB_PASS: ${{ secrets.DB_PASS }}
+          BREVO_SMTP_LOGIN: ${{ secrets.BREVO_SMTP_LOGIN }}
+          BREVO_SMTP_KEY: ${{ secrets.BREVO_SMTP_KEY }}
         run: |
           MISSING=""
           [ -z "$APP_SECRET_KEY" ] && MISSING="$MISSING APP_SECRET_KEY"
@@ -63,10 +65,10 @@ jobs:
             exit 0
           fi
           echo "Generating api/.htaccess with all DB + APP secrets..."
-          printf '<IfModule mod_env.c>\n  SetEnv APP_SECRET_KEY "%s"\n  SetEnv DB_HOST "127.0.0.1"\n  SetEnv DB_NAME "%s"\n  SetEnv DB_USER "%s"\n  SetEnv DB_PASS "%s"\n</IfModule>\n' \
-            "$APP_SECRET_KEY" "$DB_NAME" "$DB_USER" "$DB_PASS" > api/.htaccess
-          printf '<?php\n// deployed: %s\nputenv("APP_SECRET_KEY=%s");\nputenv("DB_HOST=127.0.0.1");\nputenv("DB_NAME=%s");\nputenv("DB_USER=%s");\nputenv("DB_PASS=%s");\n' \
-            "$(date -u +%Y%m%d%H%M%S)" "$APP_SECRET_KEY" "$DB_NAME" "$DB_USER" "$DB_PASS" > api/server_config.php
+          printf '<IfModule mod_env.c>\n  SetEnv APP_SECRET_KEY "%s"\n  SetEnv DB_HOST "127.0.0.1"\n  SetEnv DB_NAME "%s"\n  SetEnv DB_USER "%s"\n  SetEnv DB_PASS "%s"\n  SetEnv BREVO_SMTP_LOGIN "%s"\n  SetEnv BREVO_SMTP_KEY "%s"\n</IfModule>\n' \
+            "$APP_SECRET_KEY" "$DB_NAME" "$DB_USER" "$DB_PASS" "$BREVO_SMTP_LOGIN" "$BREVO_SMTP_KEY" > api/.htaccess
+          printf '<?php\n// deployed: %s\nputenv("APP_SECRET_KEY=%s");\nputenv("DB_HOST=127.0.0.1");\nputenv("DB_NAME=%s");\nputenv("DB_USER=%s");\nputenv("DB_PASS=%s");\nputenv("BREVO_SMTP_LOGIN=%s");\nputenv("BREVO_SMTP_KEY=%s");\n' \
+            "$(date -u +%Y%m%d%H%M%S)" "$APP_SECRET_KEY" "$DB_NAME" "$DB_USER" "$DB_PASS" "$BREVO_SMTP_LOGIN" "$BREVO_SMTP_KEY" > api/server_config.php
           echo "API config generated successfully"
       - name: Verify API config files were generated
         run: |
@@ -168,8 +170,9 @@ jobs:
         run: cp agropast_game/build/app/outputs/flutter-apk/app-release.apk agropast_game/build/app/outputs/flutter-apk/agropast-game-latest.apk
       # Deployer l'APK sur le serveur pour telechargement direct
       # (en attendant la publication officielle sur le Play Store)
-      # ATTENTION : cible le dossier reellement servi, verifie le
-      # 17/07/2026 via la technique du fichier marqueur (test_probe.txt)
+      # ATTENTION : cible le dossier reellement servi pour /downloads/,
+      # verifie le 20/07/2026 -- c'est le meme niveau que api/ et admin/
+      # (contrairement a game/ qui a un niveau de dossier en plus)
       - name: Deploy APK for direct download
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
