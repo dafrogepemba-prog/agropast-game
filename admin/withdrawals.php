@@ -17,20 +17,41 @@ try {
 
 $tW = DB_PREFIX . 'withdrawals';
 
+// --- Jeton CSRF (session) -------------------------------------
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
+$csrf = $_SESSION['csrf_token'];
+
 // --- Action : approuver ou refuser --------------------------
 $msg = ''; $err = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $token_ok = isset($_POST['csrf_token']) && hash_equals($csrf, $_POST['csrf_token']);
     $wid    = (int)($_POST['wid']    ?? 0);
     $action = $_POST['action_w']     ?? '';
     $note   = substr(trim($_POST['note_admin'] ?? ''), 0, 255);
 
-    if ($wid > 0 && in_array($action, ['approuve','refuse'])) {
-        $pdo->prepare("UPDATE `{$tW}` SET statut=?, note_admin=? WHERE id=?")
-            ->execute([$action, $note, $wid]);
-        $msg = $action === 'approuve'
-            ? '✅ Retrait approuvé et marqué comme payé.'
-            : '❌ Retrait refusé.';
+    if (!$token_ok) {
+        $err = 'Session expirée, réessaie.';
+    } elseif ($wid > 0 && in_array($action, ['approuve','refuse'])) {
+        // On ne modifie que les demandes encore en attente, pour éviter
+        // qu'un retrait déjà traité soit modifié deux fois par erreur/rejeu.
+        $stmt = $pdo->prepare("UPDATE `{$tW}` SET statut=?, note_admin=?, traite_par=? WHERE id=? AND statut='en_attente'");
+        $stmt->execute([$action, $note, $_SESSION['admin_user'] ?? 'admin', $wid]);
+        if ($stmt->rowCount() > 0) {
+            $msg = $action === 'approuve'
+                ? '✅ Retrait approuvé et marqué comme payé.'
+                : '❌ Retrait refusé.';
+        } else {
+            $err = 'Ce retrait a déjà été traité ou est introuvable.';
+        }
     }
+}
+
+// Ajouter la colonne traite_par si migration depuis ancien schéma
+$cols = array_column($pdo->query("SHOW COLUMNS FROM `{$tW}`")->fetchAll(), 'Field');
+if (!in_array('traite_par', $cols)) {
+    $pdo->exec("ALTER TABLE `{$tW}` ADD COLUMN `traite_par` VARCHAR(60) DEFAULT '' AFTER `note_admin`");
 }
 
 // --- Stats rapides ------------------------------------------
@@ -100,6 +121,8 @@ if ($filtre === 'tous') {
     .filters a.active { background:var(--green); color:#fff; border-color:var(--green); }
     .alert-ok  { background:#e8f5e9; border:1px solid #a5d6a7; color:#2e7d32;
       padding:.7rem 1rem; border-radius:8px; margin-bottom:1rem; }
+    .alert-err { background:#ffebee; border:1px solid #ef9a9a; color:#c62828;
+      padding:.7rem 1rem; border-radius:8px; margin-bottom:1rem; }
     table { width:100%; border-collapse:collapse; font-size:.84rem; }
     thead { background:var(--green); color:#fff; }
     th,td { padding:.6rem .8rem; text-align:left; border-bottom:1px solid #eee; }
@@ -127,6 +150,7 @@ if ($filtre === 'tous') {
 <main>
 
   <?php if ($msg): ?><div class="alert-ok"><?= $msg ?></div><?php endif; ?>
+  <?php if ($err): ?><div class="alert-err">❌ <?= htmlspecialchars($err) ?></div><?php endif; ?>
 
   <!-- STATS -->
   <div class="stats">
@@ -150,7 +174,7 @@ if ($filtre === 'tous') {
       <thead>
         <tr>
           <th>#</th><th>Joueur</th><th>Téléphone retrait</th><th>WhatsApp</th>
-          <th>Montant</th><th>Score</th><th>Statut</th><th>Date</th><th>Actions</th>
+          <th>Montant</th><th>Score</th><th>Statut</th><th>Traité par</th><th>Date</th><th>Actions</th>
         </tr>
       </thead>
       <tbody>
@@ -171,11 +195,13 @@ if ($filtre === 'tous') {
               <span class="badge badge-refuse">❌ Refusé</span>
             <?php endif; ?>
           </td>
+          <td style="font-size:.78rem;color:#888"><?= htmlspecialchars($w['traite_par'] ?? '') ?></td>
           <td><?= date('d/m/y H:i', strtotime($w['created_at'])) ?></td>
           <td>
             <?php if ($w['statut']==='en_attente'): ?>
             <form method="POST" class="action-form"
                   onsubmit="return confirm('Confirmer le paiement de <?= $w['montant'] ?> FCFA à <?= htmlspecialchars($w['nom']) ?> ?')">
+              <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf) ?>">
               <input type="hidden" name="wid" value="<?= $w['id'] ?>">
               <input type="hidden" name="action_w" value="approuve">
               <input type="hidden" name="note_admin" value="Paiement manuel effectué">
@@ -183,6 +209,7 @@ if ($filtre === 'tous') {
             </form>
             <form method="POST" class="action-form"
                   onsubmit="return confirm('Refuser ce retrait ?')">
+              <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf) ?>">
               <input type="hidden" name="wid" value="<?= $w['id'] ?>">
               <input type="hidden" name="action_w" value="refuse">
               <input type="hidden" name="note_admin" value="Refusé par admin">
@@ -195,7 +222,7 @@ if ($filtre === 'tous') {
         </tr>
       <?php endforeach; ?>
       <?php if (empty($list)): ?>
-        <tr><td colspan="9" style="text-align:center;padding:2rem;color:#aaa">Aucune demande</td></tr>
+        <tr><td colspan="10" style="text-align:center;padding:2rem;color:#aaa">Aucune demande</td></tr>
       <?php endif; ?>
       </tbody>
     </table>
