@@ -2,6 +2,9 @@
 // ============================================================
 // ENDPOINT : POST /api/withdraw.php
 // Demande de retrait — seuil minimum 2 000 FCFA
+// Les points sont déduits immédiatement et atomiquement à la
+// demande (pas seulement à l'approbation), pour empêcher un
+// joueur de soumettre plusieurs retraits avec le même solde.
 // ============================================================
 
 require_once __DIR__ . '/config.php';
@@ -83,27 +86,10 @@ if (strlen($telephone) < 8) {
     exit;
 }
 
-// --- Récupérer le score -------------------------------------
-$scoreRow = $pdo->prepare("SELECT score_total FROM `{$tScore}` WHERE user_id=?");
-$scoreRow->execute([$user['id']]);
-$sc = $scoreRow->fetch();
-$scoreTotal = $sc ? (int)$sc['score_total'] : 0;
-
 // --- Seuil minimum : 33 334 pts = 2 000 FCFA ---------------
 // Modèle : 60 FCFA / 1 000 pts → 2 000 FCFA = 33 334 pts
 $SEUIL_PTS   = 33334;
 $MONTANT_MIN = 2000; // FCFA
-
-if ($scoreTotal < $SEUIL_PTS) {
-    $manquant = $SEUIL_PTS - $scoreTotal;
-    echo json_encode([
-        'success' => false,
-        'error'   => "Score insuffisant. Il te faut {$SEUIL_PTS} pts minimum pour retirer {$MONTANT_MIN} FCFA. Il te manque {$manquant} pts.",
-        'score_actuel' => $scoreTotal,
-        'score_requis' => $SEUIL_PTS,
-    ]);
-    exit;
-}
 
 // --- Vérifier qu'il n'y a pas déjà une demande en attente ---
 $pending = $pdo->prepare("
@@ -119,13 +105,55 @@ if ($pending->fetchColumn()) {
     exit;
 }
 
-// --- Insérer la demande de retrait --------------------------
-$pdo->prepare("
-    INSERT INTO `{$tWithdraw}` (user_id, nom, telephone, montant, score_used)
-    VALUES (?, ?, ?, ?, ?)
-")->execute([$user['id'], $user['nom'], $telephone, $MONTANT_MIN, $scoreTotal]);
+// --- Déduction atomique + insertion, dans une transaction ----
+// L'UPDATE conditionnel (score_total >= SEUIL_PTS) ne réussit
+// que si le solde est encore suffisant au moment exact de son
+// exécution : ça empêche à la fois la réutilisation d'un solde
+// déjà consommé et une double-soumission simultanée.
+try {
+    $pdo->beginTransaction();
 
-$withdrawId = $pdo->lastInsertId();
+    $deduct = $pdo->prepare("
+        UPDATE `{$tScore}`
+        SET score_total = score_total - :seuil
+        WHERE user_id = :uid AND score_total >= :seuil2
+    ");
+    $deduct->execute([':seuil' => $SEUIL_PTS, ':uid' => $user['id'], ':seuil2' => $SEUIL_PTS]);
+
+    if ($deduct->rowCount() === 0) {
+        $pdo->rollBack();
+
+        // Récupérer le score actuel pour un message clair
+        $scoreRow = $pdo->prepare("SELECT score_total FROM `{$tScore}` WHERE user_id=?");
+        $scoreRow->execute([$user['id']]);
+        $sc = $scoreRow->fetch();
+        $scoreTotal = $sc ? (int)$sc['score_total'] : 0;
+        $manquant = max(0, $SEUIL_PTS - $scoreTotal);
+
+        echo json_encode([
+            'success' => false,
+            'error'   => "Score insuffisant. Il te faut {$SEUIL_PTS} pts minimum pour retirer {$MONTANT_MIN} FCFA. Il te manque {$manquant} pts.",
+            'score_actuel' => $scoreTotal,
+            'score_requis' => $SEUIL_PTS,
+        ]);
+        exit;
+    }
+
+    $pdo->prepare("
+        INSERT INTO `{$tWithdraw}` (user_id, nom, telephone, montant, score_used)
+        VALUES (?, ?, ?, ?, ?)
+    ")->execute([$user['id'], $user['nom'], $telephone, $MONTANT_MIN, $SEUIL_PTS]);
+
+    $withdrawId = $pdo->lastInsertId();
+    $pdo->commit();
+
+} catch (PDOException $e) {
+    if ($pdo->inTransaction()) $pdo->rollBack();
+    error_log('withdraw.php error: ' . $e->getMessage());
+    http_response_code(500);
+    echo json_encode(['success'=>false,'error'=>'Erreur serveur, réessaie.']);
+    exit;
+}
 
 echo json_encode([
     'success'    => true,
