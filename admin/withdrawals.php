@@ -34,16 +34,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!$token_ok) {
         $err = 'Session expirée, réessaie.';
     } elseif ($wid > 0 && in_array($action, ['approuve','refuse'])) {
-        // On ne modifie que les demandes encore en attente, pour éviter
-        // qu'un retrait déjà traité soit modifié deux fois par erreur/rejeu.
-        $stmt = $pdo->prepare("UPDATE `{$tW}` SET statut=?, note_admin=?, traite_par=? WHERE id=? AND statut='en_attente'");
-        $stmt->execute([$action, $note, $_SESSION['admin_user'] ?? 'admin', $wid]);
-        if ($stmt->rowCount() > 0) {
-            $msg = $action === 'approuve'
-                ? '✅ Retrait approuvé et marqué comme payé.'
-                : '❌ Retrait refusé.';
-        } else {
-            $err = 'Ce retrait a déjà été traité ou est introuvable.';
+        try {
+            $pdo->beginTransaction();
+
+            // On ne modifie que les demandes encore en attente, pour éviter
+            // qu'un retrait déjà traité soit modifié deux fois par erreur/rejeu.
+            // On verrouille la ligne (FOR UPDATE) pour éviter une double
+            // approbation simultanée par deux onglets admin ouverts en même temps.
+            $lock = $pdo->prepare("SELECT id, user_id, score_used, statut FROM `{$tW}` WHERE id=? FOR UPDATE");
+            $lock->execute([$wid]);
+            $wrow = $lock->fetch();
+
+            if (!$wrow || $wrow['statut'] !== 'en_attente') {
+                $pdo->rollBack();
+                $err = 'Ce retrait a déjà été traité ou est introuvable.';
+            } else {
+                $stmt = $pdo->prepare("UPDATE `{$tW}` SET statut=?, note_admin=?, traite_par=? WHERE id=? AND statut='en_attente'");
+                $stmt->execute([$action, $note, $_SESSION['admin_user'] ?? 'admin', $wid]);
+
+                if ($action === 'refuse') {
+                    // Rembourser les points déduits au moment de la demande
+                    $tScoreLocal = DB_PREFIX . 'scores';
+                    $pdo->prepare("UPDATE `{$tScoreLocal}` SET score_total = score_total + ? WHERE user_id = ?")
+                        ->execute([$wrow['score_used'], $wrow['user_id']]);
+                }
+
+                $pdo->commit();
+                $msg = $action === 'approuve'
+                    ? '✅ Retrait approuvé et marqué comme payé.'
+                    : '❌ Retrait refusé et points remboursés au joueur.';
+            }
+        } catch (PDOException $e) {
+            if ($pdo->inTransaction()) $pdo->rollBack();
+            error_log('withdrawals.php action error: ' . $e->getMessage());
+            $err = 'Erreur serveur, réessaie.';
         }
     }
 }
