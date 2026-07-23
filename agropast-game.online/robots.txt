@@ -1,0 +1,7 @@
+User-agent: *
+Disallow: /admin/
+Disallow: /api/
+Disallow: /game/
+Allow: /
+
+Sitemap: https://agropast-game.online/sitemap.xml
