@@ -7,6 +7,15 @@
 // ============================================================
 session_start();
 
+// Charge les secrets injectés par le CI au déploiement (putenv), le
+// même mécanisme que celui déjà utilisé par dashboard.php et withdrawals.php.
+// Sans ça, getenv() ne voit jamais ADMIN_USERNAME/ADMIN_PASSWORD : le
+// SetEnv d'Apache seul n'est pas fiable avec PHP-FPM/CGI sur cet hébergement.
+$serverConfig = dirname(__DIR__) . '/api/server_config.php';
+if (file_exists($serverConfig)) {
+    require_once $serverConfig;
+}
+
 // Si déjà connecté → rediriger vers dashboard
 if (!empty($_SESSION['admin_logged_in'])) {
     header('Location: dashboard.php');
