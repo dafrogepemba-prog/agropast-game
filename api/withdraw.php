@@ -12,9 +12,28 @@ require_once __DIR__ . '/config.php';
 header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: https://agropast-game.online');
 header('Access-Control-Allow-Methods: POST, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type');
+header('Access-Control-Allow-Headers: Content-Type, X-Client-Platform');
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { http_response_code(204); exit; }
 if ($_SERVER['REQUEST_METHOD'] !== 'POST')    { http_response_code(405); exit; }
+
+// --- Réservé à l'application Android/iOS ----------------------
+// La version web (/game/) est une démo/vitrine : elle partage le
+// même compte et la même progression que l'app, mais les retraits
+// en argent réel ne sont autorisés que depuis l'app native, pour
+// des raisons de conformité des programmes publicitaires du site
+// web (AdSense) et parce que la monétisation (pubs récompensées)
+// se fait dans l'app. Le header est fixé à la compilation (kIsWeb)
+// côté client, donc jamais falsifiable depuis un build web.
+$clientPlatform = $_SERVER['HTTP_X_CLIENT_PLATFORM'] ?? '';
+if ($clientPlatform !== 'app') {
+    http_response_code(403);
+    echo json_encode([
+        'success' => false,
+        'error'   => "Les retraits sont réservés à l'application Android. Télécharge l'app pour retirer tes gains !",
+        'web_only_blocked' => true,
+    ]);
+    exit;
+}
 
 try {
     $pdo = new PDO(

@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
@@ -414,7 +415,14 @@ class _HomeScreenState extends State<HomeScreen> {
                             final res = await http
                                 .post(
                                   Uri.parse('https://agropast-game.online/api/withdraw.php'),
-                                  headers: {'Content-Type': 'application/json'},
+                                  headers: {
+                                    'Content-Type': 'application/json',
+                                    // Distingue l'app native compilée (Android/iOS)
+                                    // de la version web : seule l'app peut envoyer
+                                    // 'app' ici, kIsWeb est déterminé à la compilation
+                                    // et ne peut pas être falsifié depuis le build web.
+                                    'X-Client-Platform': kIsWeb ? 'web' : 'app',
+                                  },
                                   body: jsonEncode(
                                       {'token': token, 'telephone': tel}),
                                 )
