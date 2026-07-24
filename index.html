@@ -3,20 +3,22 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AgroPast-Game — Cultive, Récolte, Domine !</title>
-  <meta name="description" content="AgroPast-Game : le jeu mobile de gestion de ferme de pastèques et de vinification. Gratuit sur Android. Rejoins le classement !" />
+  <title>AgroPast Game — Le jeu de simulation agricole éco-responsable</title>
+  <meta name="description" content="AgroPast Game est un jeu de simulation agricole gratuit. Semez, arrosez et récoltez vos cultures chaque jour. Disponible sur Android et navigateur web." />
+
+  <!-- Google AdSense — Vérification propriété domaine -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4115564366785475"
+     crossorigin="anonymous"></script>
+
   <style>
-    /* ===== RESET & BASE ===== */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
       --green:   #2e7d32;
       --green-l: #4caf50;
       --yellow:  #f9a825;
-      --red:     #c62828;
-      --bg:      #f1f8e9;
       --dark:    #1b2a1b;
       --white:   #ffffff;
-      --gray:    #f5f5f5;
+      --bg:      #f1f8e9;
       --shadow:  0 4px 18px rgba(0,0,0,.12);
       --radius:  12px;
     }
@@ -25,1033 +27,329 @@
       font-family: 'Segoe UI', Arial, sans-serif;
       background: var(--bg);
       color: var(--dark);
-      line-height: 1.6;
+      line-height: 1.7;
     }
-    a { color: inherit; text-decoration: none; }
-    img { max-width: 100%; display: block; }
-    .btn {
-      display: inline-block;
-      padding: .75rem 2rem;
-      border-radius: 50px;
-      font-weight: 700;
-      font-size: 1rem;
-      cursor: pointer;
-      border: none;
-      transition: transform .15s, box-shadow .15s;
-    }
-    .btn:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
-    .btn-primary   { background: var(--green);  color: var(--white); }
-    .btn-secondary { background: var(--yellow); color: var(--dark);  }
-    .btn-outline   { background: transparent; border: 2px solid var(--white); color: var(--white); }
-    .section { padding: 5rem 1.5rem; }
-    .container { max-width: 960px; margin: 0 auto; }
-    .section-title {
-      font-size: clamp(1.6rem, 4vw, 2.4rem);
-      font-weight: 800;
-      text-align: center;
-      margin-bottom: .5rem;
-      color: var(--green);
-    }
-    .section-sub {
-      text-align: center;
-      color: #555;
-      margin-bottom: 3rem;
-      font-size: 1.05rem;
-    }
+    a { color: var(--green); text-decoration: none; }
+    a:hover { text-decoration: underline; }
 
-    /* ===== NAVBAR ===== */
+    /* ── NAVBAR ── */
     nav {
-      position: sticky; top: 0; z-index: 100;
       background: var(--dark);
-      padding: 0 1.5rem;
+      padding: 1rem 2rem;
       display: flex; align-items: center; justify-content: space-between;
-      box-shadow: 0 2px 8px rgba(0,0,0,.3);
-      min-height: 60px;
-      transition: background .3s;
+      position: sticky; top: 0; z-index: 100;
     }
-    nav.scrolled { background: rgba(27,42,27,.97); backdrop-filter: blur(8px); }
-    .nav-logo { font-size: 1.3rem; font-weight: 800; color: var(--yellow); letter-spacing: .5px; flex-shrink: 0; }
-    .nav-logo span { color: var(--green-l); }
-
-    /* Liens de navigation desktop */
-    .nav-links {
-      display: flex; align-items: center; gap: .25rem;
-      list-style: none;
+    .nav-logo { font-size: 1.3rem; font-weight: 900; color: var(--yellow); }
+    .nav-links { display: flex; gap: 1.5rem; list-style: none; }
+    .nav-links a { color: rgba(255,255,255,.75); font-size: .9rem; font-weight: 600; }
+    .nav-links a:hover { color: #fff; }
+    .nav-cta {
+      background: var(--green-l); color: #fff;
+      padding: .5rem 1.2rem; border-radius: 50px;
+      font-weight: 700; font-size: .9rem;
+      text-decoration: none; transition: background .2s;
     }
-    .nav-links a {
-      color: rgba(255,255,255,.75);
-      font-size: .88rem;
-      font-weight: 600;
-      padding: .45rem .75rem;
-      border-radius: 6px;
-      transition: color .2s, background .2s;
-      white-space: nowrap;
-    }
-    .nav-links a:hover { color: var(--white); background: rgba(255,255,255,.08); }
-    .nav-links a[aria-current="page"] {
-      color: var(--yellow);
-      background: rgba(249,168,37,.12);
-    }
-    /* Focus clavier visible */
-    .nav-links a:focus-visible {
-      outline: 2px solid var(--yellow);
-      outline-offset: 2px;
+    .nav-cta:hover { background: var(--green); text-decoration: none; }
+    @media (max-width: 600px) {
+      .nav-links { display: none; }
     }
 
-    .nav-right { display: flex; align-items: center; gap: .75rem; }
-    .nav-cta { font-size: .85rem; padding: .45rem 1.1rem; }
-
-    /* Menu hamburger mobile */
-    .nav-hamburger {
-      display: none;
-      background: none; border: none;
-      cursor: pointer;
-      padding: .4rem;
-      color: var(--white);
-      flex-direction: column; gap: 5px;
-      align-items: center; justify-content: center;
-    }
-    .nav-hamburger span {
-      display: block; width: 22px; height: 2px;
-      background: var(--white);
-      border-radius: 2px;
-      transition: transform .3s, opacity .3s;
-    }
-    .nav-hamburger[aria-expanded="true"] span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
-    .nav-hamburger[aria-expanded="true"] span:nth-child(2) { opacity: 0; }
-    .nav-hamburger[aria-expanded="true"] span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
-
-    /* Mobile nav drawer */
-    @media (max-width: 720px) {
-      .nav-hamburger { display: flex; }
-      .nav-links {
-        position: fixed; top: 60px; left: 0; right: 0;
-        background: var(--dark);
-        flex-direction: column; align-items: stretch;
-        padding: 1rem 1.5rem 1.5rem;
-        gap: .25rem;
-        box-shadow: 0 4px 12px rgba(0,0,0,.4);
-        transform: translateY(-110%);
-        transition: transform .3s ease;
-        z-index: 99;
-      }
-      .nav-links.open { transform: translateY(0); }
-      .nav-links a { font-size: 1rem; padding: .75rem 1rem; }
-      .nav-cta { display: none; }
-    }
-
-    /* ===== BOUTON RETOUR EN HAUT ===== */
-    #btn-top {
-      position: fixed; bottom: 1.5rem; right: 1.5rem;
-      z-index: 200;
-      background: var(--green);
-      color: var(--white);
-      border: none; border-radius: 50%;
-      width: 44px; height: 44px;
-      font-size: 1.2rem;
-      cursor: pointer;
-      box-shadow: var(--shadow);
-      opacity: 0; pointer-events: none;
-      transition: opacity .3s, transform .3s;
-      display: flex; align-items: center; justify-content: center;
-    }
-    #btn-top.visible { opacity: 1; pointer-events: auto; }
-    #btn-top:hover { transform: translateY(-3px); background: var(--green-l); }
-    #btn-top:focus-visible { outline: 2px solid var(--yellow); outline-offset: 2px; }
-
-    /* ===== HERO ===== */
+    /* ── HERO ── */
     #hero {
       background: linear-gradient(135deg, var(--dark) 0%, #1a4620 60%, #2d6a2d 100%);
-      color: var(--white);
-      padding: 6rem 1.5rem 5rem;
-      text-align: center;
-      position: relative;
-      overflow: hidden;
-    }
-    #hero::before {
-      content: "🍉";
-      font-size: 18rem;
-      position: absolute;
-      top: -3rem; right: -4rem;
-      opacity: .08;
-      pointer-events: none;
-      line-height: 1;
+      color: #fff; padding: 5rem 2rem 4rem; text-align: center;
     }
     #hero h1 {
-      font-size: clamp(2rem, 6vw, 3.6rem);
-      font-weight: 900;
-      line-height: 1.1;
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-weight: 900; line-height: 1.2;
       margin-bottom: 1rem;
-      text-shadow: 0 2px 8px rgba(0,0,0,.4);
     }
     #hero h1 span { color: var(--yellow); }
     #hero p {
-      font-size: clamp(1rem, 2.5vw, 1.25rem);
-      max-width: 620px;
-      margin: 0 auto 2rem;
-      opacity: .9;
+      font-size: 1.1rem; max-width: 600px;
+      margin: 0 auto 2rem; opacity: .9;
     }
-    .hero-badges {
-      display: flex; flex-wrap: wrap; gap: .6rem;
-      justify-content: center;
-      margin-bottom: 2.5rem;
+    .cta-group { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+    .btn-primary {
+      background: var(--green-l); color: #fff;
+      padding: .9rem 2.5rem; border-radius: 50px;
+      font-size: 1.1rem; font-weight: 800;
+      text-decoration: none; transition: transform .15s, box-shadow .15s;
+      display: inline-block;
     }
-    .badge {
-      background: rgba(255,255,255,.12);
-      border: 1px solid rgba(255,255,255,.25);
-      border-radius: 50px;
-      padding: .35rem 1rem;
-      font-size: .85rem;
-      backdrop-filter: blur(4px);
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: var(--shadow); text-decoration: none; }
+    .btn-secondary {
+      background: rgba(255,255,255,.15); color: #fff;
+      border: 2px solid rgba(255,255,255,.4);
+      padding: .9rem 2rem; border-radius: 50px;
+      font-size: 1rem; font-weight: 700;
+      text-decoration: none; transition: background .2s;
+      display: inline-block;
     }
-    .hero-cta-group { display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center; }
+    .btn-secondary:hover { background: rgba(255,255,255,.25); text-decoration: none; }
 
-    /* ===== FEATURES (3 piliers) ===== */
-    #features { background: var(--white); }
-    .features-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 2rem;
-      margin-top: 1rem;
+    /* ── SECTIONS ── */
+    .section { padding: 4rem 2rem; max-width: 900px; margin: 0 auto; }
+    .section h2 {
+      font-size: 1.8rem; font-weight: 800;
+      color: var(--green); margin-bottom: 1rem;
+    }
+    .section p { font-size: 1rem; color: #444; margin-bottom: 1rem; }
+
+    /* ── FEATURES ── */
+    .features {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.5rem; margin-top: 2rem;
     }
     .feature-card {
-      background: var(--bg);
-      border-radius: var(--radius);
-      padding: 2rem 1.5rem;
+      background: #fff; border-radius: var(--radius);
+      padding: 1.8rem 1.5rem; box-shadow: var(--shadow);
       text-align: center;
-      box-shadow: var(--shadow);
     }
-    .feature-card .icon { font-size: 3rem; margin-bottom: 1rem; }
-    .feature-card h3 { font-size: 1.15rem; font-weight: 700; margin-bottom: .5rem; color: var(--green); }
-    .feature-card p { font-size: .95rem; color: #555; }
+    .feature-card .icon { font-size: 2.8rem; margin-bottom: .8rem; }
+    .feature-card h3 { font-size: 1.1rem; color: var(--green); margin-bottom: .5rem; }
+    .feature-card p { font-size: .9rem; color: #555; }
 
-    /* ===== HOW TO PLAY ===== */
-    #howto { background: var(--bg); }
+    /* ── HOW TO PLAY ── */
+    #comment { background: #fff; }
     .steps {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 1.5rem;
-      margin-bottom: 3rem;
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1.2rem; margin-top: 1.5rem;
     }
-    .step {
-      background: var(--white);
-      border-radius: var(--radius);
-      padding: 1.5rem;
-      text-align: center;
-      box-shadow: var(--shadow);
-      position: relative;
-    }
-    .step-num {
-      background: var(--green);
-      color: var(--white);
-      width: 36px; height: 36px;
-      border-radius: 50%;
-      font-weight: 800;
-      font-size: .95rem;
+    .step { text-align: center; }
+    .step .num {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: var(--green); color: #fff;
+      font-weight: 800; font-size: .95rem;
       display: flex; align-items: center; justify-content: center;
       margin: 0 auto .8rem;
     }
-    .step .icon { font-size: 2.2rem; margin-bottom: .6rem; }
-    .step h3 { font-weight: 700; font-size: 1rem; margin-bottom: .3rem; color: var(--dark); }
-    .step p  { font-size: .88rem; color: #666; }
+    .step .icon { font-size: 2rem; margin-bottom: .5rem; }
+    .step h3 { font-size: 1rem; font-weight: 700; margin-bottom: .3rem; }
+    .step p { font-size: .88rem; color: #666; }
 
-    /* ===== MINI-DEMO ===== */
-    #demo-zone {
-      background: #1b2a1b;
-      border-radius: var(--radius);
-      padding: 2rem;
-      max-width: 520px;
-      margin: 0 auto;
-      color: var(--white);
-      box-shadow: var(--shadow);
-      text-align: center;
+    /* ── CTA FINAL ── */
+    #cta-final {
+      background: linear-gradient(135deg, var(--dark) 0%, #1a4620 100%);
+      color: #fff; text-align: center; padding: 4rem 2rem;
     }
-    #demo-zone h3 { font-size: 1.2rem; margin-bottom: .3rem; color: var(--yellow); }
-    #demo-zone p  { font-size: .9rem; opacity: .75; margin-bottom: 1.5rem; }
-    #demo-field {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: .6rem;
-      margin-bottom: 1.5rem;
-    }
-    .plot {
-      background: #2d4a1e;
-      border: 2px solid #3a5c24;
-      border-radius: 8px;
-      height: 80px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 2.2rem;
-      cursor: pointer;
-      transition: transform .15s, border-color .15s;
-      position: relative;
-      user-select: none;
-    }
-    .plot:hover { transform: scale(1.06); border-color: var(--green-l); }
-    .plot.ready { border-color: var(--yellow); animation: pulse .8s infinite alternate; }
-    @keyframes pulse { from { box-shadow: 0 0 0 0 rgba(249,168,37,.4); } to { box-shadow: 0 0 0 8px rgba(249,168,37,0); } }
-    .water-bar-wrap {
-      background: rgba(255,255,255,.1);
-      border-radius: 50px;
-      height: 8px;
-      margin-top: .4rem;
-      overflow: hidden;
-    }
-    .water-bar { height: 100%; background: #64b5f6; border-radius: 50px; transition: width .3s; }
-    #demo-log {
-      font-size: .9rem;
-      min-height: 1.5rem;
-      margin-bottom: 1rem;
-      color: var(--yellow);
-      font-weight: 600;
-    }
-    #demo-score { font-size: 1.4rem; font-weight: 800; margin-bottom: 1rem; }
-    #demo-score span { color: var(--yellow); }
-    #btn-reset { display: none; }
+    #cta-final h2 { color: var(--yellow); font-size: 1.8rem; margin-bottom: 1rem; }
+    #cta-final p { opacity: .8; margin-bottom: 2rem; max-width: 500px; margin-left: auto; margin-right: auto; }
 
-    /* ===== LEADERBOARD ===== */
-    #leaderboard { background: var(--white); }
-    .lb-table {
-      width: 100%;
-      border-collapse: collapse;
-      border-radius: var(--radius);
-      overflow: hidden;
-      box-shadow: var(--shadow);
-    }
-    .lb-table thead { background: var(--green); color: var(--white); }
-    .lb-table th, .lb-table td { padding: .85rem 1.2rem; text-align: left; font-size: .95rem; }
-    .lb-table tbody tr:nth-child(even) { background: var(--bg); }
-    .lb-table tbody tr:hover { background: #c8e6c9; }
-    .lb-table .rank { font-weight: 800; font-size: 1.1rem; }
-    .rank-1 { color: #f9a825; }
-    .rank-2 { color: #90a4ae; }
-    .rank-3 { color: #a1887f; }
-    .lb-note {
-      text-align: center;
-      margin-top: 1.2rem;
-      font-size: .85rem;
-      color: #888;
-      font-style: italic;
-    }
-    .lb-cta { text-align: center; margin-top: 2rem; }
-
-    /* ===== FORMULAIRE ===== */
-    #signup { background: var(--bg); }
-    .form-card {
-      background: var(--white);
-      border-radius: var(--radius);
-      padding: 2.5rem 2rem;
-      max-width: 540px;
-      margin: 0 auto;
-      box-shadow: var(--shadow);
-    }
-    .form-group { margin-bottom: 1.2rem; }
-    .form-group label { display: block; font-weight: 600; margin-bottom: .4rem; font-size: .9rem; }
-    .form-group input,
-    .form-group select {
-      width: 100%;
-      padding: .7rem 1rem;
-      border: 1.5px solid #ccc;
-      border-radius: 8px;
-      font-size: 1rem;
-      background: var(--bg);
-      transition: border-color .2s;
-    }
-    .form-group input:focus,
-    .form-group select:focus { outline: none; border-color: var(--green); }
-    .form-hint { font-size: .8rem; color: #888; margin-top: .25rem; }
-    .form-submit { width: 100%; padding: .9rem; font-size: 1.05rem; margin-top: .5rem; }
-    .form-legal { font-size: .78rem; color: #999; text-align: center; margin-top: 1rem; }
-
-    /* ===== FOOTER ===== */
+    /* ── FOOTER ── */
     footer {
-      background: var(--dark);
-      color: rgba(255,255,255,.6);
-      text-align: center;
-      padding: 2rem 1.5rem;
-      font-size: .85rem;
+      background: var(--dark); color: rgba(255,255,255,.6);
+      padding: 2rem 2rem 1.5rem; text-align: center; font-size: .85rem;
     }
-    footer strong { color: var(--yellow); }
-    footer a { color: var(--green-l); }
+    .footer-links {
+      display: flex; gap: 1.5rem; justify-content: center;
+      flex-wrap: wrap; margin-bottom: 1rem;
+    }
+    .footer-links a { color: var(--green-l); }
+    .footer-links a:hover { color: #fff; }
+    footer p { margin-top: .5rem; }
 
-    /* ===== RESPONSIVE ===== */
-    @media (max-width: 480px) {
-      .hero-cta-group { flex-direction: column; align-items: center; }
-      .form-card { padding: 1.5rem 1rem; }
+    /* ── Connexion bouton ── */
+    #nav-user { display: none; align-items: center; gap: .75rem; }
+    #nav-user span { color: var(--yellow); font-weight: 700; font-size: .85rem; }
+    .btn-jouer-nav {
+      background: var(--green); color: #fff; border: none;
+      border-radius: 6px; padding: .4rem .9rem; font-size: .85rem;
+      cursor: pointer; text-decoration: none; font-weight: 700;
     }
+    .btn-deco { background: rgba(255,255,255,.1); color: #fff;
+      border: 1px solid rgba(255,255,255,.2); border-radius: 6px;
+      padding: .35rem .7rem; font-size: .8rem; cursor: pointer; }
   </style>
 </head>
 <body>
 
-<!-- ======================================================
-     NAVBAR
-====================================================== -->
-<nav id="main-nav" aria-label="Navigation principale">
-  <a href="#hero" class="nav-logo" aria-label="AgroPast-Game — retour en haut">🍉 AgroPast<span>Game</span></a>
+<!-- VERSION DEMO BANNER -->
+<div style="width:100%;padding:12px 16px;display:flex;align-items:center;gap:10px;justify-content:center;flex-wrap:wrap;background:linear-gradient(135deg,#f9a825 0%,#ffd54f 100%);color:#000;">
+  <span style="font-size:18px;">ℹ️</span>
+  <span style="font-weight:700;font-size:14px;">Version démo — récompenses limitées sur navigateur web. Télécharge l'app Android pour profiter du programme complet.</span>
+</div>
 
-  <!-- Liens desktop -->
-  <ul class="nav-links" id="nav-links" role="list">
-    <li><a href="#hero"        aria-label="Section Accueil">🏠 Accueil</a></li>
-    <li><a href="#features"    aria-label="Section Pourquoi jouer">⭐ Pourquoi</a></li>
-    <li><a href="#howto"       aria-label="Section Comment jouer">🎮 Jouer</a></li>
-    <li><a href="#leaderboard" aria-label="Section Classement">🏆 Classement</a></li>
-    <li><a href="#signup"      aria-label="Section Inscription">✉️ S'inscrire</a></li>
+<!-- NAVBAR -->
+<nav>
+  <span class="nav-logo">🍉 AgroPast Game</span>
+  <ul class="nav-links">
+    <li><a href="#concept">Le Concept</a></li>
+    <li><a href="#comment">Comment jouer</a></li>
+    <li><a href="#parcours">Parcours Quotidien</a></li>
+    <li><a href="/regles-du-jeu.html">Règles complètes</a></li>
   </ul>
-
-  <div class="nav-right">
-    <!-- Zone joueur connecté (injectée par JS) -->
-    <div id="nav-user" style="display:none; align-items:center; gap:.5rem">
-      <span id="nav-pseudo" style="color:#f9a825; font-weight:700; font-size:.85rem"></span>
-      <a href="/game/" id="nav-btn-jouer" style="
-        background:#2e7d32; color:#fff; border:none;
-        border-radius:6px; padding:.4rem .9rem; font-size:.85rem;
-        cursor:pointer; text-decoration:none; font-weight:700">
-        🎮 Jouer
-      </a>
-      <button onclick="logout()" style="
-        background:rgba(255,255,255,.1); color:#fff; border:1px solid rgba(255,255,255,.2);
-        border-radius:6px; padding:.35rem .7rem; font-size:.8rem; cursor:pointer">
-        Déconnexion
-      </button>
+  <div style="display:flex;align-items:center;gap:.75rem">
+    <div id="nav-user">
+      <span id="nav-pseudo"></span>
+      <a href="/game/" class="btn-jouer-nav">� Parcours Quotidien</a>
+      <button class="btn-deco" onclick="logout()">Déconnexion</button>
     </div>
-    <a href="/login.html"
-       class="btn btn-primary nav-cta" id="nav-cta-dl"
-       aria-label="Connexion pour jouer">
-      ▶ Jouer gratuitement
-    </a>
-    <!-- Hamburger mobile -->
-    <button class="nav-hamburger" id="nav-hamburger"
-            aria-controls="nav-links" aria-expanded="false"
-            aria-label="Ouvrir le menu de navigation">
-      <span></span><span></span><span></span>
-    </button>
+    <a href="/login.html" class="nav-cta" id="nav-cta">▶ Jouer gratuitement</a>
   </div>
 </nav>
-<button id="btn-top" aria-label="Retour en haut de page" title="Retour en haut">▲</button>
 
-<!-- ======================================================
-     ÉTAPE 1 — NOTORIÉTÉ : HERO
-====================================================== -->
-<section id="hero" aria-label="Présentation du jeu">
-  <div class="container">
-    <h1>Cultive ta <span>pastèque</span>,<br>deviens maître de la vigne 🍇</h1>
-    <p>
-      AgroPast-Game est un jeu mobile gratuit où tu gères ta ferme de pastèques,
-      maîtrises l'art de la vinification et défies des milliers de joueurs au classement mondial.
-    </p>
-    <div class="hero-badges">
-      <span class="badge">🤑 100 % gratuit</span>
-      <span class="badge">📱 Android</span>
-      <span class="badge">🌍 Classement mondial</span>
-      <span class="badge">🚜 Ferme & Vinification</span>
-    </div>
-    <div class="hero-cta-group">
-      <a href="https://play.google.com/store" target="_blank" rel="noopener"
-         class="btn btn-primary"
-         aria-label="Télécharger sur le Play Store">
-        📥 Télécharger sur Play Store
-      </a>
-      <a href="#howto" class="btn btn-outline">Voir comment jouer ↓</a>
-    </div>
-  </div>
-</section>
-
-<!-- ======================================================
-     3 PILIERS (sous le hero)
-====================================================== -->
-<section id="features" class="section" aria-label="Points forts du jeu">
-  <div class="container">
-    <h2 class="section-title">Pourquoi AgroPast-Game ?</h2>
-    <p class="section-sub">Un jeu simple à prendre en main, riche en stratégie.</p>
-    <div class="features-grid">
-      <div class="feature-card">
-        <div class="icon" aria-hidden="true">🌱</div>
-        <h3>Gestion de ferme</h3>
-        <p>Sème, arrose et récolte tes pastèques au bon moment pour maximiser ton rendement.</p>
-      </div>
-      <div class="feature-card">
-        <div class="icon" aria-hidden="true">🍷</div>
-        <h3>Vinification</h3>
-        <p>Transforme tes récoltes en vins d'exception. Maîtrise les recettes pour grimper au classement.</p>
-      </div>
-      <div class="feature-card">
-        <div class="icon" aria-hidden="true">🏆</div>
-        <h3>Compétition</h3>
-        <p>Compare ton score avec des milliers de joueurs. Chaque saison, un nouveau champion est couronné.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ======================================================
-     ÉTAPE 2 — INTÉRÊT : COMMENT JOUER + MINI-DÉMO
-====================================================== -->
-<section id="howto" class="section" aria-label="Comment jouer">
-  <div class="container">
-    <h2 class="section-title">Comment jouer ?</h2>
-    <p class="section-sub">Trois actions suffisent pour ta première récolte.</p>
-
-    <div class="steps" role="list">
-      <div class="step" role="listitem">
-        <div class="step-num" aria-hidden="true">1</div>
-        <div class="icon" aria-hidden="true">🌱</div>
-        <h3>Semer</h3>
-        <p>Clique sur une parcelle vide pour y planter une graine de pastèque.</p>
-      </div>
-      <div class="step" role="listitem">
-        <div class="step-num" aria-hidden="true">2</div>
-        <div class="icon" aria-hidden="true">💧</div>
-        <h3>Arroser</h3>
-        <p>Arrose 3 fois ta plante pour la faire pousser. L'eau est la clé du rendement.</p>
-      </div>
-      <div class="step" role="listitem">
-        <div class="step-num" aria-hidden="true">3</div>
-        <div class="icon" aria-hidden="true">🍉</div>
-        <h3>Récolter</h3>
-        <p>Quand la pastèque est mûre, récolte-la et découvre ton score de récolte.</p>
-      </div>
-      <div class="step" role="listitem">
-        <div class="step-num" aria-hidden="true">4</div>
-        <div class="icon" aria-hidden="true">🍷</div>
-        <h3>Vinifier</h3>
-        <p>Dans le vrai jeu, transforme tes fruits en vins rares pour multiplier tes points.</p>
-      </div>
-    </div>
-
-    <!-- MINI-DÉMO JOUABLE -->
-    <div id="demo-zone" role="region" aria-label="Mini-démo jouable">
-      <h3>🎮 Essaie en direct !</h3>
-      <p>Démo illustrative — sans sauvegarde, sans compte requis.</p>
-
-      <div id="demo-field" aria-label="Parcelles de jeu">
-        <!-- Les 3 parcelles seront générées par JS -->
-      </div>
-
-      <div id="demo-log" aria-live="polite"></div>
-      <div id="demo-score" aria-live="polite"></div>
-
-      <button id="btn-reset" class="btn btn-secondary" onclick="resetDemo()" aria-label="Recommencer la démo">
-        🔄 Rejouer
-      </button>
-      <a id="btn-dl-demo" href="https://play.google.com/store" target="_blank" rel="noopener"
-         class="btn btn-primary" style="display:none; margin-top:.5rem"
-         aria-label="Télécharger le vrai jeu">
-        📥 Jouer au vrai jeu !
-      </a>
-    </div>
-  </div>
-</section>
-
-<!-- ======================================================
-     ÉTAPE 3 — CONSIDÉRATION : CLASSEMENT
-====================================================== -->
-<section id="leaderboard" class="section" aria-label="Classement des joueurs">
-  <div class="container">
-    <h2 class="section-title">🏆 Classement des meilleurs joueurs</h2>
-    <p class="section-sub">Tu pourrais figurer ici dès la saison 1. Les scores sont mis à jour chaque semaine.</p>
-
-    <table class="lb-table" aria-label="Top 10 joueurs">
-      <thead>
-        <tr>
-          <th scope="col">#</th>
-          <th scope="col">Joueur</th>
-          <th scope="col">Région</th>
-          <th scope="col">Score</th>
-          <th scope="col">Récoltes</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr><td class="rank rank-1">🥇 1</td><td>AgriKing_Dakar</td><td>Sénégal</td><td>148 250</td><td>312</td></tr>
-        <tr><td class="rank rank-2">🥈 2</td><td>PasteQueen</td><td>Côte d'Ivoire</td><td>137 800</td><td>289</td></tr>
-        <tr><td class="rank rank-3">🥉 3</td><td>VinoMaster_BJ</td><td>Bénin</td><td>129 450</td><td>271</td></tr>
-        <tr><td class="rank">4</td><td>FermierFou237</td><td>Cameroun</td><td>118 900</td><td>245</td></tr>
-        <tr><td class="rank">5</td><td>SowGrow_CI</td><td>Côte d'Ivoire</td><td>110 300</td><td>230</td></tr>
-        <tr><td class="rank">6</td><td>RedSeedBF</td><td>Burkina Faso</td><td>104 750</td><td>218</td></tr>
-        <tr><td class="rank">7</td><td>JardinierDuSahel</td><td>Mali</td><td>97 200</td><td>204</td></tr>
-        <tr><td class="rank">8</td><td>TerroirGN</td><td>Guinée</td><td>89 650</td><td>190</td></tr>
-        <tr><td class="rank">9</td><td>HarvestKing_TG</td><td>Togo</td><td>82 100</td><td>175</td></tr>
-        <tr><td class="rank">10</td><td>WineWizard_NG</td><td>Nigeria</td><td>76 500</td><td>162</td></tr>
-      </tbody>
-    </table>
-
-    <p class="lb-note">* Classement illustratif — les vrais scores seront visibles dans l'application.</p>
-
-    <div class="lb-cta">
-      <p style="margin-bottom:1rem; font-size:1.05rem;">
-        Prêt à te mesurer aux meilleurs fermiers d'Afrique ?
-      </p>
-      <a href="https://play.google.com/store" target="_blank" rel="noopener"
-         class="btn btn-primary"
-         aria-label="Télécharger AgroPast-Game et rejoindre le classement">
-        📥 Rejoindre le classement
-      </a>
-    </div>
-  </div>
-</section>
-
-<!-- ======================================================
-     ÉTAPE 4 — FORMULAIRE D'INSCRIPTION / CONTACT
-====================================================== -->
-<section id="signup" class="section" aria-label="Formulaire d'inscription">
-  <div class="container">
-    <h2 class="section-title">Reste informé du lancement !</h2>
-    <p class="section-sub">Inscris-toi pour recevoir les nouveautés, les événements et les concours en avant-première.</p>
-
-    <div class="form-card">
-      <!--
-        TODO: POST vers /api/leads.php
-        Le formulaire envoie les données en POST vers l'endpoint PHP,
-        qui insère en base MySQL et redirige vers merci.html.
-      -->
-      <form id="contact-form" action="https://agropast-game.online/api/leads.php" method="POST" novalidate
-            aria-label="Formulaire d'inscription à la newsletter AgroPast-Game">
-
-        <div class="form-group">
-          <label for="field-name">Pseudo / Nom <span aria-hidden="true">*</span></label>
-          <input type="text" id="field-name" name="name"
-                 placeholder="Ex: AgriKing_Brazza"
-                 required minlength="2" maxlength="60"
-                 autocomplete="nickname" />
-        </div>
-
-        <div class="form-group">
-          <label for="field-whatsapp">Numéro WhatsApp <span aria-hidden="true">*</span></label>
-          <input type="tel" id="field-whatsapp" name="whatsapp"
-                 placeholder="+242 06 123 45 67"
-                 required maxlength="20"
-                 autocomplete="tel" />
-          <span class="form-hint">Ton identifiant de connexion au jeu.</span>
-        </div>
-
-        <div class="form-group">
-          <label for="field-email">Email <span style="font-size:.8rem;color:#aaa">(optionnel)</span></label>
-          <input type="email" id="field-email" name="email"
-                 placeholder="ton@email.com"
-                 maxlength="120"
-                 autocomplete="email" />
-        </div>
-
-        <div class="form-group">
-          <label for="field-country">Pays</label>
-          <select id="field-country" name="country">
-            <option value="">-- Sélectionner --</option>
-            <option value="Congo-Brazzaville">Congo-Brazzaville 🇨🇬</option>
-            <option value="RDC">RD Congo (Kinshasa) 🇨🇩</option>
-            <option value="Sénégal">Sénégal 🇸🇳</option>
-            <option value="Côte d'Ivoire">Côte d'Ivoire 🇨🇮</option>
-            <option value="Cameroun">Cameroun 🇨🇲</option>
-            <option value="Gabon">Gabon 🇬🇦</option>
-            <option value="Bénin">Bénin 🇧🇯</option>
-            <option value="Burkina Faso">Burkina Faso 🇧🇫</option>
-            <option value="Mali">Mali 🇲🇱</option>
-            <option value="Togo">Togo 🇹🇬</option>
-            <option value="Guinée">Guinée 🇬🇳</option>
-            <option value="Niger">Niger 🇳🇪</option>
-            <option value="Tchad">Tchad 🇹🇩</option>
-            <option value="Centrafrique">Centrafrique 🇨🇫</option>
-            <option value="Nigeria">Nigeria 🇳🇬</option>
-            <option value="Ghana">Ghana 🇬🇭</option>
-            <option value="France">France 🇫🇷</option>
-            <option value="Autre">Autre</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label for="field-source">Comment as-tu découvert AgroPast-Game ?</label>
-          <select id="field-source" name="source">
-            <option value="">-- Sélectionner --</option>
-            <option value="social">Réseaux sociaux</option>
-            <option value="friend">Un ami</option>
-            <option value="search">Recherche Google</option>
-            <option value="whatsapp">WhatsApp</option>
-            <option value="other">Autre</option>
-          </select>
-          <span class="form-hint">Facultatif — aide-nous à améliorer notre communication.</span>
-        </div>
-
-        <!-- Champs cachés : UTM + parrainage capturés par JS -->
-        <input type="hidden" id="field-utm"      name="utm"      value="" />
-        <input type="hidden" id="field-referrer" name="referrer" value="" />
-
-        <button type="submit" class="btn btn-primary form-submit"
-                aria-label="Envoyer le formulaire d'inscription">
-          ✅ Je m'inscris !
-        </button>
-
-        <p class="form-legal">
-          En t'inscrivant tu acceptes de recevoir des e-mails liés au jeu.
-          Aucune commission ni récompense n'est liée à cette inscription.
-          Désabonnement possible à tout moment.
-        </p>
-      </form>
-    </div>
-  </div>
-</section>
-
-<!-- ======================================================
-     FOOTER
-====================================================== -->
-<footer>
-  <p><strong>AgroPast-Game</strong> — Jeu mobile Android gratuit 🍉</p>
-  <p style="margin:.4rem 0;">
-    <a href="#hero">Accueil</a> ·
-    <a href="#howto">Comment jouer</a> ·
-    <a href="#leaderboard">Classement</a> ·
-    <a href="#signup">Contact</a>
+<!-- HERO -->
+<section id="hero">
+  <h1>AgroPast Game —<br>La simulation agricole <span>éco-responsable</span></h1>
+  <p>
+    Cultivez votre ferme virtuelle, arrosez vos plantations au quotidien et récoltez des
+    pastèques, du maïs et bien d'autres cultures. Un jeu de gestion agricole gratuit,
+    disponible sur Android et directement dans votre navigateur.
   </p>
-  <p style="margin-top:.6rem; font-size:.8rem;">
-    © 2025 AgroPast-Game. Tous droits réservés.
+  <div class="cta-group">
+    <a href="/game/" class="btn-primary">� Commencer le parcours quotidien</a>
+    <a href="#concept" class="btn-secondary">Découvrir le concept ↓</a>
+  </div>
+</section>
+
+<!-- CONCEPT -->
+<section class="section" id="concept">
+  <h2>Un jeu de ferme accessible à tous</h2>
+  <p>
+    AgroPast Game est un jeu de simulation agricole gratuit pensé pour les amateurs de gestion
+    de ressources. Chaque jour, vous disposez d'un <strong>Parcours Quotidien</strong> qui
+    vous permet de cultiver quatre espèces différentes : la tomate, le maïs, la carotte et le
+    piment.
+  </p>
+  <p>
+    Le principe est simple et engageant : vous devez <strong>planter vos semences</strong>,
+    les <strong>arroser régulièrement</strong> pour favoriser leur croissance, puis
+    <strong>récolter vos cultures</strong> au moment optimal pour maximiser vos points.
+    Plus vous jouez régulièrement, plus votre score global augmente et vous grimpez au
+    classement mondial.
+  </p>
+  <p>
+    Le jeu intègre également un système de <strong>parrainage</strong> : invitez vos amis
+    à rejoindre la communauté.
+  </p>
+
+  <div class="features">
+    <div class="feature-card">
+      <div class="icon">🌱</div>
+      <h3>Semences variées</h3>
+      <p>Cultivez quatre espèces agricoles aux caractéristiques uniques : tomate, maïs, carotte et piment.</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">💧</div>
+      <h3>Maturité progressive</h3>
+      <p>Chaque arrosage fait progresser la maturité de votre culture. Atteignez 100 % pour récolter.</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">🏆</div>
+      <h3>Classement mondial</h3>
+      <p>Comparez vos scores avec des joueurs du monde entier et grimpez au sommet du classement agricole.</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">🤝</div>
+      <h3>Système de parrainage</h3>
+      <p>Partagez votre lien d'invitation unique et invitez vos amis à rejoindre la communauté.</p>
+    </div>
+  </div>
+</section>
+
+<!-- COMMENT JOUER -->
+<section id="comment" style="background:#fff; padding: 4rem 0;">
+  <div class="section" style="padding-top:0;padding-bottom:0">
+    <h2>Comment jouer à AgroPast Game ?</h2>
+    <p>
+      AgroPast Game est conçu pour être joué en quelques minutes par jour. La mécanique
+      de jeu repose sur une boucle quotidienne simple mais satisfaisante.
+    </p>
+    <div class="steps">
+      <div class="step">
+        <div class="num">1</div>
+        <div class="icon">📱</div>
+        <h3>Créer un compte</h3>
+        <p>Inscrivez-vous avec votre numéro WhatsApp et choisissez un pseudo de fermier.</p>
+      </div>
+      <div class="step">
+        <div class="num">2</div>
+        <div class="icon">🌱</div>
+        <h3>Lancer le parcours</h3>
+        <p>Accédez au Parcours Quotidien et commencez par arroser votre première culture du jour.</p>
+      </div>
+      <div class="step">
+        <div class="num">3</div>
+        <div class="icon">💧</div>
+        <h3>Arroser jusqu'à maturité</h3>
+        <p>Tapez sur l'arrosoir pour progresser. Chaque tap ajoute 5 % de maturité à votre culture.</p>
+      </div>
+      <div class="step">
+        <div class="num">4</div>
+        <div class="icon">🍅</div>
+        <h3>Récolter et scorer</h3>
+        <p>À 100 % de maturité, la culture est récoltée automatiquement et vos points sont crédités.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PARCOURS QUOTIDIEN -->
+<section class="section" id="parcours">
+  <h2>Le Parcours Quotidien — 4 cultures, 4 récompenses</h2>
+  <p>
+    Le cœur du gameplay d'AgroPast Game repose sur le <strong>Parcours Quotidien</strong>.
+    Chaque journée, vous avez la possibilité de cultiver successivement quatre espèces agricoles,
+    débloquées l'une après l'autre au fil de vos récoltes.
+  </p>
+  <p>
+    La séquence de cultures suit un ordre précis et progressif : commencez par la
+    <strong>Tomate 🍅</strong> (200 points à la récolte), enchaînez avec le
+    <strong>Maïs 🌽</strong> (350 points), puis la <strong>Carotte 🥕</strong>
+    (550 points), et terminez avec le <strong>Piment 🌶️</strong>, la culture la plus
+    difficile et la plus rémunératrice avec 800 points.
+  </p>
+  <p>
+    La progression de chaque culture est sauvegardée automatiquement. Si vous quittez le jeu
+    en cours de session, vous retrouvez votre avancement intact à votre retour. Le Parcours
+    Quotidien se réinitialise automatiquement à minuit pour une nouvelle session le lendemain.
+  </p>
+  <p>
+    Plus vous complétez de parcours quotidiens consécutifs, plus votre score total augmente
+    rapidement, ce qui vous permet de gravir les échelons du classement.
+  </p>
+</section>
+
+<!-- CTA FINAL -->
+<section id="cta-final">
+  <h2>Prêt à devenir un grand fermier ?</h2>
+  <p>Rejoignez des milliers de joueurs qui cultivent leur ferme virtuelle chaque jour. C'est gratuit, sans publicité intrusive et disponible partout.</p>
+  <a href="/game/" class="btn-primary" style="font-size:1.1rem;padding:1rem 3rem">
+    🌱 Commencer à jouer maintenant
+  </a>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-links">
+    <a href="/regles-du-jeu.html">Règles du jeu</a>
+    <a href="/mentions-legales.html">Mentions Légales</a>
+    <a href="/politique-confidentialite.html">Politique de Confidentialité</a>
+    <a href="/contact.html">Contact</a>
+    <a href="/login.html">Connexion / Inscription</a>
+    <a href="/game/">Parcours Quotidien</a>
+  </div>
+  <p>© 2025 AgroPast Game — Jeu de simulation agricole gratuit. Tous droits réservés.</p>
+  <p style="margin-top:.3rem;font-size:.78rem;opacity:.7">
+    AgroPast Game est un jeu incluant un programme de récompense à ratio fixe (60 FCFA par 1 000 points), réservé aux joueurs de 18 ans ou plus, sous réserve des conditions d'utilisation. Les points accumulés ne représentent pas un revenu garanti.
   </p>
 </footer>
 
-<!-- ======================================================
-     JAVASCRIPT
-====================================================== -->
 <script>
-/* ---- MINI-DÉMO JOUABLE ----------------------------------------
-   Boucle : Semer → Arroser (3 clics) → Récolter
-   Sans backend, sans sauvegarde, purement illustrative.
----------------------------------------------------------------- */
+// Affichage du nom si connecté
 (function () {
-  const WATER_NEEDED = 3;
-
-  // État de chaque parcelle : null | 'seed' | {water: 0..3} | 'ready' | 'harvested'
-  const state = [null, null, null];
-
-  const EMOJIS = {
-    empty:     '🟫',
-    seed:      '🌱',
-    water1:    '🌿',
-    water2:    '🌾',
-    ready:     '🍉',
-    harvested: '✅',
-  };
-
-  function plotEmoji(i) {
-    const s = state[i];
-    if (s === null)        return EMOJIS.empty;
-    if (s === 'seed')      return EMOJIS.seed;
-    if (s === 'ready')     return EMOJIS.ready;
-    if (s === 'harvested') return EMOJIS.harvested;
-    if (s.water === 1)     return EMOJIS.water1;
-    if (s.water === 2)     return EMOJIS.water2;
-    return EMOJIS.seed;
-  }
-
-  function buildField() {
-    const field = document.getElementById('demo-field');
-    field.innerHTML = '';
-    state.forEach((_, i) => {
-      const div = document.createElement('div');
-      div.className = 'plot' + (state[i] === 'ready' ? ' ready' : '');
-      div.setAttribute('role', 'button');
-      div.setAttribute('tabindex', '0');
-      div.setAttribute('aria-label', labelFor(i));
-
-      // Emoji
-      const em = document.createElement('div');
-      em.style.cssText = 'font-size:2.2rem;line-height:1';
-      em.textContent = plotEmoji(i);
-      div.appendChild(em);
-
-      // Barre d'eau
-      if (state[i] && state[i] !== 'ready' && state[i] !== 'harvested') {
-        const wrap = document.createElement('div');
-        wrap.className = 'water-bar-wrap';
-        wrap.style.cssText = 'position:absolute;bottom:6px;left:8px;right:8px';
-        const bar = document.createElement('div');
-        bar.className = 'water-bar';
-        bar.style.width = ((state[i].water || 0) / WATER_NEEDED * 100) + '%';
-        wrap.appendChild(bar);
-        div.appendChild(wrap);
-      }
-
-      div.addEventListener('click',  () => handleClick(i));
-      div.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') handleClick(i); });
-      field.appendChild(div);
-    });
-  }
-
-  function labelFor(i) {
-    const s = state[i];
-    if (s === null)        return `Parcelle ${i+1} vide — cliquer pour semer`;
-    if (s === 'seed')      return `Parcelle ${i+1} — graine — cliquer pour arroser`;
-    if (s && s.water > 0)  return `Parcelle ${i+1} — arrosée ${s.water}/${WATER_NEEDED}`;
-    if (s === 'ready')     return `Parcelle ${i+1} — pastèque mûre — cliquer pour récolter`;
-    if (s === 'harvested') return `Parcelle ${i+1} — récoltée`;
-    return `Parcelle ${i+1}`;
-  }
-
-  function setLog(msg) {
-    document.getElementById('demo-log').textContent = msg;
-  }
-
-  function handleClick(i) {
-    const s = state[i];
-
-    if (s === 'harvested') { setLog('Parcelle déjà récoltée 😊'); return; }
-
-    if (s === null) {
-      state[i] = { water: 0 };
-      setLog(`🌱 Graine plantée sur la parcelle ${i+1} !`);
-      buildField();
-      return;
-    }
-
-    if (s === 'ready') {
-      state[i] = 'harvested';
-      buildField();
-      checkAllHarvested();
-      return;
-    }
-
-    if (typeof s === 'object') {
-      s.water++;
-      if (s.water >= WATER_NEEDED) {
-        state[i] = 'ready';
-        setLog(`🍉 La pastèque ${i+1} est mûre ! Clique pour récolter.`);
-      } else {
-        setLog(`💧 Arrosage ${s.water}/${WATER_NEEDED} sur la parcelle ${i+1}.`);
-      }
-      buildField();
-    }
-  }
-
-  function checkAllHarvested() {
-    const harvested = state.filter(s => s === 'ready' || s === 'harvested');
-    const allDone   = state.every(s => s === 'harvested' || s === null);
-    const anyReady  = state.some(s => s === 'ready');
-
-    if (anyReady) { setLog('🍉 Parcelle mûre — clique dessus pour récolter !'); return; }
-    if (state.every(s => s === null || s === 'harvested') && state.some(s => s === 'harvested')) {
-      showScore();
-    }
-  }
-
-  function showScore() {
-    const score = Math.floor(Math.random() * 4001) + 1000; // 1000–5000
-    const stars  = score >= 4000 ? '⭐⭐⭐' : score >= 2500 ? '⭐⭐' : '⭐';
-    document.getElementById('demo-score').innerHTML =
-      `Récolte terminée ! Score : <span>${score.toLocaleString('fr-FR')} pts</span> ${stars}`;
-    setLog('Bravo ! Dans le vrai jeu, tu peux aussi vinifier tes pastèques 🍷');
-    document.getElementById('btn-reset').style.display  = 'inline-block';
-    document.getElementById('btn-dl-demo').style.display = 'inline-block';
-  }
-
-  window.resetDemo = function () {
-    state.fill(null);
-    document.getElementById('demo-score').innerHTML = '';
-    document.getElementById('demo-log').textContent  = '';
-    document.getElementById('btn-reset').style.display   = 'none';
-    document.getElementById('btn-dl-demo').style.display = 'none';
-    buildField();
-    setLog('Clique sur une parcelle 🟫 pour commencer à semer.');
-  };
-
-  // Init
-  buildField();
-  setLog('Clique sur une parcelle 🟫 pour commencer à semer.');
-})();
-
-/* ---- CAPTURE UTM + REF (parrainage) -------------------
-   Lit les paramètres d'URL au chargement et les injecte
-   dans les champs cachés du formulaire.
----------------------------------------------------------------- */
-(function () {
-  const p = new URLSearchParams(window.location.search);
-
-  // UTM source (ex: ?utm_source=whatsapp ou ?source=facebook)
-  const utm = p.get('utm_source') || p.get('source') || p.get('utm') || '';
-  document.getElementById('field-utm').value = utm;
-
-  // Référent parrain (ex: ?ref=abc123)
-  const ref = p.get('ref') || '';
-  document.getElementById('field-referrer').value = ref;
-
-  // Pré-remplir le select "source" si UTM détecté
-  if (utm) {
-    const sel = document.getElementById('field-source');
-    const map = {
-      whatsapp: 'whatsapp', facebook: 'social', instagram: 'social',
-      twitter: 'social', google: 'search', friend: 'friend', ami: 'friend'
-    };
-    const key = utm.toLowerCase();
-    for (const [k, v] of Object.entries(map)) {
-      if (key.includes(k)) { sel.value = v; break; }
-    }
+  const nom = localStorage.getItem('apg_nom');
+  if (nom) {
+    document.getElementById('nav-user').style.display = 'flex';
+    document.getElementById('nav-pseudo').textContent = nom;
+    document.getElementById('nav-cta').style.display = 'none';
   }
 })();
-
-/* ---- FORMULAIRE DE CONTACT -----------------------------------
-   Validation front + soumission Ajax (ou redirection classique).
-   TODO: remplacer action="#" par action="/api/leads.php" côté HTML
-         quand le backend PHP sera prêt.
----------------------------------------------------------------- */
-(function () {
-  const form = document.getElementById('contact-form');
-
-  form.addEventListener('submit', function (e) {
-    e.preventDefault();
-
-    const name  = form.querySelector('#field-name').value.trim();
-    const email = form.querySelector('#field-email').value.trim();
-
-    // Validation minimale
-    if (name.length < 2) {
-      alert('Merci de renseigner ton pseudo (2 caractères minimum).');
-      form.querySelector('#field-name').focus();
-      return;
-    }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      alert('Merci de renseigner une adresse e-mail valide.');
-      form.querySelector('#field-email').focus();
-      return;
-    }
-
-    // Validation OK → soumettre le formulaire vers leads.php
-    form.submit();
-  });
-})();
-/* ---- SESSION & AUTH ------------------------------------------
-   Vérifie le token localStorage au chargement.
-   Affiche le pseudo dans la navbar si connecté.
-   Redirige vers login.html si token absent/expiré ET que
-   l'utilisateur clique sur le CTA "Jouer".
----------------------------------------------------------------- */
-(function () {
-  const token    = localStorage.getItem('apg_token');
-  const nom      = localStorage.getItem('apg_nom');
-  const whatsapp = localStorage.getItem('apg_whatsapp');
-
-  if (token && nom) {
-    // Afficher le pseudo dans la navbar
-    const navUser = document.getElementById('nav-user');
-    const navPseudo = document.getElementById('nav-pseudo');
-    if (navUser && navPseudo) {
-      navPseudo.textContent = '👤 ' + nom;
-      navUser.style.display = 'flex';
-    }
-    // Masquer le CTA "Jouer gratuitement" quand connecté
-    const ctaDl = document.getElementById('nav-cta-dl');
-    if (ctaDl) ctaDl.style.display = 'none';
-  }
-
-  // Déconnexion
-  window.logout = function () {
-    localStorage.removeItem('apg_token');
-    localStorage.removeItem('apg_nom');
-    localStorage.removeItem('apg_whatsapp');
-    localStorage.removeItem('apg_ref_id');
-    window.location.reload();
-  };
-
-  // Requête signée anti-triche — utilisée après récolte/pub
-  window.syncScore = async function(scoreTotal, nombreRecoltes, eventType, bonusPoints = 0) {
-    const tok = localStorage.getItem('apg_token');
-    if (!tok) return;
-    try {
-      await fetch('https://agropast-game.online/api/sync_score.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          token:           tok,
-          score_total:     scoreTotal,
-          nombre_recoltes: nombreRecoltes,
-          event_type:      eventType,
-          bonus_points:    bonusPoints,
-        }),
-      });
-    } catch (_) { /* fire & forget */ }
-  };
-})();
-
-/* ---- NAVIGATION : sticky highlight + hamburger + retour haut -------- */
-(function () {
-  const nav        = document.getElementById('main-nav');
-  const hamburger  = document.getElementById('nav-hamburger');
-  const navLinks   = document.getElementById('nav-links');
-  const btnTop     = document.getElementById('btn-top');
-  const links      = navLinks.querySelectorAll('a[href^="#"]');
-
-  // Sections observées pour l'indicateur actif
-  const sectionIds = ['hero', 'features', 'howto', 'leaderboard', 'signup'];
-  const sections   = sectionIds.map(id => document.getElementById(id)).filter(Boolean);
-
-  // --- Hamburger mobile ------------------------------------
-  hamburger.addEventListener('click', () => {
-    const open = navLinks.classList.toggle('open');
-    hamburger.setAttribute('aria-expanded', open);
-  });
-
-  // Fermer le menu au clic sur un lien mobile
-  links.forEach(a => {
-    a.addEventListener('click', () => {
-      navLinks.classList.remove('open');
-      hamburger.setAttribute('aria-expanded', 'false');
-    });
-  });
-
-  // Fermer le menu en cliquant en dehors
-  document.addEventListener('click', e => {
-    if (!nav.contains(e.target)) {
-      navLinks.classList.remove('open');
-      hamburger.setAttribute('aria-expanded', 'false');
-    }
-  });
-
-  // --- Scroll : navbar scrolled + retour haut + section active ---------
-  let ticking = false;
-
-  function onScroll() {
-    const scrollY = window.scrollY;
-
-    // Effet glassmorphism sur la navbar après 50px
-    nav.classList.toggle('scrolled', scrollY > 50);
-
-    // Bouton retour en haut après 400px
-    btnTop.classList.toggle('visible', scrollY > 400);
-
-    // Section active (Intersection + fallback scroll)
-    let activeId = '';
-    sections.forEach(sec => {
-      const rect = sec.getBoundingClientRect();
-      if (rect.top <= 80) activeId = sec.id;
-    });
-
-    links.forEach(a => {
-      const isActive = a.getAttribute('href') === '#' + activeId;
-      a.setAttribute('aria-current', isActive ? 'page' : 'false');
-    });
-
-    ticking = false;
-  }
-
-  window.addEventListener('scroll', () => {
-    if (!ticking) { requestAnimationFrame(onScroll); ticking = true; }
-  }, { passive: true });
-
-  onScroll(); // init au chargement
-
-  // --- Bouton retour en haut -----------------------------------
-  btnTop.addEventListener('click', () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  });
-
-  // --- Smooth scroll pour toutes les ancres internes -----------
-  document.querySelectorAll('a[href^="#"]').forEach(a => {
-    a.addEventListener('click', e => {
-      const target = document.querySelector(a.getAttribute('href'));
-      if (target) {
-        e.preventDefault();
-        const offset = nav.offsetHeight + 8;
-        const top = target.getBoundingClientRect().top + window.scrollY - offset;
-        window.scrollTo({ top, behavior: 'smooth' });
-        // Focus pour accessibilité clavier
-        target.setAttribute('tabindex', '-1');
-        target.focus({ preventScroll: true });
-      }
-    });
-  });
-})();
+function logout() {
+  ['apg_token','apg_nom','apg_whatsapp','apg_ref_id'].forEach(k => localStorage.removeItem(k));
+  location.reload();
+}
 </script>
 </body>
 </html>

@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Règles du jeu — AgroPast Game</title>
+  <meta name="description" content="Toutes les règles d'AgroPast Game : les deux modes de jeu, le système de niveaux, la conversion des points en FCFA, le parrainage et les questions fréquentes." />
+
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4115564366785475"
+     crossorigin="anonymous"></script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --green:   #2e7d32;
+      --green-l: #4caf50;
+      --yellow:  #f9a825;
+      --dark:    #1b2a1b;
+      --white:   #ffffff;
+      --bg:      #f1f8e9;
+      --shadow:  0 4px 18px rgba(0,0,0,.12);
+      --radius:  12px;
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: var(--bg);
+      color: var(--dark);
+      line-height: 1.7;
+    }
+    a { color: var(--green); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    nav {
+      background: var(--dark);
+      padding: 1rem 2rem;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 100;
+    }
+    .nav-logo { font-size: 1.3rem; font-weight: 900; color: var(--yellow); }
+    .nav-links { display: flex; gap: 1.5rem; list-style: none; }
+    .nav-links a { color: rgba(255,255,255,.75); font-size: .9rem; font-weight: 600; }
+    .nav-links a:hover { color: #fff; }
+    @media (max-width: 600px) { .nav-links { display: none; } }
+
+    #hero {
+      background: linear-gradient(135deg, var(--dark) 0%, #1a4620 60%, #2d6a2d 100%);
+      color: #fff; padding: 3.5rem 2rem 3rem; text-align: center;
+    }
+    #hero h1 { font-size: clamp(1.8rem, 4.5vw, 2.8rem); font-weight: 900; margin-bottom: .8rem; }
+    #hero h1 span { color: var(--yellow); }
+    #hero p { font-size: 1.05rem; max-width: 620px; margin: 0 auto; opacity: .9; }
+
+    main { max-width: 900px; margin: 0 auto; padding: 3rem 2rem; }
+    .card {
+      background: #fff; border-radius: var(--radius); box-shadow: var(--shadow);
+      padding: 2rem; margin-bottom: 2rem;
+    }
+    .card h2 { color: var(--green); font-size: 1.4rem; margin-bottom: 1rem; }
+    .card h3 { color: var(--dark); font-size: 1.05rem; margin: 1.2rem 0 .5rem; }
+    .card p, .card li { font-size: .96rem; color: #333; margin-bottom: .7rem; }
+    .card ul, .card ol { padding-left: 1.4rem; margin-bottom: .8rem; }
+
+    table { width: 100%; border-collapse: collapse; margin: 1rem 0 1.5rem; font-size: .9rem; }
+    th, td { text-align: left; padding: .55rem .7rem; border-bottom: 1px solid #eee; }
+    th { background: #f1f8e9; color: var(--dark); font-weight: 700; }
+    tr:last-child td { border-bottom: none; }
+
+    .badge {
+      display: inline-block; background: var(--green-l); color: #fff;
+      font-size: .78rem; font-weight: 700; padding: .15rem .6rem; border-radius: 50px;
+    }
+
+    .faq-item { border-bottom: 1px solid #eee; padding: 1rem 0; }
+    .faq-item:last-child { border-bottom: none; }
+    .faq-item h3 { margin-top: 0; }
+
+    footer {
+      background: var(--dark); color: rgba(255,255,255,.6);
+      padding: 2rem 2rem 1.5rem; text-align: center; font-size: .85rem;
+    }
+    .footer-links { display: flex; gap: 1.5rem; justify-content: center; flex-wrap: wrap; margin-bottom: 1rem; }
+    .footer-links a { color: var(--green-l); }
+    .footer-links a:hover { color: #fff; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo">🍉 AgroPast Game</a>
+  <ul class="nav-links">
+    <li><a href="/#concept">Le Concept</a></li>
+    <li><a href="/regles-du-jeu.html">Règles du jeu</a></li>
+    <li><a href="/#parcours">Parcours Quotidien</a></li>
+  </ul>
+  <a href="/game/" class="badge">▶ Jouer</a>
+</nav>
+
+<section id="hero">
+  <h1>Les règles complètes <span>d'AgroPast Game</span></h1>
+  <p>Comment progresser, gagner des points, monter de niveau et convertir vos récoltes en récompenses réelles. Tout ce qu'il faut savoir avant de commencer.</p>
+</section>
+
+<main>
+
+  <div class="card">
+    <h2>🌾 Deux façons de jouer</h2>
+    <p>AgroPast Game propose deux boucles de jeu complémentaires, accessibles depuis le même compte.</p>
+
+    <h3>1. La Ferme classique</h3>
+    <p>
+      Vous disposez de <strong>6 parcelles</strong>. Chacune suit un cycle en plusieurs étapes :
+      plantation d'une graine, trois arrosages successifs, maturation, puis récolte. Chaque récolte
+      complète rapporte <strong>800 points</strong>, quelle que soit la parcelle. Une fois vos
+      6 parcelles récoltées, vous pouvez démarrer une nouvelle saison et recommencer le cycle.
+    </p>
+
+    <h3>2. Le Parcours Quotidien</h3>
+    <p>
+      Un défi renouvelé chaque jour à minuit : cultiver successivement <strong>4 cultures
+      différentes</strong>, débloquées l'une après l'autre. Chaque culture rapporte un score
+      croissant, la dernière étant la plus exigeante mais aussi la plus rémunératrice.
+    </p>
+    <table>
+      <tr><th>Ordre</th><th>Culture</th><th>Points à la récolte</th></tr>
+      <tr><td>1</td><td>🍅 Tomate</td><td>200 pts</td></tr>
+      <tr><td>2</td><td>🌽 Maïs</td><td>350 pts</td></tr>
+      <tr><td>3</td><td>🥕 Carotte</td><td>550 pts</td></tr>
+      <tr><td>4</td><td>🌶️ Piment</td><td>800 pts</td></tr>
+    </table>
+    <p>Votre progression du jour est sauvegardée automatiquement : vous pouvez quitter et reprendre le Parcours Quotidien sans perdre votre avancement, jusqu'à la réinitialisation de minuit.</p>
+  </div>
+
+  <div class="card">
+    <h2>🏆 Système de niveaux</h2>
+    <p>Votre score total détermine votre niveau de fermier. Chaque montée de niveau débloque une nouvelle culture thématique et octroie un bonus de pièces d'or, utilisables dans le jeu.</p>
+    <table>
+      <tr><th>Niveau</th><th>Titre</th><th>Score requis</th><th>Culture débloquée</th><th>Bonus pièces d'or</th></tr>
+      <tr><td>1</td><td>🌱 Apprenti Fermier</td><td>0 – 5 000</td><td>Pastèque</td><td>—</td></tr>
+      <tr><td>2</td><td>🌿 Fermier Actif</td><td>5 000 – 15 000</td><td>Vigne</td><td>+50</td></tr>
+      <tr><td>3</td><td>🌾 Agriculteur</td><td>15 000 – 30 000</td><td>Maïs</td><td>+100</td></tr>
+      <tr><td>4</td><td>🍉 Expert Récolte</td><td>30 000 – 50 000</td><td>Cacao</td><td>+200</td></tr>
+      <tr><td>5</td><td>🏆 Maître Fermier</td><td>50 000+</td><td>Café</td><td>+500</td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>🎬 Bonus par publicité récompensée</h2>
+    <p>
+      Vous pouvez visionner des publicités récompensées pour obtenir un bonus de points et de
+      pièces d'or, dans la limite de <strong>8 publicités par jour</strong>. Ce plafond est
+      appliqué et vérifié côté serveur pour garantir l'équité entre tous les joueurs.
+    </p>
+  </div>
+
+  <div class="card">
+    <h2>💰 Convertir vos points en FCFA</h2>
+    <p>
+      AgroPast Game inclut un programme de récompense à taux fixe : <strong>60 FCFA pour
+      1 000 points</strong> accumulés. Une fois le seuil minimum atteint, vous pouvez demander
+      un retrait depuis votre profil.
+    </p>
+    <ul>
+      <li>Seuil minimum de retrait : <strong>33 334 points</strong></li>
+      <li>Montant du premier retrait : <strong>2 000 FCFA</strong></li>
+      <li>Traitement de la demande : sous 24 à 48 h, par un administrateur, sur le numéro renseigné à l'inscription</li>
+    </ul>
+    <p style="font-size:.85rem;color:#666">
+      Programme réservé aux joueurs de 18 ans ou plus. Les points accumulés ne constituent pas
+      un revenu garanti et sont soumis aux conditions d'utilisation du jeu.
+    </p>
+  </div>
+
+  <div class="card">
+    <h2>🤝 Parrainage</h2>
+    <p>
+      Chaque joueur dispose d'un lien d'invitation unique, accessible depuis son profil. En
+      invitant vos proches à créer un compte via ce lien, vous contribuez à faire grandir la
+      communauté AgroPast Game et pouvez suivre vos statistiques de parrainage directement
+      dans l'application.
+    </p>
+  </div>
+
+  <div class="card">
+    <h2>❓ Questions fréquentes</h2>
+
+    <div class="faq-item">
+      <h3>Le jeu est-il gratuit ?</h3>
+      <p>Oui, AgroPast Game est entièrement gratuit à jouer, sur navigateur comme sur Android.</p>
+    </div>
+    <div class="faq-item">
+      <h3>Quelle est la différence entre la Ferme classique et le Parcours Quotidien ?</h3>
+      <p>La Ferme classique se joue à votre rythme, sans limite de temps. Le Parcours Quotidien est un défi structuré qui se réinitialise chaque jour à minuit et propose une progression différente, avec 4 cultures à débloquer successivement.</p>
+    </div>
+    <div class="faq-item">
+      <h3>Mon score se perd-il si je ferme l'application ?</h3>
+      <p>Non. Votre score, votre niveau et l'état de vos parcelles sont sauvegardés automatiquement, en local et sur nos serveurs une fois connecté.</p>
+    </div>
+    <div class="faq-item">
+      <h3>Comment demander un retrait ?</h3>
+      <p>Rendez-vous dans votre profil une fois le seuil de 33 334 points atteint, puis soumettez votre demande. Un administrateur la traite sous 24 à 48 h.</p>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  <div class="footer-links">
+    <a href="/">Accueil</a>
+    <a href="/mentions-legales.html">Mentions Légales</a>
+    <a href="/politique-confidentialite.html">Politique de Confidentialité</a>
+    <a href="/contact.html">Contact</a>
+    <a href="/game/">Jouer</a>
+  </div>
+  <p>© 2026 AgroPast Game — Jeu de simulation agricole gratuit. Tous droits réservés.</p>
+</footer>
+
+</body>
+</html>
