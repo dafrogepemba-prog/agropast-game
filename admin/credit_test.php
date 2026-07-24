@@ -81,6 +81,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (!$target) {
                 $error = 'Compte introuvable.';
             } else {
+                // IMPORTANT : les CREATE TABLE doivent être exécutés AVANT
+                // beginTransaction(). En MySQL/InnoDB, tout DDL déclenche un
+                // commit implicite qui clôture silencieusement la transaction
+                // en cours — un rollBack() ultérieur échoue alors avec
+                // "There is no active transaction" et masque l'erreur réelle.
+                $pdo->exec("
+                    CREATE TABLE IF NOT EXISTS `{$tEvents}` (
+                        `id`                  INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+                        `user_id`             INT UNSIGNED NOT NULL,
+                        `event_type`          VARCHAR(30)  NOT NULL,
+                        `points_awarded`      INT NOT NULL,
+                        `client_score_report` INT UNSIGNED DEFAULT 0,
+                        `ip`                  VARCHAR(45)  DEFAULT '',
+                        `created_at`          DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                        INDEX `idx_user_time` (`user_id`, `created_at`),
+                        INDEX `idx_user_type_time` (`user_id`, `event_type`, `created_at`)
+                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+                ");
+
                 $pdo->beginTransaction();
                 try {
                     // Log d'audit : traçabilité complète de l'action admin
@@ -98,19 +117,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                     // Même table d'audit que le circuit de jeu normal,
                     // avec un event_type distinct pour rester traçable
-                    $pdo->exec("
-                        CREATE TABLE IF NOT EXISTS `{$tEvents}` (
-                            `id`                  INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-                            `user_id`             INT UNSIGNED NOT NULL,
-                            `event_type`          VARCHAR(30)  NOT NULL,
-                            `points_awarded`      INT NOT NULL,
-                            `client_score_report` INT UNSIGNED DEFAULT 0,
-                            `ip`                  VARCHAR(45)  DEFAULT '',
-                            `created_at`          DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                            INDEX `idx_user_time` (`user_id`, `created_at`),
-                            INDEX `idx_user_type_time` (`user_id`, `event_type`, `created_at`)
-                        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-                    ");
                     $stmt = $pdo->prepare("
                         INSERT INTO `{$tEvents}` (user_id, event_type, points_awarded, client_score_report, ip)
                         VALUES (:uid, 'admin_credit_test', :pts, 0, :ip)
@@ -136,7 +142,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $pdo->commit();
                     $message = "Crédit de {$points} pts appliqué à {$target['nom']} ({$target['whatsapp']}). Journalisé.";
                 } catch (Exception $e) {
-                    $pdo->rollBack();
+                    if ($pdo->inTransaction()) {
+                        $pdo->rollBack();
+                    }
                     $error = 'Erreur lors du crédit : ' . $e->getMessage();
                 }
             }
