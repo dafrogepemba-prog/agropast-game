@@ -108,21 +108,6 @@ jobs:
           exclude: |
             **/.git*
             **/.git*/**
-      # robots.txt, sitemap.xml et ads.txt doivent être servis SANS
-      # réécriture d'URL (cf. règles d'exemption dans .htaccess), donc
-      # physiquement au même niveau que api/ et admin/ ci-dessus — PAS
-      # dans le dossier imbriqué où vont les pages du site (index.html,
-      # regles-du-jeu.html, etc.). D'où ce step séparé.
-      - name: Deploy special root files (robots.txt, sitemap.xml, ads.txt) to FTP
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: ftp.epsylon-cg.com
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          server-dir: /agropast-game.online/
-          local-dir: special-root-files/
-          state-name: .ftp-deploy-sync-state-special-root.json
-          log-level: verbose
       # Deploiement des fichiers racine du site (login.html, index.html,
       # merci.html, etc.) — jusqu'ici ils n'etaient mis a jour que
       # manuellement par FTP, ce qui a cause un oubli le 20/07/2026.
@@ -148,12 +133,10 @@ jobs:
             .idea/**
             .vscode/**
             maintenance/**
-            special-root-files/**
             *.md
             *.txt
+            !robots.txt
             *.bat
-            robots.txt
-            sitemap.xml
   # ── Job 2 : Build AAB Android (production) ──────────────
   build-aab:
     name: Build Android App Bundle
