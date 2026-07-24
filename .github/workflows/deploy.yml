@@ -135,6 +135,7 @@ jobs:
             maintenance/**
             *.md
             *.txt
+            !robots.txt
             *.bat
   # ── Job 2 : Build AAB Android (production) ──────────────
   build-aab:
