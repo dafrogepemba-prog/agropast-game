@@ -147,7 +147,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.red.withValues(alpha: 0.15),
+                    color: Colors.red.withOpacity(0.15),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(_error!, style: const TextStyle(color: Colors.redAccent)),
@@ -222,7 +222,7 @@ class _LoginScreenState extends State<LoginScreen> {
         labelText: label,
         labelStyle: const TextStyle(color: Colors.white54),
         filled: true,
-        fillColor: Colors.white.withValues(alpha: 0.06),
+        fillColor: Colors.white.withOpacity(0.06),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
       ),
     );
