@@ -5,6 +5,10 @@ import 'dart:js' as js;
 
 // Implémentation web — localStorage, navigation et H5 Ads
 class WebBridge {
+  // No-op sur web : localStorage est déjà synchrone et disponible
+  // immédiatement, contrairement à SharedPreferences sur mobile.
+  static Future<void> init() async {}
+
   static String getLocalStorage(String key) {
     try { return html.window.localStorage[key] ?? ''; } catch (_) { return ''; }
   }

@@ -281,4 +281,45 @@ class GameProvider extends ChangeNotifier {
   // Exposé pour ParcoursQuotidienProvider — sync serveur fin de session
   Future<void> syncScorePublic({required String eventType}) =>
       _syncScore(eventType: eventType);
+
+  // ── Session (connexion native) ────────────────────────────
+  // Appelé par LoginScreen après une connexion/inscription réussie.
+  // Persiste la session (SharedPreferences sur mobile, localStorage
+  // sur web via WebBridge) puis rafraîchit le score depuis le serveur.
+  Future<void> setSession({
+    required String token,
+    required String nom,
+    required String whatsapp,
+  }) async {
+    _webToken = token;
+    WebBridge.setLocalStorage('apg_token', token);
+    WebBridge.setLocalStorage('apg_nom', nom);
+    WebBridge.setLocalStorage('apg_whatsapp', whatsapp);
+
+    player.pseudo = nom;
+    player.email  = whatsapp;
+    await _save();
+    notifyListeners();
+
+    await refreshFromServer();
+  }
+
+  Future<void> logout() async {
+    _webToken = '';
+    WebBridge.removeLocalStorage('apg_token');
+    WebBridge.removeLocalStorage('apg_nom');
+    WebBridge.removeLocalStorage('apg_whatsapp');
+    notifyListeners();
+  }
+
+  // Récupère le score/niveau réels du serveur et met à jour l'état local.
+  Future<void> refreshFromServer() async {
+    if (_webToken.isEmpty) return;
+    final data = await ApiService.fetchScore(_webToken);
+    if (data['success'] == true) {
+      player.scoreTotal = data['score_total'] ?? player.scoreTotal;
+      await _save();
+      notifyListeners();
+    }
+  }
 }

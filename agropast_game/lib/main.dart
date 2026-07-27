@@ -4,10 +4,15 @@ import 'package:provider/provider.dart';
 import 'services/ad_mediation_service.dart';
 import 'services/game_provider.dart';
 import 'services/parcours_provider.dart';
+import 'services/web_bridge.dart';
 import 'screens/splash_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Précharge le cache local (SharedPreferences sur mobile) avant
+  // toute lecture de token/session par GameProvider.init().
+  await WebBridge.init();
 
   // Orientation portrait uniquement
   await SystemChrome.setPreferredOrientations([

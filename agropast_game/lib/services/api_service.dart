@@ -36,6 +36,70 @@ class ApiService {
     }
   }
 
+  // Connexion (WhatsApp ou email + PIN)
+  static Future<Map<String, dynamic>> login({
+    required String identifier,
+    required String pin,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$_baseUrl/auth.php'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'action':     'login',
+          'identifier': identifier,
+          'pin':        pin,
+        }),
+      ).timeout(const Duration(seconds: 10));
+      return jsonDecode(response.body);
+    } catch (_) {
+      return {'success': false, 'error': 'Connexion impossible. Vérifie ta connexion internet.'};
+    }
+  }
+
+  // Inscription (PIN généré automatiquement par le serveur)
+  static Future<Map<String, dynamic>> register({
+    required String whatsapp,
+    required String email,
+    required String nom,
+    String pays = '',
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$_baseUrl/auth.php'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'action':   'register',
+          'whatsapp': whatsapp,
+          'email':    email,
+          'nom':      nom,
+          'pays':     pays,
+        }),
+      ).timeout(const Duration(seconds: 10));
+      return jsonDecode(response.body);
+    } catch (_) {
+      return {'success': false, 'error': 'Inscription impossible. Vérifie ta connexion internet.'};
+    }
+  }
+
+  // Récupère le score/niveau réels du serveur pour un token donné.
+  // Réutilise sync_score.php avec un événement neutre (0 point) : le
+  // serveur ignore de toute façon tout score envoyé par le client et
+  // renvoie toujours son propre total authoritatif — pratique pour
+  // simplement "lire" l'état sans créer de doublon d'endpoint.
+  static Future<Map<String, dynamic>> fetchScore(String token) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$_baseUrl/sync_score.php'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'token': token, 'event_type': 'saison'}),
+      ).timeout(const Duration(seconds: 10));
+      return jsonDecode(response.body);
+    } catch (_) {
+      return {'success': false};
+    }
+  }
+
   // Récupérer le leaderboard
   static Future<List<Map<String, dynamic>>> getLeaderboard() async {
     try {
