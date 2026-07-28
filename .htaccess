@@ -9,6 +9,13 @@ RewriteEngine On
 RewriteCond %{HTTPS} off
 RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
+# --- Forcer la version sans www (une seule URL canonique) ---
+# Corrige "Page en double sans URL canonique" côté Search Console :
+# www.agropast-game.online et agropast-game.online servaient le
+# même contenu sans qu'aucune version ne soit désignée officielle.
+RewriteCond %{HTTP_HOST} ^www\.agropast-game\.online$ [NC]
+RewriteRule ^(.*)$ https://agropast-game.online/$1 [L,R=301]
+
 # --- Fichiers spéciaux : ne pas rediriger ------------------
 # ads.txt, robots.txt, sitemap.xml → servis depuis la racine
 RewriteCond %{HTTP_HOST} ^(www\.)?agropast-game\.online$ [NC]
