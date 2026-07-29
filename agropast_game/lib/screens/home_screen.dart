@@ -8,7 +8,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../services/game_provider.dart';
 import '../services/parcours_provider.dart';
 import '../services/web_bridge.dart';
-import 'login_screen.dart';
 import '../models/player.dart';
 import 'game_screen.dart';
 import 'leaderboard_screen.dart';
@@ -570,10 +569,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   const SizedBox(width: 8),
                   ElevatedButton.icon(
                     onPressed: () {
+                      // TODO: Open Play Store link
                       if (!gp.isRegistered) {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(builder: (_) => const LoginScreen()),
-                        );
+                        WebBridge.share('/login.html');
                       } else if (_kPlayStoreUrl.isEmpty) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
@@ -927,10 +925,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                         Expanded(
                                           child: ElevatedButton(
                                             onPressed: () =>
-                                                Navigator.of(context).push(
-                                                  MaterialPageRoute(
-                                                      builder: (_) => const LoginScreen()),
-                                                ),
+                                                WebBridge.share('/login.html'),
                                             style: ElevatedButton.styleFrom(
                                               backgroundColor:
                                                   const Color(0xFF4caf50),
