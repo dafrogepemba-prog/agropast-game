@@ -146,23 +146,10 @@
   <form id="form-register" style="display:none" onsubmit="submitRegister(event)">
     <div class="form-group">
       <label>Numéro WhatsApp</label>
-      <div class="input-wrap" style="display:flex;gap:.4rem;align-items:stretch">
-        <select id="reg-indicatif" aria-label="Indicatif téléphonique"
-            style="flex:0 0 auto;padding:.7rem .5rem;background:rgba(255,255,255,.08);
-            border:1.5px solid rgba(255,255,255,.2);border-radius:8px;
-            color:#fff;font-size:1rem;max-width:6.5rem">
-          <option value="+242">🇨🇬 +242</option>
-          <option value="+243">🇨🇩 +243</option>
-          <option value="+221">🇸🇳 +221</option>
-          <option value="+225">🇨🇮 +225</option>
-          <option value="+237">🇨🇲 +237</option>
-          <option value="+241">🇬🇦 +241</option>
-          <option value="+229">🇧🇯 +229</option>
-          <option value="+226">🇧🇫 +226</option>
-          <option value="">🌍 Autre</option>
-        </select>
-        <input type="tel" id="reg-phone" placeholder="06 123 45 67"
-               autocomplete="tel" required style="flex:1" />
+      <div class="input-wrap">
+        <span class="flag">📱</span>
+        <input type="tel" id="reg-phone" placeholder="+242 06 123 45 67"
+               autocomplete="tel" required />
       </div>
     </div>
     <div class="form-group">
@@ -327,28 +314,9 @@ async function submitLogin(e) {
 }
 
 // ---- INSCRIPTION ---------------------------------------------
-// Synchronise le sélecteur "Pays" avec l'indicatif téléphonique (et inversement)
-const PAYS_VERS_INDICATIF = {
-  'Congo-Brazzaville': '+242', 'RDC': '+243', 'Sénégal': '+221',
-  "Côte d'Ivoire": '+225', 'Cameroun': '+237', 'Gabon': '+241',
-  'Bénin': '+229', 'Burkina Faso': '+226',
-};
-const INDICATIF_VERS_PAYS = Object.fromEntries(
-  Object.entries(PAYS_VERS_INDICATIF).map(([p, i]) => [i, p])
-);
-document.getElementById('reg-pays').addEventListener('change', function () {
-  const code = PAYS_VERS_INDICATIF[this.value];
-  if (code) document.getElementById('reg-indicatif').value = code;
-});
-document.getElementById('reg-indicatif').addEventListener('change', function () {
-  const pays = INDICATIF_VERS_PAYS[this.value];
-  if (pays) document.getElementById('reg-pays').value = pays;
-});
-
 async function submitRegister(e) {
   e.preventDefault();
-  const indicatif = document.getElementById('reg-indicatif').value.trim();
-  const phone = indicatif + ' ' + document.getElementById('reg-phone').value.trim();
+  const phone = document.getElementById('reg-phone').value.trim();
   const nom   = document.getElementById('reg-nom').value.trim();
   const email = document.getElementById('reg-email').value.trim();
   const pays  = document.getElementById('reg-pays').value;
