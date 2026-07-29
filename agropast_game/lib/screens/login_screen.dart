@@ -14,6 +14,18 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isLoginTab = true;
   bool _loading = false;
   String? _error;
+  String _indicatif = '+242';
+
+  static const _indicatifs = [
+    {'code': '+242', 'flag': '🇨🇬', 'nom': 'Congo-Brazzaville'},
+    {'code': '+243', 'flag': '🇨🇩', 'nom': 'RD Congo'},
+    {'code': '+221', 'flag': '🇸🇳', 'nom': 'Sénégal'},
+    {'code': '+225', 'flag': '🇨🇮', 'nom': "Côte d'Ivoire"},
+    {'code': '+237', 'flag': '🇨🇲', 'nom': 'Cameroun'},
+    {'code': '+241', 'flag': '🇬🇦', 'nom': 'Gabon'},
+    {'code': '+229', 'flag': '🇧🇯', 'nom': 'Bénin'},
+    {'code': '+226', 'flag': '🇧🇫', 'nom': 'Burkina Faso'},
+  ];
 
   // Connexion
   final _identifierCtrl = TextEditingController();
@@ -77,7 +89,7 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() { _loading = true; _error = null; });
 
     final result = await ApiService.register(
-      whatsapp: _whatsappCtrl.text.trim(),
+      whatsapp: '$_indicatif ${_whatsappCtrl.text.trim()}',
       email: _emailCtrl.text.trim(),
       nom: _nomCtrl.text.trim().isEmpty ? 'Fermier' : _nomCtrl.text.trim(),
     );
@@ -147,7 +159,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.red.withValues(alpha: 0.15),
+                    color: Colors.red.withOpacity(0.15),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(_error!, style: const TextStyle(color: Colors.redAccent)),
@@ -199,7 +211,35 @@ class _LoginScreenState extends State<LoginScreen> {
 
   List<Widget> _buildRegisterFields() {
     return [
-      _field(_whatsappCtrl, 'Numéro WhatsApp'),
+      Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.06),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            height: 56,
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<String>(
+                value: _indicatif,
+                dropdownColor: const Color(0xFF1b2a1b),
+                style: const TextStyle(color: Colors.white),
+                items: _indicatifs.map((c) {
+                  return DropdownMenuItem(
+                    value: c['code'],
+                    child: Text('${c['flag']} ${c['code']}'),
+                  );
+                }).toList(),
+                onChanged: (v) => setState(() => _indicatif = v ?? _indicatif),
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(child: _field(_whatsappCtrl, 'Numéro WhatsApp')),
+        ],
+      ),
       const SizedBox(height: 12),
       _field(_emailCtrl, 'Email'),
       const SizedBox(height: 12),
@@ -222,7 +262,7 @@ class _LoginScreenState extends State<LoginScreen> {
         labelText: label,
         labelStyle: const TextStyle(color: Colors.white54),
         filled: true,
-        fillColor: Colors.white.withValues(alpha: 0.06),
+        fillColor: Colors.white.withOpacity(0.06),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
       ),
     );
