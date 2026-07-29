@@ -318,6 +318,10 @@ if (isset($_GET['export']) && $_GET['export'] === 'csv') {
         } catch (Exception $ig) {}
       ?>
     </a>
+    <a href="kpi_financier.php" style="background:#2f7a3f;color:#fff;border-radius:6px;
+       padding:.4rem .9rem;font-size:.85rem;text-decoration:none;font-weight:700">
+      💰 KPI Financier
+    </a>
     <span class="user">👤 <?= htmlspecialchars($_SESSION['admin_user']) ?></span>
     <a href="logout.php" class="btn-logout">Déconnexion</a>
   </div>
