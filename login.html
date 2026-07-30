@@ -154,20 +154,27 @@
     <div class="form-group">
       <label>Numéro WhatsApp</label>
       <div class="input-wrap" style="display:flex;gap:.4rem;align-items:stretch">
-        <select id="reg-indicatif" aria-label="Indicatif téléphonique"
-            style="flex:0 0 auto;padding:.7rem .5rem;background:rgba(255,255,255,.08);
-            border:1.5px solid rgba(255,255,255,.2);border-radius:8px;
-            color:#fff;font-size:1rem;max-width:6.5rem">
-          <option value="+242">🇨🇬 +242</option>
-          <option value="+243">🇨🇩 +243</option>
-          <option value="+221">🇸🇳 +221</option>
-          <option value="+225">🇨🇮 +225</option>
-          <option value="+237">🇨🇲 +237</option>
-          <option value="+241">🇬🇦 +241</option>
-          <option value="+229">🇧🇯 +229</option>
-          <option value="+226">🇧🇫 +226</option>
-          <option value="">🌍 Autre</option>
-        </select>
+        <div style="display:flex;align-items:center;gap:.3rem;padding:0 .4rem;
+             background:rgba(255,255,255,.08);border:1.5px solid rgba(255,255,255,.2);
+             border-radius:8px;flex:0 0 auto">
+          <img id="reg-indicatif-flag" src="https://flagcdn.com/24x18/cg.png"
+               width="22" height="16" alt=""
+               style="border-radius:2px;display:block" />
+          <select id="reg-indicatif" aria-label="Indicatif téléphonique"
+              onchange="document.getElementById('reg-indicatif-flag').src='https://flagcdn.com/24x18/'+this.selectedOptions[0].dataset.iso+'.png'"
+              style="border:0;background:transparent;color:#fff;font-size:1rem;
+              max-width:5rem;padding:.7rem 0">
+            <option value="+242" data-iso="cg">+242</option>
+            <option value="+243" data-iso="cd">+243</option>
+            <option value="+221" data-iso="sn">+221</option>
+            <option value="+225" data-iso="ci">+225</option>
+            <option value="+237" data-iso="cm">+237</option>
+            <option value="+241" data-iso="ga">+241</option>
+            <option value="+229" data-iso="bj">+229</option>
+            <option value="+226" data-iso="bf">+226</option>
+            <option value="" data-iso="un">Autre</option>
+          </select>
+        </div>
         <input type="tel" id="reg-phone" placeholder="06 123 45 67"
                autocomplete="tel" required style="flex:1" />
       </div>
@@ -345,7 +352,12 @@ const INDICATIF_VERS_PAYS = Object.fromEntries(
 );
 document.getElementById('reg-pays').addEventListener('change', function () {
   const code = PAYS_VERS_INDICATIF[this.value];
-  if (code) document.getElementById('reg-indicatif').value = code;
+  if (code) {
+    const sel = document.getElementById('reg-indicatif');
+    sel.value = code;
+    document.getElementById('reg-indicatif-flag').src =
+      'https://flagcdn.com/24x18/' + sel.selectedOptions[0].dataset.iso + '.png';
+  }
 });
 document.getElementById('reg-indicatif').addEventListener('change', function () {
   const pays = INDICATIF_VERS_PAYS[this.value];
