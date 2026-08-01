@@ -322,6 +322,15 @@ if (isset($_GET['export']) && $_GET['export'] === 'csv') {
        padding:.4rem .9rem;font-size:.85rem;text-decoration:none;font-weight:700">
       💰 KPI Financier
     </a>
+    <a href="id_verifications.php" style="background:#6a4c93;color:#fff;border-radius:6px;
+       padding:.4rem .9rem;font-size:.85rem;text-decoration:none;font-weight:700">
+      🪪 Vérif. identité<?php
+        try {
+          $nbId = $pdo->query("SELECT COUNT(*) FROM `".DB_PREFIX."id_verifications` WHERE statut='en_attente'")->fetchColumn();
+          if ($nbId > 0) echo "<span style='background:#e53935;color:#fff;border-radius:10px;padding:.1rem .4rem;margin-left:.3rem'>{$nbId}</span>";
+        } catch (Exception $ig) {}
+      ?>
+    </a>
     <span class="user">👤 <?= htmlspecialchars($_SESSION['admin_user']) ?></span>
     <a href="logout.php" class="btn-logout">Déconnexion</a>
   </div>

@@ -8,6 +8,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../services/game_provider.dart';
 import '../services/parcours_provider.dart';
 import '../services/web_bridge.dart';
+import 'login_screen.dart';
+import 'id_verification_screen.dart';
 import '../models/player.dart';
 import 'game_screen.dart';
 import 'leaderboard_screen.dart';
@@ -429,6 +431,19 @@ class _HomeScreenState extends State<HomeScreen> {
                                 .timeout(const Duration(seconds: 10));
                             final data = jsonDecode(res.body);
                             if (ctx.mounted) Navigator.pop(ctx);
+
+                            if (data['needs_id_verification'] == true && mounted) {
+                              // Pièce d'identité jamais envoyée ou refusée :
+                              // on ouvre directement l'écran de vérification
+                              // plutôt que d'afficher un simple message.
+                              await Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (_) => IdVerificationScreen(token: token),
+                                ),
+                              );
+                              return;
+                            }
+
                             if (mounted) {
                               ScaffoldMessenger.of(context)
                                   .showSnackBar(SnackBar(
@@ -538,7 +553,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
-            // Version démo banner
+            // Version démo banner — uniquement sur le web (kIsWeb),
+            // n'a pas de sens dans l'app native puisque l'utilisateur
+            // l'a déjà téléchargée.
+            if (kIsWeb)
             Container(
               width: double.infinity,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
@@ -569,9 +587,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   const SizedBox(width: 8),
                   ElevatedButton.icon(
                     onPressed: () {
-                      // TODO: Open Play Store link
                       if (!gp.isRegistered) {
-                        WebBridge.share('/login.html');
+                        Navigator.of(context).push(
+                          MaterialPageRoute(builder: (_) => const LoginScreen()),
+                        );
                       } else if (_kPlayStoreUrl.isEmpty) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
@@ -925,7 +944,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                         Expanded(
                                           child: ElevatedButton(
                                             onPressed: () =>
-                                                WebBridge.share('/login.html'),
+                                                Navigator.of(context).push(
+                                                  MaterialPageRoute(
+                                                      builder: (_) => const LoginScreen()),
+                                                ),
                                             style: ElevatedButton.styleFrom(
                                               backgroundColor:
                                                   const Color(0xFF4caf50),

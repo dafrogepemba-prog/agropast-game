@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:http/http.dart' as http;
 import 'ad_mediation_service.dart';
 
@@ -100,7 +101,32 @@ class ApiService {
     }
   }
 
-  // Récupérer le leaderboard
+  // Upload d'une pièce d'identité pour vérification avant retrait
+  static Future<Map<String, dynamic>> uploadId({
+    required String token,
+    required String imageBase64,
+    required String mime,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$_baseUrl/upload_id.php'),
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Client-Platform': kIsWeb ? 'web' : 'app',
+        },
+        body: jsonEncode({
+          'token': token,
+          'image_base64': imageBase64,
+          'mime': mime,
+        }),
+      ).timeout(const Duration(seconds: 30));
+      return jsonDecode(response.body);
+    } catch (_) {
+      return {'success': false, 'error': 'Envoi impossible. Vérifie ta connexion internet.'};
+    }
+  }
+
+  // Récupère le leaderboard
   static Future<List<Map<String, dynamic>>> getLeaderboard() async {
     try {
       final response = await http.get(

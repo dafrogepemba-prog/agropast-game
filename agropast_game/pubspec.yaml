@@ -26,6 +26,8 @@ dependencies:
   animate_do: ^3.3.4
   # HTTP pour leaderboard API
   http: ^1.2.2
+  # Sélection photo (caméra/galerie) pour vérification d'identité
+  image_picker: ^1.1.2
 
 dev_dependencies:
   flutter_test:
