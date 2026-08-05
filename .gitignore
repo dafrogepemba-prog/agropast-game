@@ -37,3 +37,5 @@ firebase_backend/functions/lib/
 firebase_backend/*.log
 firebase_backend/*-debug.log
 firebase_backend/firestore-debug.log
+
+*.zip
