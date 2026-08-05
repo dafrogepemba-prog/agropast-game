@@ -1,0 +1,158 @@
+[gd_scene load_steps=2 format=3 uid="uid://c8yvxg3ulq3a"]
+
+[ext_resource type="Script" path="res://scenes/auth/login_screen.gd" id="1_8j7b2"]
+
+[node name="LoginScreen" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_8j7b2")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.141176, 0.168627, 0.129412, 1)
+
+[node name="Content" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -300.0
+offset_top = -400.0
+offset_right = 300.0
+offset_bottom = 400.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 20
+alignment = 1
+
+[node name="Title" type="Label" parent="Content"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 48
+text = "Se Connecter"
+horizontal_alignment = 1
+
+[node name="PhoneRow" type="HBoxContainer" parent="Content"]
+layout_mode = 2
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="CountryCode" type="Label" parent="Content/PhoneRow"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 32
+text = "+242"
+
+[node name="PhoneInput" type="LineEdit" parent="Content/PhoneRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 32
+placeholder_text = "Numero de telephone"
+max_length = 9
+
+[node name="OperatorRow" type="HBoxContainer" parent="Content"]
+layout_mode = 2
+theme_override_constants/separation = 20
+alignment = 1
+
+[node name="BtnMTN" type="Button" parent="Content/OperatorRow"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "MTN"
+
+[node name="BtnAirtel" type="Button" parent="Content/OperatorRow"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "Airtel"
+
+[node name="OTPSection" type="VBoxContainer" parent="Content"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="OTPTitle" type="Label" parent="Content/OTPSection"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+text = "Code de Validation (OTP)"
+horizontal_alignment = 1
+
+[node name="OTPContainer" type="HBoxContainer" parent="Content/OTPSection"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="OTP1" type="LineEdit" parent="Content/OTPSection/OTPContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 32
+max_length = 1
+alignment = 1
+
+[node name="OTP2" type="LineEdit" parent="Content/OTPSection/OTPContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 32
+max_length = 1
+alignment = 1
+
+[node name="OTP3" type="LineEdit" parent="Content/OTPSection/OTPContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 32
+max_length = 1
+alignment = 1
+
+[node name="OTP4" type="LineEdit" parent="Content/OTPSection/OTPContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 32
+max_length = 1
+alignment = 1
+
+[node name="OTP5" type="LineEdit" parent="Content/OTPSection/OTPContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 32
+max_length = 1
+alignment = 1
+
+[node name="OTP6" type="LineEdit" parent="Content/OTPSection/OTPContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 32
+max_length = 1
+alignment = 1
+
+[node name="TimerLabel" type="Label" parent="Content/OTPSection"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "Renvoyer le code (0:60)"
+horizontal_alignment = 1
+
+[node name="BtnConnect" type="Button" parent="Content"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 32
+text = "CONNEXION"
+
+[node name="ErrorLabel" type="Label" parent="Content"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(1, 0.2, 0.2, 1)
+horizontal_alignment = 1

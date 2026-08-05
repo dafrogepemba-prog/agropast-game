@@ -7,8 +7,8 @@ signal connection_status_changed(is_online: bool)
 var is_online: bool = false
 
 func _ready() -> void:
-print("NetworkManager initialized")
+    print("NetworkManager initialized")
 
 func observe_connection() -> void:
-is_online = true
-emit_signal("connection_status_changed", true)
+    is_online = true
+    emit_signal("connection_status_changed", true)
