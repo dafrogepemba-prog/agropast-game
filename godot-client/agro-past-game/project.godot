@@ -1,0 +1,26 @@
+﻿; Engine Configuration File.
+; Godot version: 4.7.1-stable
+
+[application]
+config/name="AgroPastGame"
+config/description="Jeu mobile de simulation agricole eco-responsable"
+config/features=PackedStringArray("4.7", "Mobile")
+boot_splash/bg_color=Color(0.141176, 0.168627, 0.129412, 1)
+config/icon="res://icon.svg"
+
+[autoload]
+GameState="*res://autoload/GameState.gd"
+NetworkManager="*res://autoload/NetworkManager.gd"
+AuthManager="*res://autoload/AuthManager.gd"
+AudioManager="*res://autoload/AudioManager.gd"
+
+[display]
+window/size/viewport_width=720
+window/size/viewport_height=1280
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
+window/handheld/orientation=1
+
+[rendering]
+renderer/rendering_method="mobile"
+textures/vram_compression/import_etc2_astc=true
