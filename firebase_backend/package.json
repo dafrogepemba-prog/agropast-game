@@ -1,0 +1,11 @@
+{
+  "name": "agropast-firebase-backend",
+  "version": "1.0.0",
+  "description": "AgroPastGame — Phase 2 Firebase backend (Zero-Trust Ledger)",
+  "private": true,
+  "scripts": {
+    "deploy":       "firebase deploy",
+    "deploy:rules": "firebase deploy --only firestore:rules",
+    "deploy:functions": "firebase deploy --only functions"
+  }
+}

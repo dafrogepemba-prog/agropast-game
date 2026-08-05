@@ -1,0 +1,60 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Helpers ────────────────────────────────────────────
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // ── Users : lecture seule par le proprietaire ──────────
+    // Toute ecriture directe client est interdite.
+    // Seul l'Admin SDK (Cloud Functions) peut ecrire.
+    match /users/{userId} {
+      allow read:  if isOwner(userId);
+      allow write: if false;  // Admin SDK uniquement
+
+      // Sous-collection transactions : lecture seule
+      match /transactions/{txId} {
+        allow read:  if isOwner(userId);
+        allow write: if false;  // Admin SDK uniquement
+      }
+    }
+
+    // ── Ledger global : aucun acces client ─────────────────
+    // Seules les Cloud Functions (Admin SDK) peuvent lire/ecrire.
+    match /ledger_global/{entryId} {
+      allow read:  if false;
+      allow write: if false;
+    }
+
+    // ── Classement hebdomadaire : lecture publique authentifiee ──
+    // Collection : leaderboards/{weekId}  (ex: leaderboards/week_2026_W32)
+    // Ecriture reservee a l'Admin SDK (weeklyLeaderboardReset).
+    // get  : lecture d'un document unique (ex: semaine courante)
+    // list : lecture en mode query (ex: historique des semaines)
+    match /leaderboards/{weekId} {
+      allow get:    if isAuthenticated();
+      allow list:   if isAuthenticated();
+      allow create: if false;  // Admin SDK uniquement
+      allow update: if false;
+      allow delete: if false;
+    }
+
+    // ── Catalogue items (lecture publique authentifiee) ────
+    match /items/{itemId} {
+      allow read:  if isAuthenticated();
+      allow write: if false;
+    }
+
+    // Bloquer tout le reste par defaut
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
