@@ -1,0 +1,247 @@
+name: Deploy + Build Web + AAB
+on:
+  push:
+    branches:
+      - main
+jobs:
+  # ── Job 1 : Build web + déploiement FTP ──────────────────
+  deploy-web:
+    name: Build web and deploy to LWS via FTP
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.4'
+          channel: stable
+          cache: true
+      - name: Flutter pub get
+        run: flutter pub get
+        working-directory: agropast_game
+      - name: Clean previous build artifacts
+        run: flutter clean
+        working-directory: agropast_game
+      - name: Build web release
+        run: flutter build web --release --base-href /game/
+        working-directory: agropast_game
+      - name: Verify base href
+        run: grep -n "base href" build/web/index.html
+        working-directory: agropast_game
+      - name: Deploy web build to FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ftp.epsylon-cg.com
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          server-dir: /agropast-game.online/agropast-game.online/game/
+          local-dir: agropast_game/build/web/
+          state-name: .ftp-deploy-sync-state-web.json
+          log-level: verbose
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/node_modules/**
+            **/assets/**
+            **/*.map
+      - name: Prepare API server config (inject secrets)
+        env:
+          APP_SECRET_KEY: ${{ secrets.APP_SECRET_KEY }}
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASS: ${{ secrets.DB_PASS }}
+          BREVO_SMTP_LOGIN: ${{ secrets.BREVO_SMTP_LOGIN }}
+          BREVO_SMTP_KEY: ${{ secrets.BREVO_SMTP_KEY }}
+          ADMIN_USERNAME: ${{ secrets.ADMIN_USERNAME }}
+          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+        run: |
+          MISSING=""
+          [ -z "$APP_SECRET_KEY" ] && MISSING="$MISSING APP_SECRET_KEY"
+          [ -z "$DB_HOST" ]        && MISSING="$MISSING DB_HOST"
+          [ -z "$DB_NAME" ]        && MISSING="$MISSING DB_NAME"
+          [ -z "$DB_USER" ]        && MISSING="$MISSING DB_USER"
+          [ -z "$DB_PASS" ]        && MISSING="$MISSING DB_PASS"
+          if [ -n "$MISSING" ]; then
+            echo "Secrets manquants :$MISSING — etape ignoree"
+            exit 0
+          fi
+          echo "Generating legacy/api/.htaccess with all DB + APP secrets..."
+          printf '<IfModule mod_env.c>\n  SetEnv APP_SECRET_KEY "%s"\n  SetEnv DB_HOST "127.0.0.1"\n  SetEnv DB_NAME "%s"\n  SetEnv DB_USER "%s"\n  SetEnv DB_PASS "%s"\n  SetEnv BREVO_SMTP_LOGIN "%s"\n  SetEnv BREVO_SMTP_KEY "%s"\n  SetEnv ADMIN_USERNAME "%s"\n  SetEnv ADMIN_PASSWORD "%s"\n</IfModule>\n' \
+            "$APP_SECRET_KEY" "$DB_NAME" "$DB_USER" "$DB_PASS" "$BREVO_SMTP_LOGIN" "$BREVO_SMTP_KEY" "$ADMIN_USERNAME" "$ADMIN_PASSWORD" > legacy/api/.htaccess
+          printf '<?php\n// deployed: %s\nputenv("APP_SECRET_KEY=%s");\nputenv("DB_HOST=127.0.0.1");\nputenv("DB_NAME=%s");\nputenv("DB_USER=%s");\nputenv("DB_PASS=%s");\nputenv("BREVO_SMTP_LOGIN=%s");\nputenv("BREVO_SMTP_KEY=%s");\nputenv("ADMIN_USERNAME=%s");\nputenv("ADMIN_PASSWORD=%s");\n' \
+            "$(date -u +%Y%m%d%H%M%S)" "$APP_SECRET_KEY" "$DB_NAME" "$DB_USER" "$DB_PASS" "$BREVO_SMTP_LOGIN" "$BREVO_SMTP_KEY" "$ADMIN_USERNAME" "$ADMIN_PASSWORD" > legacy/api/server_config.php
+          echo "API config generated successfully"
+      - name: Verify API config files were generated
+        run: |
+          echo "--- Verification fichiers API generés ---"
+          if [ ! -f legacy/api/.htaccess ]; then echo "ERREUR: legacy/api/.htaccess manquant"; exit 1; fi
+          if [ ! -f legacy/api/server_config.php ]; then echo "ERREUR: legacy/api/server_config.php manquant"; exit 1; fi
+          echo "legacy/api/.htaccess: OK ($(wc -c < legacy/api/.htaccess) bytes)"
+          echo "legacy/api/server_config.php: OK ($(wc -c < legacy/api/server_config.php) bytes)"
+          grep -c "putenv" legacy/api/server_config.php && echo "putenv lines OK" || echo "WARN: pas de putenv dans server_config.php"
+      - name: Deploy API to FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ftp.epsylon-cg.com
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          server-dir: /agropast-game.online/api/
+          local-dir: legacy/api/
+          state-name: .ftp-deploy-sync-state-v4.json
+          log-level: verbose
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/node_modules/**
+            **/*.log
+      - name: Deploy Admin dashboard to FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ftp.epsylon-cg.com
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          server-dir: /agropast-game.online/admin/
+          local-dir: legacy/admin/
+          state-name: .ftp-deploy-sync-state-admin.json
+          log-level: verbose
+          exclude: |
+            **/.git*
+            **/.git*/**
+      # Deploiement des fichiers racine du site (login.html, index.html,
+      # merci.html, etc.) — jusqu'ici ils n'etaient mis a jour que
+      # manuellement par FTP, ce qui a cause un oubli le 20/07/2026.
+      - name: Deploy root site files to FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ftp.epsylon-cg.com
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          server-dir: /agropast-game.online/agropast-game.online/
+          local-dir: ./
+          state-name: .ftp-deploy-sync-state-root.json
+          log-level: verbose
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/node_modules/**
+            agropast_game/**
+            godot-client/**
+            legacy/**
+            special-root-files/**
+            legacy/api/**
+            legacy/admin/**
+            .github/**
+            .kiro/**
+            .idea/**
+            .vscode/**
+            maintenance/**
+            *.md
+            *.txt
+            !robots.txt
+            *.bat
+      - name: Deploy special root files to FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ftp.epsylon-cg.com
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          server-dir: /agropast-game.online/agropast-game.online/
+          local-dir: special-root-files/
+          state-name: .ftp-deploy-sync-state-special-root.json
+          log-level: verbose
+  # ── Job 2 : Build AAB Android (production) ──────────────
+  build-aab:
+    name: Build Android App Bundle
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.4'
+          channel: stable
+          cache: true
+      - name: Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('agropast_game/android/**/*.gradle*') }}
+          restore-keys: gradle-${{ runner.os }}-
+      # Recréer key.properties depuis les secrets GitHub (optionnel)
+      - name: Setup keystore
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "Keystore secret found, setting up production signing..."
+            echo "$KEYSTORE_BASE64" | base64 -d > agropast_game/android/agropast_release.jks
+            printf 'storePassword=%s\nkeyPassword=%s\nkeyAlias=agropast\nstoreFile=agropast_release.jks\n' \
+              "$STORE_PASSWORD" "$KEY_PASSWORD" \
+              > agropast_game/android/key.properties
+            echo "key.properties created successfully"
+          else
+            echo "No keystore secret found — creating debug keystore for CI fallback signing"
+            mkdir -p "$HOME/.android"
+            keytool -genkeypair -v \
+              -keystore "$HOME/.android/debug.keystore" \
+              -storepass android -alias androiddebugkey -keypass android \
+              -keyalg RSA -keysize 2048 -validity 10000 \
+              -dname "CN=AgroPast CI,O=AgroPast,C=CG"
+            echo "Debug keystore created at $HOME/.android/debug.keystore"
+          fi
+      - name: Flutter pub get
+        run: flutter pub get
+        working-directory: agropast_game
+      # Build AAB (obligatoire pour Google Play, pret pour plus tard)
+      - name: Build App Bundle (AAB)
+        run: flutter build appbundle --release
+        working-directory: agropast_game
+      - name: Upload AAB artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: agropast-game-release-aab
+          path: agropast_game/build/app/outputs/bundle/release/app-release.aab
+          retention-days: 30
+      # Build APK aussi pour les tests directs ET le telechargement direct web
+      - name: Build APK (tests + telechargement direct)
+        run: flutter build apk --release
+        working-directory: agropast_game
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: agropast-game-release-apk
+          path: agropast_game/build/app/outputs/flutter-apk/app-release.apk
+          retention-days: 30
+      # Renommer avec un nom stable pour que le lien de telechargement
+      # ne change jamais entre les versions
+      - name: Rename APK for stable download link
+        run: cp agropast_game/build/app/outputs/flutter-apk/app-release.apk agropast_game/build/app/outputs/flutter-apk/agropast-game-latest.apk
+      # Deployer l'APK sur le serveur pour telechargement direct
+      # (en attendant la publication officielle sur le Play Store)
+      # ATTENTION : cible le dossier reellement servi pour /downloads/,
+      # verifie le 20/07/2026 -- c'est le meme niveau que api/ et admin/
+      # (contrairement a game/ qui a un niveau de dossier en plus)
+      - name: Deploy APK for direct download
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ftp.epsylon-cg.com
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          server-dir: /agropast-game.online/downloads/
+          local-dir: agropast_game/build/app/outputs/flutter-apk/
+          state-name: .ftp-deploy-sync-state-apk.json
+          log-level: verbose
+          exclude: |
+            **/.git*
+            **/.git*/**
+            app-release.apk
+            output-metadata.json
